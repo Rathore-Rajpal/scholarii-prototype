@@ -12,7 +12,7 @@ export const DEMO_USERS: Record<Role, { email: string; name: string; color: stri
   admin: { email: "admin@school.com", name: "Priya Mehta", color: "#f59e0b" },
 };
 
-const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || "";
+export const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || "";
 
 interface AuthCtx {
   user: User | null;
