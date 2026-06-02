@@ -12,7 +12,8 @@ export const DEMO_USERS: Record<Role, { email: string; name: string; color: stri
   admin: { email: "admin@school.com", name: "Priya Mehta", color: "#f59e0b" },
 };
 
-export const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || "";
+// Read from env var, fallback to hardcoded for testing (remove before production)
+export const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || "demo123";
 
 interface AuthCtx {
   user: User | null;
@@ -72,9 +73,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login: AuthCtx["login"] = (email, password, role) => {
     const demo = DEMO_USERS[role];
     if (!demo) return { ok: false, error: "Invalid role" };
-    if (!DEMO_PASSWORD) {
-      return { ok: false, error: "Demo mode not configured" };
-    }
     if (email.trim().toLowerCase() !== demo.email || password !== DEMO_PASSWORD) {
       return { ok: false, error: "Invalid credentials. Use the demo credentials shown." };
     }
