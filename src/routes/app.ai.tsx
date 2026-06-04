@@ -1,25 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/scholarii/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
+  ArrowUp,
   BarChart3,
   BookOpen,
   BrainCircuit,
   CheckCircle2,
   Clock3,
   FileText,
+  History,
   Image as ImageIcon,
+  Mic,
   Paperclip,
-  Plus,
-  Search,
   Send,
   Sparkles,
   Table2,
@@ -288,17 +290,22 @@ function seedHistory(attachments: Attachment[]): HistoryItem[] {
 }
 
 function ScholariiAiPage() {
-  const [query, setQuery] = useState("Analyze attendance trends across the school.");
-  const [mode, setMode] = useState<Mode>("Analysis");
+  const [query, setQuery] = useState("");
+  const [mode, setMode] = useState<Mode>("Simple Query");
   const [attachments, setAttachments] = useState<Attachment[]>(initialAttachments);
   const [history, setHistory] = useState<HistoryItem[]>(() => seedHistory(initialAttachments));
-  const [activeHistoryId, setActiveHistoryId] = useState<number>(1);
+  const [activeHistoryId, setActiveHistoryId] = useState<number | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [thinkingStep, setThinkingStep] = useState(0);
   const [pendingRequest, setPendingRequest] = useState<{ query: string; mode: Mode; attachments: Attachment[] } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const activeHistory = useMemo(() => history.find((item) => item.id === activeHistoryId) ?? history[0] ?? null, [activeHistoryId, history]);
+  const activeHistory = useMemo(
+    () => history.find((item) => item.id === activeHistoryId) ?? null,
+    [activeHistoryId, history]
+  );
 
   useEffect(() => {
     if (!isThinking || !pendingRequest) return;
@@ -331,14 +338,7 @@ function ScholariiAiPage() {
     };
   }, [isThinking, pendingRequest]);
 
-  const sendLabel =
-    mode === "Simple Query"
-      ? "Ask Scholarii AI"
-      : mode === "Analysis"
-        ? "Run Analysis"
-        : mode === "Research"
-          ? "Generate Research Brief"
-          : "Prepare Action Plan";
+  const sendLabel = "Send";
 
   const handleAttachClick = () => {
     fileInputRef.current?.click();
@@ -369,14 +369,14 @@ function ScholariiAiPage() {
       return;
     }
 
-    setQuery(trimmed);
     setPendingRequest({ query: trimmed, mode, attachments: [...attachments] });
     setIsThinking(true);
+    setQuery("");
   };
 
-  const handleSuggestedQuery = (prompt: string) => {
-    setQuery(prompt);
-    startThinking(prompt);
+  const handleComposerSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    startThinking(query);
   };
 
   const handleHistoryOpen = (item: HistoryItem) => {
@@ -409,10 +409,10 @@ function ScholariiAiPage() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.08fr_0.92fr]">
-        <div className="space-y-4">
-          <Card className="border-border/60 bg-gradient-to-br from-white via-white to-slate-50 p-5 shadow-sm">
-            <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.08fr_0.92fr] xl:h-[calc(100dvh-12.5rem)] xl:min-h-[680px] xl:items-stretch xl:overflow-hidden">
+        <div className="space-y-4 xl:flex xl:h-full xl:flex-col">
+          <Card className="border-border/60 bg-gradient-to-br from-white via-white to-slate-50 p-4 shadow-sm xl:h-full">
+            <div className="flex h-full flex-col gap-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">AI input area</p>
@@ -427,35 +427,137 @@ function ScholariiAiPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border bg-background p-3">
-                <Textarea
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder='Ask anything about your school...'
-                  className="min-h-[170px] resize-none border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0"
-                />
-
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={handleAttachClick}>
-                    <Paperclip className="mr-2 size-4" />
-                    Attach Files
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setQuery("");
-                      setAttachments(initialAttachments);
-                    }}
-                  >
-                    Reset
-                  </Button>
-                  <div className="ml-auto flex items-center gap-2 rounded-full border border-border bg-muted/30 px-3 py-1 text-xs text-muted-foreground">
-                    <Sparkles className="size-3.5 text-cyan-600" />
-                    Files stay in this prototype only
+              <form className="flex flex-1 min-h-0 flex-col rounded-2xl border border-border bg-background p-3" onSubmit={handleComposerSubmit}>
+                <div className="mb-3">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Suggested prompts</p>
+                    <Badge variant="outline">Use as a starting point</Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Which students are at risk?",
+                      "Analyze fee collection performance.",
+                      "Generate academic summary.",
+                      "Research attendance decline.",
+                    ].map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => {
+                          setQuery(item);
+                          composerRef.current?.focus();
+                        }}
+                        className="rounded-full border border-border bg-slate-50 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-cyan-200 hover:bg-cyan-50"
+                      >
+                        {item}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
+
+                <Textarea
+                  ref={composerRef}
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                      event.preventDefault();
+                      startThinking(query);
+                    }
+                  }}
+                  placeholder='Ask anything about your school...'
+                  className="min-h-[170px] resize-none border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0"
+                  />
+
+                <div className="mt-3 flex-1 min-h-0">
+                  <div className="mb-3 flex flex-wrap gap-2 overflow-x-auto pb-1">
+                    {attachments.map((item) => {
+                      const Icon = inferAttachmentIcon(item.kind);
+                      return (
+                        <div
+                          key={item.name}
+                          className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border bg-slate-50 px-3 py-1.5 text-xs text-foreground shadow-sm"
+                        >
+                          <Icon className="size-3.5 text-muted-foreground" />
+                          <span className="font-medium">{item.name}</span>
+                          <span className="text-muted-foreground">({item.size})</span>
+                          <button
+                            type="button"
+                            onClick={() => removeAttachment(item.name)}
+                            className="ml-1 rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            aria-label={`Remove ${item.name}`}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {!attachments.length && (
+                      <div className="rounded-full border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground">
+                        No attachments added yet
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-auto border-t border-border/60 pt-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button type="button" variant="outline" size="sm" onClick={handleAttachClick} className="h-9 rounded-full px-3">
+                        <Paperclip className="mr-2 size-4" />
+                        Attach
+                      </Button>
+
+                      <div className="flex items-center gap-2 rounded-full border border-border bg-background px-2 py-1">
+                        <span className="px-2 text-xs text-muted-foreground">Skill</span>
+                        <Select value={mode} onValueChange={(value) => setMode(value as Mode)}>
+                          <SelectTrigger className="h-8 w-[132px] rounded-full border-0 bg-transparent px-2 text-xs shadow-none">
+                            <SelectValue placeholder="Select skill" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MODES.map((item) => (
+                              <SelectItem key={item} value={item}>
+                                {modeMeta[item].label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-9 rounded-full"
+                        onClick={() => toast("Voice input is a demo control in this prototype.")}
+                        aria-label="Voice input"
+                      >
+                        <Mic className="size-4" />
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 rounded-full px-3"
+                        onClick={() => {
+                          setQuery("");
+                          setAttachments(initialAttachments);
+                        }}
+                      >
+                        Reset
+                      </Button>
+
+                      <Button
+                        type="submit"
+                        className="ml-auto size-10 rounded-full bg-slate-900 p-0 text-white hover:bg-slate-800"
+                        disabled={isThinking}
+                        aria-label={isThinking ? "Thinking" : "Send message"}
+                      >
+                        {isThinking ? <Sparkles className="size-4 animate-pulse" /> : <ArrowUp className="size-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </form>
 
               <input
                 ref={fileInputRef}
@@ -466,398 +568,292 @@ function ScholariiAiPage() {
                 onChange={handleAttachmentChange}
               />
 
-              <div>
-                <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Attachments</p>
-                <div className="flex flex-wrap gap-2">
-                  {attachments.map((item) => {
-                    const Icon = inferAttachmentIcon(item.kind);
-                    return (
-                      <div
-                        key={item.name}
-                        className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-xs text-foreground shadow-sm"
-                      >
-                        <Icon className="size-3.5 text-muted-foreground" />
-                        <span className="font-medium">{item.name}</span>
-                        <span className="text-muted-foreground">({item.size})</span>
-                        <button
-                          type="button"
-                          onClick={() => removeAttachment(item.name)}
-                          className="ml-1 rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          aria-label={`Remove ${item.name}`}
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                  {!attachments.length && (
-                    <div className="rounded-full border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
-                      No attachments added yet
-                    </div>
-                  )}
-                </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">{attachments.length} attachments</Badge>
+                <Badge variant="outline">{modeMeta[mode].label}</Badge>
               </div>
-
-              <div>
-                <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Agent type selector</p>
-                <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                  {MODES.map((item) => {
-                    const active = mode === item;
-                    const meta = modeMeta[item];
-                    return (
-                      <button
-                        key={item}
-                        type="button"
-                        onClick={() => setMode(item)}
-                        className={cn(
-                          "rounded-2xl border px-3 py-3 text-left transition-all",
-                          active
-                            ? "border-transparent bg-brand-gradient text-white shadow-glow"
-                            : "border-border bg-background hover:border-slate-300 hover:bg-slate-50"
-                        )}
-                      >
-                        <div className="text-sm font-semibold">{meta.label}</div>
-                        <div className={cn("mt-1 text-xs", active ? "text-white/80" : "text-muted-foreground")}>{meta.hint}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 border-t border-border pt-4 md:flex-row md:items-center md:justify-between">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline">{attachments.length} attachments</Badge>
-                  <Badge variant="outline">{mode}</Badge>
-                </div>
-                <Button
-                  onClick={() => startThinking(query)}
-                  className={cn("border-0 text-white", `bg-gradient-to-r ${modeMeta[mode].accent}`)}
-                  disabled={isThinking}
-                >
-                  {isThinking ? "Thinking..." : sendLabel}
-                  <Send className="ml-2 size-4" />
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="border-border/60 p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Suggested queries</p>
-                <h3 className="mt-1 text-lg font-semibold">Quick prompts for the principal</h3>
-              </div>
-              <Badge variant="outline">Tap to run</Badge>
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
-              {[
-                "Which students are at risk?",
-                "Analyze fee collection performance.",
-                "Generate academic summary.",
-                "Research attendance decline.",
-                "Identify overloaded teachers.",
-                "Show compliance risks.",
-                "Which classes need intervention?",
-              ].map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => handleSuggestedQuery(item)}
-                  className="group rounded-2xl border border-border bg-slate-50/70 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-cyan-50/60"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 rounded-full bg-background p-2 shadow-sm">
-                      <Search className="size-3.5 text-cyan-600" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium leading-5 text-foreground">{item}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">Populate the prompt and run a 5-second Scholarii AI response.</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="border-border/60 p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">AI activity history</p>
-                <h3 className="mt-1 text-lg font-semibold">Recent interactions</h3>
-              </div>
-              <Badge variant="outline">{history.length} items</Badge>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              {history.map((item) => {
-                const active = item.id === activeHistoryId;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => handleHistoryOpen(item)}
-                    className={cn(
-                      "w-full rounded-2xl border p-4 text-left transition-all",
-                      active ? "border-cyan-200 bg-cyan-50/70 shadow-sm" : "border-border bg-background hover:border-slate-300 hover:bg-slate-50"
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Clock3 className="size-3.5 text-muted-foreground" />
-                          <span className="text-sm font-semibold">{item.title}</span>
-                          <Badge variant="outline" className="text-[10px] uppercase">
-                            {item.mode}
-                          </Badge>
-                        </div>
-                        <p className="mt-2 line-clamp-1 text-sm text-muted-foreground">{item.prompt}</p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                        <span>{item.time}</span>
-                        <ArrowRight className="size-3.5" />
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
             </div>
           </Card>
         </div>
 
-        <div className="space-y-4 xl:sticky xl:top-24">
-          <Card className="border-border/60 p-5 shadow-sm">
+        <div className="space-y-4 xl:flex xl:h-full xl:flex-col xl:justify-stretch">
+          <Card className="border-border/60 p-4 shadow-sm xl:h-full">
+            <div className="flex h-full flex-col">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Chat / response area</p>
                 <h3 className="mt-1 text-lg font-semibold">Live Scholarii AI response</h3>
               </div>
-              <Badge className="bg-slate-900 text-white hover:bg-slate-900">{mode}</Badge>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-slate-900 text-white hover:bg-slate-900">{mode}</Badge>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setHistoryOpen((current) => !current)}
+                  className="h-8 gap-2 rounded-full px-3 text-xs"
+                >
+                  <History className="size-3.5" />
+                  {historyOpen ? "Hide history" : "History"}
+                </Button>
+              </div>
             </div>
 
-            <div className="mt-4 rounded-3xl border border-border bg-gradient-to-b from-slate-50 to-white p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Current prompt</p>
-                  <p className="mt-1 truncate text-sm font-medium text-foreground">{query}</p>
-                </div>
-                <div className="rounded-full border border-border bg-white px-3 py-1 text-xs text-muted-foreground">
-                  {activeHistory?.title ?? "No response selected"}
-                </div>
-              </div>
-
-              {isThinking && pendingRequest ? (
-                <div className="mt-4 rounded-2xl border border-dashed border-cyan-200 bg-cyan-50/50 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="grid size-12 place-items-center rounded-2xl bg-white shadow-sm">
-                      <Sparkles className="size-5 animate-pulse text-cyan-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold">Scholarii AI is thinking...</div>
-                      <div className="text-sm text-muted-foreground">{THINKING_STEPS[thinkingStep]}</div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-2 sm:grid-cols-4">
-                    {THINKING_STEPS.map((step, index) => (
-                      <div
-                        key={step}
-                        className={cn(
-                          "rounded-2xl border p-3 text-xs transition-all",
-                          index <= thinkingStep ? "border-cyan-200 bg-white text-foreground shadow-sm" : "border-border bg-white/60 text-muted-foreground"
-                        )}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className={cn("size-2 rounded-full", index <= thinkingStep ? "bg-cyan-500" : "bg-slate-300")} />
-                          <span className="font-medium">{step}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-white">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 transition-all duration-500"
-                      style={{ width: `${Math.min(100, (thinkingStep + 1) * 25)}%` }}
-                    />
-                  </div>
-                </div>
-              ) : activeHistory ? (
-                <div className="mt-4 space-y-4">
-                  <div className="rounded-2xl border border-border bg-background p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className={cn("mt-4 flex flex-1 min-h-0 flex-col rounded-3xl border border-border bg-gradient-to-b from-slate-50 to-white p-4", historyOpen ? "xl:p-4" : "")}>
+              <div className={cn("grid h-full min-h-0 gap-4", historyOpen ? "xl:grid-cols-[minmax(0,1fr)_280px]" : "grid-cols-1")}>
+                <div className="flex min-h-0 flex-col rounded-2xl border border-border bg-white">
+                  <div className="border-b border-border/60 px-4 py-3">
+                    <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground">Answer</div>
-                        <h4 className="mt-1 text-2xl font-semibold tracking-tight">{activeHistory.response.headline}</h4>
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">Conversation</div>
+                        <div className="text-sm font-medium text-foreground">
+                          {isThinking && pendingRequest
+                            ? "Scholarii AI is preparing your response"
+                            : activeHistory
+                              ? activeHistory.title
+                              : "No response yet"}
+                        </div>
                       </div>
-                      <Badge variant="outline">Prototype response</Badge>
+                      <Badge variant="outline">{isThinking ? "Thinking" : "Ready"}</Badge>
                     </div>
-                    <p className="mt-3 text-sm leading-6 text-muted-foreground">{activeHistory.response.summary}</p>
                   </div>
 
-                  {mode === "Simple Query" && (
-                    <div className="rounded-2xl border border-border bg-background p-4">
-                      <div className="flex items-center gap-2 text-sm font-semibold">
-                        <CheckCircle2 className="size-4 text-emerald-600" />
-                        Quick answer
-                      </div>
-                      <div className="mt-3 space-y-2">
-                        {activeHistory.response.bullets.map((item) => (
-                          <div key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <span className="mt-1 size-1.5 rounded-full bg-cyan-500" />
-                            <span>{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 rounded-2xl bg-slate-50 p-3 text-sm text-muted-foreground">
-                        Ask for Analysis or Research mode if you want this turned into a deeper brief.
+                  <div className="flex flex-1 min-h-0 flex-col gap-4 overflow-y-auto p-4">
+                  {!isThinking && !activeHistory && (
+                    <div className="flex min-h-[300px] items-center justify-center">
+                      <div className="max-w-md rounded-3xl border border-dashed border-border bg-slate-50/80 p-5 text-center">
+                        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-white shadow-sm">
+                          <BrainCircuit className="size-6 text-cyan-600" />
+                        </div>
+                        <div className="mt-4 text-lg font-semibold">Chat with Scholarii AI</div>
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          Type a prompt on the left and send it with the button below. Responses will appear here like a chat transcript.
+                        </p>
                       </div>
                     </div>
                   )}
 
-                  {mode === "Analysis" && (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        {(activeHistory.response.metrics ?? []).map((metric) => (
-                          <Card key={metric.label} className="border-border/60 p-4">
-                            <p className="text-xs text-muted-foreground">{metric.label}</p>
-                            <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
-                            <p className="mt-1 text-xs text-muted-foreground">{metric.note}</p>
-                          </Card>
-                        ))}
-                      </div>
-
-                      <div className="rounded-2xl border border-border bg-background p-4">
-                        <div className="mb-2 flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2 text-sm font-semibold">
-                            <BarChart3 className="size-4 text-cyan-600" />
-                            Visual summary
-                          </div>
-                          <Badge variant="outline">Mock chart</Badge>
-                        </div>
-                        <div className="h-52">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={activeHistory.response.chartData ?? []} margin={{ top: 10, right: 8, bottom: 8, left: -10 }}>
-                              <defs>
-                                <linearGradient id="aiAnalysisFill" x1="0" x2="0" y1="0" y2="1">
-                                  <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.35} />
-                                  <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.02} />
-                                </linearGradient>
-                              </defs>
-                              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                              <XAxis dataKey="label" stroke="var(--muted-foreground)" tickMargin={10} />
-                              <YAxis domain={[80, 100]} stroke="var(--muted-foreground)" width={32} />
-                              <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 12 }} />
-                              <Area type="monotone" dataKey="value" stroke="#06b6d4" fill="url(#aiAnalysisFill)" strokeWidth={2} />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-
-                      <div className="grid gap-3">
-                        {activeHistory.response.bullets.map((item) => (
-                          <div key={item} className="rounded-2xl border border-border bg-slate-50/70 p-4 text-sm text-muted-foreground">
-                            {item}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {mode === "Research" && (
-                    <div className="space-y-4">
-                      <div className="grid gap-3">
-                        {(activeHistory.response.reportSections ?? []).map((section) => (
-                          <div key={section.title} className="rounded-2xl border border-border bg-background p-4">
-                            <div className="flex items-center gap-2 text-sm font-semibold">
-                              <BookOpen className="size-4 text-violet-600" />
-                              {section.title}
+                  {isThinking && pendingRequest && (
+                    <>
+                      <div className="flex justify-end">
+                        <div className="max-w-[80%] rounded-3xl rounded-br-md bg-slate-900 px-4 py-3 text-sm text-white shadow-sm">
+                          <p className="text-[11px] uppercase tracking-wide text-white/70">You</p>
+                          <p className="mt-1 leading-6">{pendingRequest.query}</p>
+                          {pendingRequest.attachments.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {pendingRequest.attachments.map((item) => (
+                                <Badge key={item.name} variant="outline" className="border-white/20 bg-white/10 text-white">
+                                  {item.name}
+                                </Badge>
+                              ))}
                             </div>
-                            <p className="mt-2 text-sm leading-6 text-muted-foreground">{section.body}</p>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="rounded-2xl border border-border bg-slate-50/70 p-4">
-                        <div className="text-sm font-semibold">References consulted</div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {(activeHistory.response.references ?? []).map((reference) => (
-                            <Badge key={reference} variant="outline" className="bg-white">
-                              {reference}
-                            </Badge>
-                          ))}
+                          )}
                         </div>
                       </div>
 
-                      <div className="grid gap-3">
-                        {activeHistory.response.bullets.map((item) => (
-                          <div key={item} className="rounded-2xl border border-border bg-background p-4 text-sm text-muted-foreground">
-                            {item}
+                      <div className="flex justify-start">
+                        <div className="max-w-[88%] rounded-3xl rounded-bl-md border border-cyan-100 bg-cyan-50/70 px-4 py-3 text-sm text-foreground shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="grid size-10 place-items-center rounded-2xl bg-white shadow-sm">
+                              <Sparkles className="size-5 animate-pulse text-cyan-600" />
+                            </div>
+                            <div>
+                              <div className="font-semibold">Scholarii AI is thinking...</div>
+                              <div className="text-muted-foreground">{THINKING_STEPS[thinkingStep]}</div>
+                            </div>
                           </div>
-                        ))}
+
+                          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                            {THINKING_STEPS.map((step, index) => (
+                              <div
+                                key={step}
+                                className={cn(
+                                  "rounded-2xl border p-3 text-xs transition-all",
+                                  index <= thinkingStep
+                                    ? "border-cyan-200 bg-white text-foreground shadow-sm"
+                                    : "border-border bg-white/60 text-muted-foreground"
+                                )}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className={cn("size-2 rounded-full", index <= thinkingStep ? "bg-cyan-500" : "bg-slate-300")} />
+                                  <span className="font-medium">{step}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
 
-                  {mode === "Agent" && (
-                    <div className="space-y-4">
-                      <div className="rounded-2xl border border-border bg-background p-4">
-                        <div className="text-sm font-semibold">Actions identified</div>
-                        <div className="mt-3 space-y-2">
-                          {(activeHistory.response.actions ?? []).map((action) => (
-                            <div key={action} className="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-3 text-sm">
-                              <CheckCircle2 className="size-4 text-emerald-600" />
-                              <span>{action}</span>
-                            </div>
-                          ))}
+                  {!isThinking && activeHistory && (
+                    <>
+                      <div className="flex justify-end">
+                        <div className="max-w-[80%] rounded-3xl rounded-br-md bg-slate-900 px-4 py-3 text-sm text-white shadow-sm">
+                          <p className="text-[11px] uppercase tracking-wide text-white/70">You</p>
+                          <p className="mt-1 leading-6">{activeHistory.prompt}</p>
                         </div>
                       </div>
 
-                      <div className="rounded-2xl border border-border bg-slate-50/70 p-4">
-                        <div className="text-sm font-semibold">Suggested workflow</div>
-                        <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-                          {activeHistory.response.bullets.map((item) => (
-                            <div key={item} className="flex items-start gap-2">
-                              <span className="mt-1 size-1.5 rounded-full bg-emerald-500" />
-                              <span>{item}</span>
+                      <div className="flex justify-start">
+                        <div className="max-w-[88%] rounded-3xl rounded-bl-md border border-border bg-white px-4 py-3 text-sm text-foreground shadow-sm">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 font-semibold">
+                              <BrainCircuit className="size-4 text-cyan-600" />
+                              Scholarii AI
                             </div>
-                          ))}
+                            <Badge variant="outline">Prototype response</Badge>
+                          </div>
+                          <div className="mt-3 text-base font-semibold tracking-tight">{activeHistory.response.headline}</div>
+                          <p className="mt-2 leading-6 text-muted-foreground">{activeHistory.response.summary}</p>
+
+                          {activeHistory.response.bullets.length > 0 && (
+                            <div className="mt-4 space-y-2">
+                              {activeHistory.response.bullets.map((item) => (
+                                <div key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                  <span className="mt-1 size-1.5 rounded-full bg-cyan-500" />
+                                  <span>{item}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {activeHistory.response.metrics && (
+                            <div className="mt-4 grid grid-cols-2 gap-3">
+                              {activeHistory.response.metrics.map((metric) => (
+                                <div key={metric.label} className="rounded-2xl border border-border bg-slate-50 p-3">
+                                  <div className="text-xs text-muted-foreground">{metric.label}</div>
+                                  <div className="mt-1 text-lg font-semibold">{metric.value}</div>
+                                  <div className="text-xs text-muted-foreground">{metric.note}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {activeHistory.response.chartData && (
+                            <div className="mt-4 rounded-2xl border border-border bg-slate-50 p-3">
+                              <div className="mb-2 flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2 text-sm font-semibold">
+                                  <BarChart3 className="size-4 text-cyan-600" />
+                                  Visual summary
+                                </div>
+                                <Badge variant="outline">Mock chart</Badge>
+                              </div>
+                              <div className="h-40">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={activeHistory.response.chartData} margin={{ top: 10, right: 8, bottom: 0, left: -10 }}>
+                                    <defs>
+                                      <linearGradient id="aiAnalysisFill" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.35} />
+                                        <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.02} />
+                                      </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+                                    <XAxis dataKey="label" stroke="var(--muted-foreground)" tickMargin={10} />
+                                    <YAxis domain={[80, 100]} stroke="var(--muted-foreground)" width={32} />
+                                    <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 12 }} />
+                                    <Area type="monotone" dataKey="value" stroke="#06b6d4" fill="url(#aiAnalysisFill)" strokeWidth={2} />
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </div>
+                          )}
+
+                          {activeHistory.response.reportSections && (
+                            <div className="mt-4 space-y-3">
+                              {activeHistory.response.reportSections.map((section) => (
+                                <div key={section.title} className="rounded-2xl border border-border bg-slate-50 p-3">
+                                  <div className="flex items-center gap-2 font-semibold">
+                                    <BookOpen className="size-4 text-violet-600" />
+                                    {section.title}
+                                  </div>
+                                  <p className="mt-2 leading-6 text-muted-foreground">{section.body}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {activeHistory.response.references && (
+                            <div className="mt-4 rounded-2xl border border-border bg-slate-50 p-3">
+                              <div className="text-sm font-semibold">Sources consulted</div>
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {activeHistory.response.references.map((reference) => (
+                                  <Badge key={reference} variant="outline" className="bg-white">
+                                    {reference}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {activeHistory.response.actions && (
+                            <div className="mt-4 rounded-2xl border border-border bg-slate-50 p-3">
+                              <div className="text-sm font-semibold">Actions identified</div>
+                              <div className="mt-3 space-y-2">
+                                {activeHistory.response.actions.map((action) => (
+                                  <div key={action} className="flex items-center gap-3 rounded-xl bg-white px-3 py-3 text-sm">
+                                    <CheckCircle2 className="size-4 text-emerald-600" />
+                                    <span>{action}</span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="mt-4 flex flex-wrap gap-2">
+                                <Button onClick={handleExecuteActions} className="bg-brand-gradient text-white border-0">
+                                  Execute Actions
+                                </Button>
+                                <Button variant="outline">Review plan</Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        <Button onClick={handleExecuteActions} className="bg-brand-gradient text-white border-0">
-                          Execute Actions
-                        </Button>
-                        <Button variant="outline">Review plan</Button>
-                      </div>
-                    </div>
+                    </>
                   )}
 
-                  <div className="rounded-2xl border border-border bg-slate-50/60 p-4">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Sources / context</div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {(activeHistory.response.references ?? attachments.map((item) => item.name)).slice(0, 3).map((reference) => (
-                        <Badge key={reference} variant="outline" className="bg-white">
-                          {reference}
-                        </Badge>
-                      ))}
-                    </div>
+                  </div>
                   </div>
                 </div>
-              ) : (
-                <div className="mt-4 rounded-2xl border border-dashed border-border bg-slate-50/70 p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="grid size-12 place-items-center rounded-2xl bg-white shadow-sm">
-                      <BrainCircuit className="size-5 text-cyan-600" />
+
+                {historyOpen && (
+                  <aside className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">AI activity history</p>
+                        <h3 className="mt-1 text-sm font-semibold">Recent interactions</h3>
+                      </div>
+                      <Badge variant="outline">{history.length} items</Badge>
                     </div>
-                    <div>
-                      <div className="text-sm font-semibold">Ready for your next instruction</div>
-                      <div className="text-sm text-muted-foreground">Ask a question, run analysis, research a topic, or stage an action plan.</div>
+
+                    <div className="mt-4 space-y-2">
+                      {history.map((item) => {
+                        const active = item.id === activeHistoryId;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => handleHistoryOpen(item)}
+                            className={cn(
+                              "w-full rounded-2xl border p-3 text-left transition-all",
+                              active ? "border-cyan-200 bg-cyan-50/70 shadow-sm" : "border-border bg-background hover:border-slate-300 hover:bg-slate-50"
+                            )}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Clock3 className="size-3.5 text-muted-foreground" />
+                                  <span className="text-sm font-semibold">{item.title}</span>
+                                </div>
+                                <p className="mt-2 line-clamp-1 text-xs text-muted-foreground">{item.prompt}</p>
+                              </div>
+                              <ArrowRight className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
-                  </div>
-                </div>
-              )}
+                  </aside>
+                )}
+              </div>
             </div>
           </Card>
         </div>
