@@ -26,12 +26,15 @@ import { Route as AppLogsRouteImport } from './routes/app.logs'
 import { Route as AppInfrastructureRouteImport } from './routes/app.infrastructure'
 import { Route as AppGradebookRouteImport } from './routes/app.gradebook'
 import { Route as AppFeesRouteImport } from './routes/app.fees'
+import { Route as AppFacilitiesRouteImport } from './routes/app.facilities'
 import { Route as AppExamsRouteImport } from './routes/app.exams'
 import { Route as AppEventsRouteImport } from './routes/app.events'
+import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppComplianceRouteImport } from './routes/app.compliance'
 import { Route as AppCommunicationRouteImport } from './routes/app.communication'
 import { Route as AppClassesRouteImport } from './routes/app.classes'
 import { Route as AppChildrenRouteImport } from './routes/app.children'
+import { Route as AppBrainRouteImport } from './routes/app.brain'
 import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
 import { Route as AppAssignmentsRouteImport } from './routes/app.assignments'
 import { Route as AppAnnouncementsRouteImport } from './routes/app.announcements'
@@ -125,6 +128,11 @@ const AppFeesRoute = AppFeesRouteImport.update({
   path: '/fees',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFacilitiesRoute = AppFacilitiesRouteImport.update({
+  id: '/facilities',
+  path: '/facilities',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppExamsRoute = AppExamsRouteImport.update({
   id: '/exams',
   path: '/exams',
@@ -133,6 +141,11 @@ const AppExamsRoute = AppExamsRouteImport.update({
 const AppEventsRoute = AppEventsRouteImport.update({
   id: '/events',
   path: '/events',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDocumentsRoute = AppDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
   getParentRoute: () => AppRoute,
 } as any)
 const AppComplianceRoute = AppComplianceRouteImport.update({
@@ -153,6 +166,11 @@ const AppClassesRoute = AppClassesRouteImport.update({
 const AppChildrenRoute = AppChildrenRouteImport.update({
   id: '/children',
   path: '/children',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBrainRoute = AppBrainRouteImport.update({
+  id: '/brain',
+  path: '/brain',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAttendanceRoute = AppAttendanceRouteImport.update({
@@ -202,12 +220,15 @@ export interface FileRoutesByFullPath {
   '/app/announcements': typeof AppAnnouncementsRoute
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
+  '/app/brain': typeof AppBrainRoute
   '/app/children': typeof AppChildrenRoute
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
   '/app/compliance': typeof AppComplianceRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/events': typeof AppEventsRoute
   '/app/exams': typeof AppExamsRoute
+  '/app/facilities': typeof AppFacilitiesRoute
   '/app/fees': typeof AppFeesRoute
   '/app/gradebook': typeof AppGradebookRoute
   '/app/infrastructure': typeof AppInfrastructureRoute
@@ -233,12 +254,15 @@ export interface FileRoutesByTo {
   '/app/announcements': typeof AppAnnouncementsRoute
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
+  '/app/brain': typeof AppBrainRoute
   '/app/children': typeof AppChildrenRoute
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
   '/app/compliance': typeof AppComplianceRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/events': typeof AppEventsRoute
   '/app/exams': typeof AppExamsRoute
+  '/app/facilities': typeof AppFacilitiesRoute
   '/app/fees': typeof AppFeesRoute
   '/app/gradebook': typeof AppGradebookRoute
   '/app/infrastructure': typeof AppInfrastructureRoute
@@ -266,12 +290,15 @@ export interface FileRoutesById {
   '/app/announcements': typeof AppAnnouncementsRoute
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
+  '/app/brain': typeof AppBrainRoute
   '/app/children': typeof AppChildrenRoute
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
   '/app/compliance': typeof AppComplianceRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/events': typeof AppEventsRoute
   '/app/exams': typeof AppExamsRoute
+  '/app/facilities': typeof AppFacilitiesRoute
   '/app/fees': typeof AppFeesRoute
   '/app/gradebook': typeof AppGradebookRoute
   '/app/infrastructure': typeof AppInfrastructureRoute
@@ -300,12 +327,15 @@ export interface FileRouteTypes {
     | '/app/announcements'
     | '/app/assignments'
     | '/app/attendance'
+    | '/app/brain'
     | '/app/children'
     | '/app/classes'
     | '/app/communication'
     | '/app/compliance'
+    | '/app/documents'
     | '/app/events'
     | '/app/exams'
+    | '/app/facilities'
     | '/app/fees'
     | '/app/gradebook'
     | '/app/infrastructure'
@@ -331,12 +361,15 @@ export interface FileRouteTypes {
     | '/app/announcements'
     | '/app/assignments'
     | '/app/attendance'
+    | '/app/brain'
     | '/app/children'
     | '/app/classes'
     | '/app/communication'
     | '/app/compliance'
+    | '/app/documents'
     | '/app/events'
     | '/app/exams'
+    | '/app/facilities'
     | '/app/fees'
     | '/app/gradebook'
     | '/app/infrastructure'
@@ -363,12 +396,15 @@ export interface FileRouteTypes {
     | '/app/announcements'
     | '/app/assignments'
     | '/app/attendance'
+    | '/app/brain'
     | '/app/children'
     | '/app/classes'
     | '/app/communication'
     | '/app/compliance'
+    | '/app/documents'
     | '/app/events'
     | '/app/exams'
+    | '/app/facilities'
     | '/app/fees'
     | '/app/gradebook'
     | '/app/infrastructure'
@@ -512,6 +548,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFeesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/facilities': {
+      id: '/app/facilities'
+      path: '/facilities'
+      fullPath: '/app/facilities'
+      preLoaderRoute: typeof AppFacilitiesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/exams': {
       id: '/app/exams'
       path: '/exams'
@@ -524,6 +567,13 @@ declare module '@tanstack/react-router' {
       path: '/events'
       fullPath: '/app/events'
       preLoaderRoute: typeof AppEventsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/documents': {
+      id: '/app/documents'
+      path: '/documents'
+      fullPath: '/app/documents'
+      preLoaderRoute: typeof AppDocumentsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/compliance': {
@@ -552,6 +602,13 @@ declare module '@tanstack/react-router' {
       path: '/children'
       fullPath: '/app/children'
       preLoaderRoute: typeof AppChildrenRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/brain': {
+      id: '/app/brain'
+      path: '/brain'
+      fullPath: '/app/brain'
+      preLoaderRoute: typeof AppBrainRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/attendance': {
@@ -614,12 +671,15 @@ interface AppRouteChildren {
   AppAnnouncementsRoute: typeof AppAnnouncementsRoute
   AppAssignmentsRoute: typeof AppAssignmentsRoute
   AppAttendanceRoute: typeof AppAttendanceRoute
+  AppBrainRoute: typeof AppBrainRoute
   AppChildrenRoute: typeof AppChildrenRoute
   AppClassesRoute: typeof AppClassesRoute
   AppCommunicationRoute: typeof AppCommunicationRoute
   AppComplianceRoute: typeof AppComplianceRoute
+  AppDocumentsRoute: typeof AppDocumentsRoute
   AppEventsRoute: typeof AppEventsRoute
   AppExamsRoute: typeof AppExamsRoute
+  AppFacilitiesRoute: typeof AppFacilitiesRoute
   AppFeesRoute: typeof AppFeesRoute
   AppGradebookRoute: typeof AppGradebookRoute
   AppInfrastructureRoute: typeof AppInfrastructureRoute
@@ -644,12 +704,15 @@ const AppRouteChildren: AppRouteChildren = {
   AppAnnouncementsRoute: AppAnnouncementsRoute,
   AppAssignmentsRoute: AppAssignmentsRoute,
   AppAttendanceRoute: AppAttendanceRoute,
+  AppBrainRoute: AppBrainRoute,
   AppChildrenRoute: AppChildrenRoute,
   AppClassesRoute: AppClassesRoute,
   AppCommunicationRoute: AppCommunicationRoute,
   AppComplianceRoute: AppComplianceRoute,
+  AppDocumentsRoute: AppDocumentsRoute,
   AppEventsRoute: AppEventsRoute,
   AppExamsRoute: AppExamsRoute,
+  AppFacilitiesRoute: AppFacilitiesRoute,
   AppFeesRoute: AppFeesRoute,
   AppGradebookRoute: AppGradebookRoute,
   AppInfrastructureRoute: AppInfrastructureRoute,
