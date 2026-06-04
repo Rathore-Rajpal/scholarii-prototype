@@ -35,6 +35,10 @@
       "dest": "/$1.$2"
     },
     {
+      "src": "/favicon.ico",
+      "dest": "/Icons/favicon.ico"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
