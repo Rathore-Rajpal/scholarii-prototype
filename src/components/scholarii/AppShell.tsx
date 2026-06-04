@@ -6,6 +6,7 @@ import {
   ClipboardCheck, ClipboardList, GraduationCap, CalendarClock, UserCircle, Building2,
   ShieldCheck, FileText, ScrollText, Calendar, Wallet, MessageSquare, Baby,
   LogOut, Bell, Moon, Sun, Search, Menu, BookMarked, User as StudentIcon, Users as ParentIcon,
+  BrainCircuit,
   ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ const NAV: Record<Role, NavItem[]> = {
     { to: "/app/academics", label: "Academics", icon: BookOpen },
     { to: "/app/fees", label: "Finance", icon: DollarSign },
     { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
+    { to: "/app/ai", label: "Scholarii AI", icon: BrainCircuit },
     { to: "/app/compliance", label: "Compliance", icon: ShieldCheck },
     { to: "/app/communication", label: "Communications", icon: MessageSquare },
     { to: "/app/settings", label: "Settings", icon: Settings },
