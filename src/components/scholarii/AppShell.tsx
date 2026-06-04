@@ -2,7 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/scholarii/auth";
 import type { Role } from "@/lib/scholarii/types";
 import {
-  Home, Users, Briefcase, BookOpen, DollarSign, BarChart3, Megaphone, Settings,
+  Home, Users, Briefcase, BookOpen, DollarSign, BarChart3, Settings,
   ClipboardCheck, ClipboardList, GraduationCap, CalendarClock, UserCircle, Building2,
   ShieldCheck, FileText, ScrollText, Calendar, Wallet, MessageSquare, Baby,
   LogOut, Bell, Moon, Sun, Search, Menu, BookMarked, User as StudentIcon, Users as ParentIcon,
@@ -40,7 +40,8 @@ const NAV: Record<Role, NavItem[]> = {
     { to: "/app/academics", label: "Academics", icon: BookOpen },
     { to: "/app/fees", label: "Finance", icon: DollarSign },
     { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
-    { to: "/app/announcements", label: "Announcements", icon: Megaphone },
+    { to: "/app/compliance", label: "Compliance", icon: ShieldCheck },
+    { to: "/app/communication", label: "Communications", icon: MessageSquare },
     { to: "/app/settings", label: "Settings", icon: Settings },
   ],
   teacher: [
@@ -50,7 +51,6 @@ const NAV: Record<Role, NavItem[]> = {
     { to: "/app/assignments", label: "Assignments", icon: ClipboardList },
     { to: "/app/gradebook", label: "Gradebook", icon: GraduationCap },
     { to: "/app/meetings", label: "PTA Meetings", icon: CalendarClock },
-    { to: "/app/announcements", label: "Announcements", icon: Megaphone },
     { to: "/app/profile", label: "Profile", icon: UserCircle },
   ],
   student: [
@@ -60,7 +60,6 @@ const NAV: Record<Role, NavItem[]> = {
     { to: "/app/exams", label: "Exams & Results", icon: GraduationCap },
     { to: "/app/attendance", label: "Attendance", icon: ClipboardCheck },
     { to: "/app/fees", label: "Fees", icon: Wallet },
-    { to: "/app/announcements", label: "Announcements", icon: Megaphone },
     { to: "/app/profile", label: "Profile", icon: UserCircle },
   ],
   admin: [
@@ -163,10 +162,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-background flex w-full">
+    <div className="h-screen bg-background flex w-full overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className={cn(
-        "hidden lg:flex flex-col shrink-0 bg-sidebar border-r border-sidebar-border transition-all duration-300 overflow-hidden",
+        "hidden lg:flex flex-col shrink-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 overflow-hidden",
         sidebarOpen ? "w-64" : "w-20"
       )}>
         {SidebarInner}
@@ -181,7 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="sticky top-0 z-30 h-16 flex items-center gap-3 px-4 lg:px-6 border-b border-border bg-background/80 backdrop-blur">
           <Button 
             variant="ghost" 
@@ -275,7 +274,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main key={showParent ? "p" : "s"} className="flex-1 p-4 lg:p-8 animate-in-up transition-all duration-300">{children}</main>
+        <main key={showParent ? "p" : "s"} className="flex-1 overflow-y-auto p-4 lg:p-8 animate-in-up transition-all duration-300">{children}</main>
       </div>
     </div>
   );

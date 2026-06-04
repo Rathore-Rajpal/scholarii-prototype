@@ -28,6 +28,7 @@ import { Route as AppGradebookRouteImport } from './routes/app.gradebook'
 import { Route as AppFeesRouteImport } from './routes/app.fees'
 import { Route as AppExamsRouteImport } from './routes/app.exams'
 import { Route as AppEventsRouteImport } from './routes/app.events'
+import { Route as AppComplianceRouteImport } from './routes/app.compliance'
 import { Route as AppCommunicationRouteImport } from './routes/app.communication'
 import { Route as AppClassesRouteImport } from './routes/app.classes'
 import { Route as AppChildrenRouteImport } from './routes/app.children'
@@ -133,6 +134,11 @@ const AppEventsRoute = AppEventsRouteImport.update({
   path: '/events',
   getParentRoute: () => AppRoute,
 } as any)
+const AppComplianceRoute = AppComplianceRouteImport.update({
+  id: '/compliance',
+  path: '/compliance',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCommunicationRoute = AppCommunicationRouteImport.update({
   id: '/communication',
   path: '/communication',
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/app/children': typeof AppChildrenRoute
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
+  '/app/compliance': typeof AppComplianceRoute
   '/app/events': typeof AppEventsRoute
   '/app/exams': typeof AppExamsRoute
   '/app/fees': typeof AppFeesRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/app/children': typeof AppChildrenRoute
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
+  '/app/compliance': typeof AppComplianceRoute
   '/app/events': typeof AppEventsRoute
   '/app/exams': typeof AppExamsRoute
   '/app/fees': typeof AppFeesRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/app/children': typeof AppChildrenRoute
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
+  '/app/compliance': typeof AppComplianceRoute
   '/app/events': typeof AppEventsRoute
   '/app/exams': typeof AppExamsRoute
   '/app/fees': typeof AppFeesRoute
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/app/children'
     | '/app/classes'
     | '/app/communication'
+    | '/app/compliance'
     | '/app/events'
     | '/app/exams'
     | '/app/fees'
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/app/children'
     | '/app/classes'
     | '/app/communication'
+    | '/app/compliance'
     | '/app/events'
     | '/app/exams'
     | '/app/fees'
@@ -343,6 +354,7 @@ export interface FileRouteTypes {
     | '/app/children'
     | '/app/classes'
     | '/app/communication'
+    | '/app/compliance'
     | '/app/events'
     | '/app/exams'
     | '/app/fees'
@@ -502,6 +514,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEventsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/compliance': {
+      id: '/app/compliance'
+      path: '/compliance'
+      fullPath: '/app/compliance'
+      preLoaderRoute: typeof AppComplianceRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/communication': {
       id: '/app/communication'
       path: '/communication'
@@ -578,6 +597,7 @@ interface AppRouteChildren {
   AppChildrenRoute: typeof AppChildrenRoute
   AppClassesRoute: typeof AppClassesRoute
   AppCommunicationRoute: typeof AppCommunicationRoute
+  AppComplianceRoute: typeof AppComplianceRoute
   AppEventsRoute: typeof AppEventsRoute
   AppExamsRoute: typeof AppExamsRoute
   AppFeesRoute: typeof AppFeesRoute
@@ -606,6 +626,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppChildrenRoute: AppChildrenRoute,
   AppClassesRoute: AppClassesRoute,
   AppCommunicationRoute: AppCommunicationRoute,
+  AppComplianceRoute: AppComplianceRoute,
   AppEventsRoute: AppEventsRoute,
   AppExamsRoute: AppExamsRoute,
   AppFeesRoute: AppFeesRoute,

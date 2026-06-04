@@ -1,88 +1,571 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/scholarii/AppShell";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend, BarChart, Bar } from "recharts";
-import { TrendingUp, TrendingDown, Users, GraduationCap, DollarSign, Activity } from "lucide-react";
-import { monthlyAttendance, feeCollection } from "@/lib/scholarii/mock";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  BrainCircuit,
+  Briefcase,
+  DollarSign,
+  Download,
+  GraduationCap,
+  LineChart,
+  FileText,
+  MessageSquareMore,
+  Sparkles,
+  Users,
+} from "lucide-react";
 
 export const Route = createFileRoute("/app/analytics")({ component: AnalyticsPage });
 
-const enrollment = [
-  { m: "Apr", v: 420 }, { m: "May", v: 432 }, { m: "Jun", v: 445 },
-  { m: "Jul", v: 460 }, { m: "Aug", v: 478 }, { m: "Sep", v: 490 }, { m: "Oct", v: 512 },
+type TimeRange = "Last 7 Days" | "Last 30 Days" | "Current Term" | "Current Academic Year";
+type TrendDirection = "up" | "down" | "stable";
+
+type KpiCard = {
+  label: string;
+  value: string;
+  change: string;
+  direction: TrendDirection;
+  hint: string;
+  icon: typeof Users;
+  tone: string;
+};
+
+type MetricCard = {
+  label: string;
+  value: string;
+  hint: string;
+};
+
+type InsightCard = {
+  title: string;
+  detail: string;
+};
+
+const attendanceTrend = [
+  { month: "Apr", value: 90 },
+  { month: "May", value: 91 },
+  { month: "Jun", value: 89 },
+  { month: "Jul", value: 92 },
+  { month: "Aug", value: 93 },
+  { month: "Sep", value: 94 },
+  { month: "Oct", value: 95 },
 ];
-const gender = [{ name: "Boys", value: 268, c: "#667eea" }, { name: "Girls", value: 244, c: "#ec4899" }];
-const sources = [
-  { src: "Referrals", v: 38 }, { src: "Walk-in", v: 24 }, { src: "Website", v: 20 }, { src: "Social", v: 12 }, { src: "Events", v: 6 },
+
+const attendanceByDay = [
+  { day: "Mon", value: 88 },
+  { day: "Tue", value: 91 },
+  { day: "Wed", value: 93 },
+  { day: "Thu", value: 94 },
+  { day: "Fri", value: 92 },
+  { day: "Sat", value: 89 },
 ];
+
+const subjectSummary = [
+  { subject: "Mathematics", score: 72, status: "Needs Improvement" },
+  { subject: "Science", score: 84, status: "Strong" },
+  { subject: "English", score: 81, status: "Healthy" },
+  { subject: "Computer Science", score: 88, status: "Strong" },
+  { subject: "Social Studies", score: 76, status: "Moderate" },
+  { subject: "Hindi", score: 79, status: "Stable" },
+];
+
+const adoptionGrowth = [
+  { label: "Teacher AI Queries", value: 12458 },
+  { label: "Student AI Queries", value: 29840 },
+  { label: "Hours Saved", value: 1284 },
+  { label: "Documents in School Brain", value: 4820 },
+  { label: "Automations Executed", value: 860 },
+];
+
+const analyticsInsights: InsightCard[] = [
+  { title: "Attendance improved by 2% this month.", detail: "Monday remains the weakest day, so late-week intervention is paying off." },
+  { title: "Grade 8 continues to have the highest fee default rate.", detail: "The pattern is stable, which makes targeted reminders more effective." },
+  { title: "Mathematics remains the weakest subject.", detail: "The gap is narrow, but it still needs focused academic support." },
+  { title: "Parent engagement increased by 8%.", detail: "PTM reminders and WhatsApp communication are driving the lift." },
+  { title: "Staff workload imbalance detected in the Science department.", detail: "Five teachers currently have limited free periods." },
+  { title: "School compliance readiness remains above 90%.", detail: "This supports a strong operational outlook across the year." },
+];
+
+const timeRanges: TimeRange[] = ["Last 7 Days", "Last 30 Days", "Current Term", "Current Academic Year"];
+
+function trendMeta(direction: TrendDirection) {
+  if (direction === "up") {
+    return {
+      icon: <ArrowUpRight className="size-3.5" />,
+      className: "text-emerald-700 bg-emerald-50 border-emerald-200",
+    };
+  }
+  if (direction === "down") {
+    return {
+      icon: <ArrowDownRight className="size-3.5" />,
+      className: "text-rose-700 bg-rose-50 border-rose-200",
+    };
+  }
+  return {
+    icon: <LineChart className="size-3.5" />,
+    className: "text-slate-700 bg-slate-50 border-slate-200",
+  };
+}
+
+function miniTone(score: number) {
+  if (score >= 85) return "bg-emerald-50 border-emerald-200 text-emerald-700";
+  if (score >= 75) return "bg-amber-50 border-amber-200 text-amber-700";
+  return "bg-rose-50 border-rose-200 text-rose-700";
+}
 
 function AnalyticsPage() {
+  const [timeRange, setTimeRange] = useState<TimeRange>("Last 30 Days");
+
+  const kpis: KpiCard[] = [
+    { label: "Attendance Health", value: "94%", change: "+2% vs last month", direction: "up", hint: "Attendance is steady across most grades.", icon: Users, tone: "from-emerald-500 to-teal-500" },
+    { label: "Academic Health", value: "84%", change: "+3% vs last term", direction: "up", hint: "Performance is improving, but Maths needs support.", icon: GraduationCap, tone: "from-sky-500 to-indigo-500" },
+    { label: "Finance Health", value: "87%", change: "+4% vs last month", direction: "up", hint: "Collections are improving, especially with reminders.", icon: DollarSign, tone: "from-amber-500 to-orange-500" },
+    { label: "Parent Engagement", value: "78%", change: "+8% vs last month", direction: "up", hint: "PTM reminders continue to drive the best response.", icon: MessageSquareMore, tone: "from-fuchsia-500 to-pink-500" },
+    { label: "Staff Health", value: "91%", change: "+1% vs last month", direction: "up", hint: "Workload balance is mostly healthy with a few exceptions.", icon: Briefcase, tone: "from-violet-500 to-purple-500" },
+    { label: "Scholarii Adoption", value: "86%", change: "+6% vs last month", direction: "up", hint: "Usage is growing across teachers and staff.", icon: Sparkles, tone: "from-cyan-500 to-sky-500" },
+  ];
+
+  const summaryByRange: Record<TimeRange, string> = {
+    "Last 7 Days": "Attendance and academic performance continue to improve over the last 7 days, while fee collection remains stable. Parent engagement has also increased, and overall operations remain healthy.",
+    "Last 30 Days": "Attendance and academic performance continue to improve, while fee collection remains stable. Parent engagement increased this month, and overall school operations remain healthy.",
+    "Current Term": "This term shows steady gains across attendance, academics, and parent engagement. Fee collection is trending upward and staff health remains strong.",
+    "Current Academic Year": "Year-to-date performance is healthy across the school, with strong attendance, improving academic outcomes, and rising adoption of Scholarii across departments.",
+  };
+
+  const attendanceMetrics: MetricCard[] = [
+    { label: "Average Attendance", value: "94%", hint: "School-wide average" },
+    { label: "Best Performing Class", value: "10A", hint: "98% attendance" },
+    { label: "Lowest Attendance Class", value: "8B", hint: "74% attendance" },
+    { label: "Students Below Threshold", value: "34", hint: "Below 75%" },
+  ];
+
+  const academicMetrics: MetricCard[] = [
+    { label: "School Average", value: "78%", hint: "Across all subjects" },
+    { label: "Top Class", value: "10A", hint: "89% average" },
+    { label: "Weakest Class", value: "8B", hint: "71% average" },
+    { label: "Students At Risk", value: "21", hint: "Need support" },
+  ];
+
+  const financeMetrics: MetricCard[] = [
+    { label: "Collection Rate", value: "82%", hint: "Current month" },
+    { label: "Outstanding Dues", value: "Rs. 14.2L", hint: "Pending collection" },
+    { label: "Defaulters", value: "84", hint: "Families" },
+    { label: "Forecast", value: "Rs. 10.6L", hint: "Expected next cycle" },
+  ];
+
+  const staffMetrics: MetricCard[] = [
+    { label: "Staff Attendance", value: "91%", hint: "Current period" },
+    { label: "Overloaded Teachers", value: "5", hint: "Need workload review" },
+    { label: "Available Teachers", value: "12", hint: "With free periods" },
+    { label: "Pending Substitutions", value: "4", hint: "Upcoming" },
+  ];
+
+  const parentMetrics: MetricCard[] = [
+    { label: "Parent Engagement", value: "78%", hint: "Healthy" },
+    { label: "Circular Read Rate", value: "84%", hint: "Strong" },
+    { label: "PTM Participation", value: "76%", hint: "Improving" },
+    { label: "Active Parents", value: "92%", hint: "Connected" },
+  ];
+
+  const adoptionMetrics: MetricCard[] = [
+    { label: "Teacher AI Queries", value: "12,458", hint: "This month" },
+    { label: "Student AI Queries", value: "29,840", hint: "This month" },
+    { label: "Hours Saved", value: "1,284", hint: "Through automation" },
+    { label: "Documents in School Brain", value: "4,820", hint: "Indexed knowledge" },
+    { label: "Staff Adoption Rate", value: "93%", hint: "Very strong" },
+    { label: "Automations Executed", value: "860", hint: "Completed workflows" },
+  ];
+
+  const selectedSummary = summaryByRange[timeRange];
+
+  const attendanceChart = useMemo(
+    () =>
+      attendanceTrend.map((point, index) => ({
+        ...point,
+        value: point.value + (timeRange === "Last 7 Days" ? index % 2 : timeRange === "Current Academic Year" ? 1 : 0),
+      })),
+    [timeRange]
+  );
+
   return (
     <div>
-      <PageHeader title="Analytics" subtitle="School-wide trends, KPIs and reports." />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {[
-          { l: "Total Students", v: "512", d: "+22 this month", up: true, i: Users, c: "from-violet-500 to-fuchsia-500" },
-          { l: "Avg Attendance", v: "93.4%", d: "+1.2% vs last", up: true, i: Activity, c: "from-emerald-500 to-teal-500" },
-          { l: "Fee Collected", v: "₹6.85L", d: "-2.1% vs target", up: false, i: DollarSign, c: "from-amber-500 to-orange-500" },
-          { l: "Avg Grade", v: "B+", d: "Stable", up: true, i: GraduationCap, c: "from-sky-500 to-indigo-500" },
-        ].map((k) => (
-          <Card key={k.l} className="p-5">
-            <div className={`size-10 rounded-xl bg-gradient-to-br ${k.c} grid place-items-center text-white mb-3`}><k.i className="size-5" /></div>
-            <div className="text-2xl font-semibold">{k.v}</div>
-            <div className="text-xs text-muted-foreground">{k.l}</div>
-            <div className={`text-xs mt-2 inline-flex items-center gap-1 ${k.up ? "text-emerald-600" : "text-red-600"}`}>{k.up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}{k.d}</div>
+      <PageHeader
+        title="Analytics"
+        subtitle="School Intelligence Center for the principal - trends, explanations, comparisons, and actionable insights."
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" className="bg-brand-gradient text-white border-0">
+              <Download className="mr-2 size-4" />
+              Export Analytics Report
+            </Button>
+            <Button size="sm" variant="outline">
+              <FileText className="mr-2 size-4" />
+              Generate Executive Summary
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="space-y-6">
+        <Card className="p-4 border-border/60">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Global Filters</p>
+              <p className="text-sm text-muted-foreground">Use a simple time range to review the selected period.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Time range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {timeRanges.map((range) => (
+                    <SelectItem key={range} value={range}>
+                      {range}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Badge variant="outline">{timeRange}</Badge>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6 border-border/60 bg-gradient-to-br from-slate-50 via-white to-emerald-50">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                <BrainCircuit className="size-3.5" />
+                School Intelligence Summary
+              </div>
+              <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">{selectedSummary}</p>
+            </div>
+            <div className="rounded-2xl border border-border bg-background/80 p-4 shadow-sm">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Why this page exists</p>
+              <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                Dashboard tells the principal what is happening. Analytics explains why it is happening and where intervention is needed.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          {kpis.map((kpi) => {
+            const Icon = kpi.icon;
+            const trend = trendMeta(kpi.direction);
+            return (
+              <Card key={kpi.label} className="p-4 border-border/60">
+                <div className={`inline-flex size-10 items-center justify-center rounded-xl bg-gradient-to-br ${kpi.tone} text-white mb-3`}>
+                  <Icon className="size-5" />
+                </div>
+                <p className="text-xs text-muted-foreground">{kpi.label}</p>
+                <div className="mt-2 text-3xl font-semibold tracking-tight">{kpi.value}</div>
+                <div className={`mt-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${trend.className}`}>
+                  {trend.icon}
+                  {kpi.change}
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">{kpi.hint}</p>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-[1.05fr_0.95fr] gap-4">
+          <Card className="p-5 border-border/60">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold">Attendance Analytics</h3>
+                <p className="text-sm text-muted-foreground">Understand attendance trends and where intervention is needed.</p>
+              </div>
+              <Badge variant="outline">Trend focus</Badge>
+            </div>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+              {attendanceMetrics.map((metric) => (
+                <Card key={metric.label} className="p-4 border-border/60">
+                  <p className="text-xs text-muted-foreground">{metric.label}</p>
+                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
+                </Card>
+              ))}
+            </div>
+            <div className="mt-5 rounded-2xl border border-border bg-background p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-sm font-medium">Attendance trend</p>
+                <Badge variant="outline">One chart only</Badge>
+              </div>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={attendanceChart} margin={{ top: 10, right: 12, left: -8, bottom: 20 }}>
+                    <defs>
+                      <linearGradient id="attendanceFill" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
+                        <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="month" stroke="var(--muted-foreground)" tickMargin={12} interval={0} />
+                    <YAxis domain={[85, 100]} stroke="var(--muted-foreground)" width={34} />
+                    <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 12 }} />
+                    <Area type="monotone" dataKey="value" stroke="#10b981" fill="url(#attendanceFill)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-medium">Attendance by weekday</p>
+                  <Badge variant="outline">Compact view</Badge>
+                </div>
+                <div className="h-40">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={attendanceByDay} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.15} vertical={false} />
+                      <XAxis dataKey="day" stroke="var(--muted-foreground)" tickMargin={10} interval={0} />
+                      <YAxis domain={[80, 100]} stroke="var(--muted-foreground)" width={30} />
+                      <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 12 }} />
+                      <Bar dataKey="value" fill="#14b8a6" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[
+                "Grade 9 attendance declined by 4% this month.",
+                "Monday attendance remains the lowest across the school.",
+                "34 students remain below the attendance threshold.",
+              ].map((item) => (
+                <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
+                  <p className="text-sm text-muted-foreground">{item}</p>
+                </Card>
+              ))}
+            </div>
           </Card>
-        ))}
+
+          <Card className="p-5 border-border/60">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold">Academic Analytics</h3>
+                <p className="text-sm text-muted-foreground">Understand academic performance and subject pressure points.</p>
+              </div>
+              <Badge variant="outline">Intervention ready</Badge>
+            </div>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {academicMetrics.map((metric) => (
+                <Card key={metric.label} className="p-4 border-border/60">
+                  <p className="text-xs text-muted-foreground">{metric.label}</p>
+                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
+                </Card>
+              ))}
+            </div>
+            <div className="mt-5 space-y-3">
+              <p className="text-sm font-medium">Subject Performance Summary</p>
+              <div className="grid grid-cols-1 gap-3">
+                {subjectSummary.map((subject) => (
+                  <Card key={subject.subject} className="p-4 border-border/60">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="font-medium">{subject.subject}</p>
+                        <p className="text-xs text-muted-foreground">{subject.status}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-semibold">{subject.score}%</p>
+                        <p className="text-xs text-muted-foreground">Average</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${
+                          subject.score >= 85 ? "bg-emerald-500" : subject.score >= 75 ? "bg-amber-500" : "bg-rose-500"
+                        }`}
+                        style={{ width: `${subject.score}%` }}
+                      />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+            <div className="mt-5 space-y-3">
+              {[
+                "Mathematics remains the weakest subject.",
+                "Class 8B requires intervention.",
+                "Academic performance improved by 3% this term.",
+              ].map((item) => (
+                <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
+                  <p className="text-sm text-muted-foreground">{item}</p>
+                </Card>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-4">
+          <Card className="p-5 border-border/60">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold">Finance Analytics</h3>
+                <p className="text-sm text-muted-foreground">Understand financial trends without a finance-system feel.</p>
+              </div>
+              <Badge variant="outline">Collection focus</Badge>
+            </div>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {financeMetrics.map((metric) => (
+                <Card key={metric.label} className="p-4 border-border/60">
+                  <p className="text-xs text-muted-foreground">{metric.label}</p>
+                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
+                </Card>
+              ))}
+            </div>
+            <div className="mt-5 space-y-3">
+              {[
+                "Collection performance improved by 12%.",
+                "Grade 8 has the highest default rate.",
+                "Current trends indicate monthly targets are achievable.",
+              ].map((item) => (
+                <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
+                  <p className="text-sm text-muted-foreground">{item}</p>
+                </Card>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="p-5 border-border/60">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold">Staff Analytics</h3>
+                <p className="text-sm text-muted-foreground">Monitor workload and staffing health across the school.</p>
+              </div>
+              <Badge variant="outline">Workforce health</Badge>
+            </div>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {staffMetrics.map((metric) => (
+                <Card key={metric.label} className="p-4 border-border/60">
+                  <p className="text-xs text-muted-foreground">{metric.label}</p>
+                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
+                </Card>
+              ))}
+            </div>
+            <div className="mt-5 space-y-3">
+              {[
+                "Science department has the highest workload.",
+                "Five teachers currently have no free periods.",
+                "Teacher attendance improved this month.",
+              ].map((item) => (
+                <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
+                  <p className="text-sm text-muted-foreground">{item}</p>
+                </Card>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-4">
+          <Card className="p-5 border-border/60">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold">Parent Engagement Analytics</h3>
+                <p className="text-sm text-muted-foreground">Understand communication effectiveness and parent response patterns.</p>
+              </div>
+              <Badge variant="outline">Communication</Badge>
+            </div>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {parentMetrics.map((metric) => (
+                <Card key={metric.label} className="p-4 border-border/60">
+                  <p className="text-xs text-muted-foreground">{metric.label}</p>
+                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
+                </Card>
+              ))}
+            </div>
+            <div className="mt-5 space-y-3">
+              {[
+                "Grade 8 parent engagement is lowest.",
+                "PTM participation improved by 9%.",
+                "WhatsApp communication drives the highest engagement.",
+              ].map((item) => (
+                <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
+                  <p className="text-sm text-muted-foreground">{item}</p>
+                </Card>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="p-5 border-border/60">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold">Scholarii Adoption Analytics</h3>
+                <p className="text-sm text-muted-foreground">The school’s usage of Scholarii across teachers, students, and staff.</p>
+              </div>
+              <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">86 / 100</Badge>
+            </div>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {adoptionMetrics.map((metric) => (
+                <Card key={metric.label} className={`p-4 border ${miniTone(metric.label === "Hours Saved" ? 95 : metric.label === "Staff Adoption Rate" ? 93 : 88)}`}>
+                  <p className="text-xs text-muted-foreground">{metric.label}</p>
+                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
+                </Card>
+              ))}
+            </div>
+            <div className="mt-5 space-y-3">
+              <p className="text-sm font-medium">Usage Trends</p>
+              <div className="space-y-2">
+                {adoptionGrowth.map((item) => (
+                  <div key={item.label} className="rounded-xl border border-border p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-medium">{item.label}</p>
+                      <p className="text-sm text-muted-foreground">{item.value.toLocaleString("en-IN")}</p>
+                    </div>
+                    <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-sky-600"
+                        style={{ width: `${Math.min(100, Math.round(item.value / 300))}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-1 gap-3">
+                {[
+                  "Teacher AI usage increased by 18%.",
+                  "Over 1,200 hours saved through automation.",
+                  "Staff adoption remains above 90%.",
+                ].map((item) => (
+                  <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
+                    <p className="text-sm text-muted-foreground">{item}</p>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <Card className="p-5 border-border/60">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-semibold">AI Insights</h3>
+              <p className="text-sm text-muted-foreground">Concise intelligent observations across departments.</p>
+            </div>
+            <Badge variant="outline">7 insights</Badge>
+          </div>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {analyticsInsights.map((insight) => (
+              <Card key={insight.title} className="p-4 border-border/60 bg-slate-50/60">
+                <p className="font-medium">{insight.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{insight.detail}</p>
+              </Card>
+            ))}
+          </div>
+        </Card>
       </div>
-
-      <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="enrollment">Enrollment</TabsTrigger>
-          <TabsTrigger value="finance">Finance</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="mt-4 grid lg:grid-cols-2 gap-4">
-          <Card className="p-5">
-            <div className="font-semibold mb-3">Attendance trend</div>
-            <div className="h-64"><ResponsiveContainer><AreaChart data={monthlyAttendance}><defs><linearGradient id="a1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#667eea" stopOpacity={0.4} /><stop offset="100%" stopColor="#667eea" stopOpacity={0} /></linearGradient></defs><CartesianGrid strokeDasharray="3 3" opacity={0.2} /><XAxis dataKey="m" /><YAxis /><Tooltip /><Area dataKey="v" stroke="#667eea" fill="url(#a1)" strokeWidth={2} /></AreaChart></ResponsiveContainer></div>
-          </Card>
-          <Card className="p-5">
-            <div className="font-semibold mb-3">Gender split</div>
-            <div className="h-64"><ResponsiveContainer><PieChart><Pie data={gender} dataKey="value" innerRadius={60} outerRadius={90} paddingAngle={3}>{gender.map((g) => <Cell key={g.name} fill={g.c} />)}</Pie><Legend /></PieChart></ResponsiveContainer></div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="enrollment" className="mt-4 grid lg:grid-cols-2 gap-4">
-          <Card className="p-5">
-            <div className="font-semibold mb-3">Enrollment growth</div>
-            <div className="h-64"><ResponsiveContainer><AreaChart data={enrollment}><defs><linearGradient id="a2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.4} /><stop offset="100%" stopColor="#10b981" stopOpacity={0} /></linearGradient></defs><CartesianGrid strokeDasharray="3 3" opacity={0.2} /><XAxis dataKey="m" /><YAxis /><Tooltip /><Area dataKey="v" stroke="#10b981" fill="url(#a2)" strokeWidth={2} /></AreaChart></ResponsiveContainer></div>
-          </Card>
-          <Card className="p-5">
-            <div className="font-semibold mb-3">Admission sources (%)</div>
-            <div className="h-64"><ResponsiveContainer><BarChart data={sources}><CartesianGrid strokeDasharray="3 3" opacity={0.2} /><XAxis dataKey="src" /><YAxis /><Tooltip /><Bar dataKey="v" fill="#8b5cf6" radius={[8, 8, 0, 0]} /></BarChart></ResponsiveContainer></div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="finance" className="mt-4">
-          <Card className="p-5">
-            <div className="font-semibold mb-3">Fee collection (monthly)</div>
-            <div className="h-72"><ResponsiveContainer><BarChart data={feeCollection}><CartesianGrid strokeDasharray="3 3" opacity={0.2} /><XAxis dataKey="m" /><YAxis /><Tooltip formatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`} /><Bar dataKey="v" fill="url(#g2)" radius={[8, 8, 0, 0]} /><defs><linearGradient id="g2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#ef4444" /></linearGradient></defs></BarChart></ResponsiveContainer></div>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      <Card className="p-5 mt-6">
-        <div className="font-semibold mb-3">Recent insights</div>
-        <ul className="space-y-2 text-sm">
-          {["Attendance up 1.2% — best month since June.", "Class 10-A leads in academic performance for 3rd straight month.", "Fee collection slightly behind Q3 target; 18 pending parents.", "Computer Science marks improved 6% after new teacher onboarding."].map((t, i) => (
-            <li key={i} className="flex gap-2"><Badge variant="outline" className="shrink-0">{i + 1}</Badge>{t}</li>
-          ))}
-        </ul>
-      </Card>
     </div>
   );
 }

@@ -135,37 +135,9 @@ function AdmissionsPage() {
           </Card>
         </div>
 
-        {/* Funnel + Recent Applications */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="p-5 lg:col-span-1">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold">Admission Funnel</h3>
-              <p className="text-xs text-muted-foreground mt-1">Academic Year 2026</p>
-            </div>
-            <div className="space-y-4 text-sm">
-              <div>
-                <div className="text-xs text-muted-foreground mb-1">Inquiries</div>
-                <div className="text-xl font-bold text-blue-600">{totals.inquiries}</div>
-              </div>
-              <div className="h-1 bg-muted rounded-full"></div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1">Applications</div>
-                <div className="text-xl font-bold text-green-600">{totals.submitted}</div>
-              </div>
-              <div className="h-1 bg-muted rounded-full"></div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1">Enrolled</div>
-                <div className="text-xl font-bold text-emerald-600">{totals.confirmed}</div>
-              </div>
-              <div className="pt-2 border-t border-border">
-                <div className="text-xs text-muted-foreground mb-1">Students Leaving</div>
-                <div className="text-lg font-semibold">28</div>
-              </div>
-            </div>
-          </Card>
-
-          <div className="lg:col-span-2 space-y-3">
-            <Card className="p-4">
+        {/* Recent Applications */}
+        <div className="space-y-3">
+          <Card className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h3 className="text-lg font-semibold">Recent Applications</h3>
@@ -233,7 +205,6 @@ function AdmissionsPage() {
               </div>
             </Card>
           </div>
-        </div>
 
         {/* Class Capacity Overview */}
         <Card className="p-5">
