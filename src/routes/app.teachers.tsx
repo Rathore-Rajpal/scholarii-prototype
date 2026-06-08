@@ -223,6 +223,22 @@ function TeachersPage() {
     workload: index % 2 === 0 ? "High" : "Normal",
   }));
 
+  const departmentMixColors = ["#22c55e", "#38bdf8", "#f59e0b", "#a855f7", "#f97316", "#ef4444"];
+  const departmentMixSegments = departmentOverview.map((dept, index) => ({
+    label: dept.name,
+    value: dept.total,
+    color: departmentMixColors[index % departmentMixColors.length],
+  }));
+  const departmentMixTotal = departmentMixSegments.reduce((sum, segment) => sum + segment.value, 0) || 1;
+  const departmentMixBackground = departmentMixSegments.reduce((background, segment, index) => {
+    const start = departmentMixSegments.slice(0, index).reduce((sum, s) => sum + s.value, 0);
+    const end = start + segment.value;
+    const startPct = (start / departmentMixTotal) * 100;
+    const endPct = (end / departmentMixTotal) * 100;
+    const slice = `${segment.color} ${startPct}% ${endPct}%`;
+    return background ? `${background}, ${slice}` : slice;
+  }, "");
+
   const availabilityNow = derivedTeachers
     .filter((teacher) => teacher.availability === "Available")
     .slice(0, 5)
@@ -297,7 +313,7 @@ function TeachersPage() {
           <Card className="p-4">
             <p className="text-xs text-muted-foreground">Total Staff</p>
             <div className="text-2xl font-bold mt-2">{totalStaff} Staff Members</div>
-            <p className="text-xs text-muted-foreground mt-1">{totalTeachers} Teachers • 10 Admin</p>
+            <p className="text-xs text-muted-foreground mt-1">{totalTeachers} Teachers â€¢ 10 Admin</p>
           </Card>
           <Card className="p-4">
             <p className="text-xs text-muted-foreground">Present Today</p>
@@ -332,7 +348,32 @@ function TeachersPage() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Tabs defaultValue="workforce" className="space-y-4">
+          <Card className="p-3 border-border/60 bg-white/70 backdrop-blur-xl shadow-sm">
+            <TabsList className="flex h-auto flex-wrap gap-2 bg-transparent p-0">
+              <TabsTrigger
+                value="workforce"
+                className="rounded-full border border-border/70 bg-white/50 px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 backdrop-blur-md data-[state=active]:border-emerald-500/70 data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-50/90 data-[state=active]:to-white/80 data-[state=active]:text-foreground data-[state=active]:shadow-[0_10px_30px_rgba(16,185,129,0.18)] data-[state=active]:ring-1 data-[state=active]:ring-emerald-200/60 hover:border-emerald-300 hover:bg-white/80 hover:text-foreground"
+              >
+                Workforce Intelligence
+              </TabsTrigger>
+              <TabsTrigger
+                value="directory"
+                className="rounded-full border border-border/70 bg-white/50 px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 backdrop-blur-md data-[state=active]:border-emerald-500/70 data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-50/90 data-[state=active]:to-white/80 data-[state=active]:text-foreground data-[state=active]:shadow-[0_10px_30px_rgba(16,185,129,0.18)] data-[state=active]:ring-1 data-[state=active]:ring-emerald-200/60 hover:border-emerald-300 hover:bg-white/80 hover:text-foreground"
+              >
+                Staff Directory
+              </TabsTrigger>
+              <TabsTrigger
+                value="department"
+                className="rounded-full border border-border/70 bg-white/50 px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 backdrop-blur-md data-[state=active]:border-emerald-500/70 data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-50/90 data-[state=active]:to-white/80 data-[state=active]:text-foreground data-[state=active]:shadow-[0_10px_30px_rgba(16,185,129,0.18)] data-[state=active]:ring-1 data-[state=active]:ring-emerald-200/60 hover:border-emerald-300 hover:bg-white/80 hover:text-foreground"
+              >
+                Department Overview
+              </TabsTrigger>
+            </TabsList>
+          </Card>
+
+          <TabsContent value="workforce" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="p-5 lg:col-span-2">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -398,6 +439,9 @@ function TeachersPage() {
           </Card>
         </div>
 
+          </TabsContent>
+
+          <TabsContent value="directory" className="space-y-4">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -514,7 +558,7 @@ function TeachersPage() {
                     <TableHead>Department</TableHead>
                     <TableHead>Subjects</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead>Today’s Status</TableHead>
+                    <TableHead>Todayâ€™s Status</TableHead>
                     <TableHead>Attendance %</TableHead>
                     <TableHead>Workload Score</TableHead>
                     <TableHead>Availability</TableHead>
@@ -616,7 +660,7 @@ function TeachersPage() {
 
             <div className="flex items-center justify-between p-4 border-t border-border text-sm">
               <div className="text-muted-foreground">
-                Showing {filteredTeachers.length === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredTeachers.length)} of {filteredTeachers.length}
+                Showing {filteredTeachers.length === 0 ? 0 : (page - 1) * pageSize + 1}â€“{Math.min(page * pageSize, filteredTeachers.length)} of {filteredTeachers.length}
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Previous</Button>
@@ -626,59 +670,63 @@ function TeachersPage() {
             </div>
           </Card>
         </div>
+        </TabsContent>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="p-5 lg:col-span-2">
-            <h3 className="text-lg font-semibold mb-4">Department Overview</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-              {departmentOverview.map((dept) => (
-                <Card key={dept.name} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold">{dept.name}</p>
-                    <Badge variant={dept.workload === "High" ? "destructive" : "secondary"}>{dept.workload}</Badge>
-                  </div>
-                  <div className="mt-3 text-xs text-muted-foreground space-y-1">
-                    <div>Total Staff: {dept.total}</div>
-                    <div>Present: {dept.present}</div>
-                    <div>Absent: {dept.absent}</div>
-                    <div>Performance: {dept.performance}%</div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </Card>
-          <div className="space-y-4">
-            <Card className="p-4">
-              <h4 className="font-semibold">Currently Available</h4>
-              <div className="mt-3 space-y-2">
-                {availabilityNow.map((teacher) => (
-                  <div key={teacher.name} className="flex items-center justify-between text-sm">
-                    <div>
-                      <p className="font-medium">{teacher.name}</p>
-                      <p className="text-xs text-muted-foreground">{teacher.department}</p>
-                    </div>
-                    <Badge variant="outline">Free until {teacher.freeUntil}</Badge>
-                  </div>
-                ))}
-              </div>
-            </Card>
-            <Card className="p-4">
-              <h4 className="font-semibold">Today’s Substitute Management</h4>
-              <div className="mt-3 space-y-2">
-                {substituteAssignments.map((assignment) => (
-                  <div key={assignment.absent} className="border border-border rounded-lg p-3 text-sm">
+        <TabsContent value="department" className="space-y-4">
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-4 items-start">
+            <Card className="p-5">
+              <h3 className="text-lg font-semibold mb-4">Department Overview</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {departmentOverview.map((dept) => (
+                  <Card key={dept.name} className="p-4">
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold">{assignment.absent}</p>
-                      <Badge variant={assignment.status === "Critical" ? "destructive" : "secondary"}>{assignment.status}</Badge>
+                      <p className="font-semibold">{dept.name}</p>
+                      <Badge variant={dept.workload === "High" ? "destructive" : "secondary"}>{dept.workload}</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">{assignment.className} • {assignment.period}</p>
-                    <p className="text-xs text-muted-foreground">Substitute: {assignment.substitute}</p>
-                  </div>
+                    <div className="mt-3 text-xs text-muted-foreground space-y-1">
+                      <div>Total Staff: {dept.total}</div>
+                      <div>Present: {dept.present}</div>
+                      <div>Absent: {dept.absent}</div>
+                      <div>Performance: {dept.performance}%</div>
+                    </div>
+                  </Card>
                 ))}
               </div>
             </Card>
+
+            <div className="space-y-4">
+              <Card className="p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Department Mix</p>
+                    <h4 className="font-semibold mt-1">Staff Distribution</h4>
+                  </div>
+                  <Badge variant="outline">{departmentMixTotal} Staff</Badge>
+                </div>
+                <div className="mt-5 flex items-center justify-center">
+                  <div
+                    className="size-36 rounded-full shadow-inner"
+                    style={{ background: `conic-gradient(${departmentMixBackground})` }}
+                    aria-label="Department staffing mix chart"
+                  />
+                </div>
+                <div className="mt-5 space-y-2">
+                  {departmentMixSegments.map((segment) => (
+                    <div key={segment.label} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="size-2.5 rounded-full" style={{ backgroundColor: segment.color }} />
+                        <span>{segment.label}</span>
+                      </div>
+                      <span className="text-muted-foreground">{segment.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+            </div>
           </div>
-        </div>
+        </TabsContent>
+        </Tabs>
       </div>
 
       <Sheet open={!!selectedTeacherId} onOpenChange={(open) => !open && setSelectedTeacherId(null)}>
@@ -699,8 +747,8 @@ function TeachersPage() {
                       </Avatar>
                       <div className="flex-1">
                         <div className="text-lg font-semibold">{selectedTeacher.name}</div>
-                        <div className="text-xs text-muted-foreground">{selectedTeacher.employeeId} • {selectedTeacher.designation}</div>
-                        <div className="text-xs text-muted-foreground">{selectedTeacher.department} • {selectedTeacher.experience} experience</div>
+                        <div className="text-xs text-muted-foreground">{selectedTeacher.employeeId} â€¢ {selectedTeacher.designation}</div>
+                        <div className="text-xs text-muted-foreground">{selectedTeacher.department} â€¢ {selectedTeacher.experience} experience</div>
                       </div>
                       <div className="text-right space-y-2">
                         <Badge variant={selectedTeacher.status === "Active" ? "secondary" : selectedTeacher.status === "Late" ? "outline" : "destructive"}>
@@ -732,7 +780,7 @@ function TeachersPage() {
                         <ProfileItem label="Classes Assigned" value={selectedTeacher.classes.join(", ") || "-"} />
                         <ProfileItem label="Emergency Contact" value={selectedTeacher.phone} />
                         <ProfileItem label="Email" value={selectedTeacher.email} />
-                        <ProfileItem label="Salary Amount" value={`₹${selectedTeacher.salaryAmount.toLocaleString("en-IN")}`} />
+                        <ProfileItem label="Salary Amount" value={`â‚¹${selectedTeacher.salaryAmount.toLocaleString("en-IN")}`} />
                         <ProfileItem label="Salary Method" value={selectedTeacher.salaryMethod} />
                         <ProfileItem label="Salary Status" value={selectedTeacher.salaryStatus} />
                         <ProfileItem label="Role Type" value={selectedTeacher.roleType} />
@@ -762,7 +810,7 @@ function TeachersPage() {
                                 key={period}
                                 className={`px-2 py-1 rounded-full text-[11px] ${selectedTeacher.periodsAssigned.includes(period) ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}
                               >
-                                P{period} {selectedTeacher.periodsAssigned.includes(period) ? "✓" : "FREE"}
+                                P{period} {selectedTeacher.periodsAssigned.includes(period) ? "âœ“" : "FREE"}
                               </span>
                             ))}
                           </div>

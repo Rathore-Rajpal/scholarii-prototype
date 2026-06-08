@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   CalendarClock,
+  BarChart3,
   Users,
   UserCheck,
   UserX,
@@ -444,6 +445,7 @@ function OperationsSchedulePage() {
   const currentPeriod = periodSummaries[currentPeriodIndex];
   const [selectedClassName, setSelectedClassName] = useState<string>(classSchedules[0]?.className ?? "");
   const [selectedTeacherIndex, setSelectedTeacherIndex] = useState<number>(0);
+  const [activeSection, setActiveSection] = useState<"Class Timetable" | "Teacher Schedule & Availability" | "School Events Today" | "Exam Operations">("Class Timetable");
 
   const availableTeachers = teacherAvailability.filter((teacher) => teacher.free.includes(currentPeriod.id));
   const selectedClass = classSchedules.find((cls) => cls.className === selectedClassName) || null;
@@ -459,6 +461,13 @@ function OperationsSchedulePage() {
   const handleNextTeacher = () => {
     setSelectedTeacherIndex((prev) => (prev === teacherAvailability.length - 1 ? 0 : prev + 1));
   };
+
+  const sectionNav = [
+    { label: "Class Timetable", description: "View the live class schedule.", icon: ClipboardList },
+    { label: "Teacher Schedule & Availability", description: "See free slots and proxy coverage.", icon: Users },
+    { label: "School Events Today", description: "Track todayâ€™s events and timings.", icon: CalendarClock },
+    { label: "Exam Operations", description: "Check exam-day operations quickly.", icon: ClipboardCheck },
+  ] as const;
 
   return (
     <div>
@@ -496,7 +505,7 @@ function OperationsSchedulePage() {
           <Card className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">Today’s School Status</p>
+                <p className="text-xs text-muted-foreground">Today's School Status</p>
                 <div className="flex items-center gap-2 mt-2">
                   <span className={`size-2.5 rounded-full ${dayStatus.tone === "warning" ? "bg-amber-500" : "bg-emerald-500"}`} />
                   <p className="font-semibold">{dayStatus.label}</p>
@@ -537,245 +546,352 @@ function OperationsSchedulePage() {
           ))}
         </div>
 
-        <Card className="p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <div>
-              <h3 className="text-lg font-semibold">Class Timetable</h3>
-              <p className="text-sm text-muted-foreground">3 lectures • short break • 3 lectures • lunch • 2 lectures</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Select class</span>
-              <select
-                className="h-9 rounded-md border border-border bg-background px-3 text-sm"
-                value={selectedClassName}
-                onChange={(event) => setSelectedClassName(event.target.value)}
-              >
-                {classSchedules.map((cls) => (
-                  <option key={cls.className} value={cls.className}>
-                    {cls.className}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <Card className="p-3 border-border/60 bg-white/70 backdrop-blur-xl shadow-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            {sectionNav.map((section) => {
+              const isActive = activeSection === section.label;
+              return (
+                <button
+                  key={section.label}
+                  type="button"
+                  onClick={() => setActiveSection(section.label)}
+                  className={`group inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 backdrop-blur-md ${
+                    isActive
+                      ? "border-emerald-500/70 bg-gradient-to-b from-emerald-50/90 to-white/80 text-foreground shadow-[0_10px_30px_rgba(16,185,129,0.18)] ring-1 ring-emerald-200/60"
+                      : "border-border/70 bg-white/50 text-muted-foreground hover:border-brand/25 hover:bg-white/80 hover:text-foreground hover:shadow-sm"
+                  }`}
+                >
+                  <section.icon className={`size-4 transition-colors ${isActive ? "text-brand" : "text-muted-foreground group-hover:text-foreground"}`} />
+                  <span>{section.label}</span>
+                </button>
+              );
+            })}
           </div>
-          {selectedClass ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-              {selectedClass.schedule.map((slot, index) => (
-                <Card key={`${slot.time}-${index}`} className={slot.type === "lecture" ? "p-4" : "p-4 bg-muted/50"}>
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold">
-                      {slot.type === "lecture" ? `Period ${slot.period}` : slot.label}
-                    </p>
-                    {slot.room && <Badge variant="outline">{slot.room}</Badge>}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">{slot.time}</p>
-                  {slot.subject && <p className="text-xs text-muted-foreground">{slot.subject}</p>}
-                  {slot.teacher && <p className="text-xs text-muted-foreground">{slot.teacher}</p>}
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">No class selected.</div>
-          )}
         </Card>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <Card className="p-5 xl:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold">Teacher Schedule & Availability</h3>
-                <p className="text-sm text-muted-foreground">Live status by period and free slots.</p>
-              </div>
-              <Badge variant="secondary">Current period {currentPeriod.label}</Badge>
-            </div>
-            
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Select teacher</span>
-                <select
-                  className="h-9 rounded-md border border-border bg-background px-3 text-sm"
-                  value={selectedTeacherIndex}
-                  onChange={(event) => setSelectedTeacherIndex(Number(event.target.value))}
-                >
-                  {teacherAvailability.map((teacher, index) => (
-                    <option key={teacher.name} value={index}>
-                      {teacher.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handlePreviousTeacher}
-                >
-                  ← Previous
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleNextTeacher}
-                >
-                  Next →
-                </Button>
-              </div>
-            </div>
-
-            {selectedTeacher && (
-              <>
-                <Card className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">{selectedTeacher.name}</p>
-                      <p className="text-xs text-muted-foreground">{selectedTeacher.department}</p>
-                    </div>
-                    <Badge variant={selectedTeacher.status === "Available" ? "secondary" : "outline"}>{selectedTeacher.status}</Badge>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((period) => (
-                      <span
-                        key={period}
-                        className={`px-2 py-1 rounded-full text-[11px] ${selectedTeacher.assigned.includes(period) ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}
-                      >
-                        P{period} {selectedTeacher.assigned.includes(period) ? "✓" : "FREE"}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-3 text-xs text-muted-foreground">
-                    Free periods: {selectedTeacher.free.join(", ")}
-                  </div>
-                </Card>
-                
-                <Card className="p-4 mt-4">
-                  <h4 className="font-semibold mb-4">Performance - Last 7 Days</h4>
-                  <div className="space-y-6">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-medium">Proxies Served</p>
-                        <p className="text-xs text-muted-foreground">by day</p>
-                      </div>
-                      <div className="flex items-end justify-between gap-2 h-24">
-                        {teacherStats[selectedTeacher.name]?.map((stat) => {
-                          const maxProxies = Math.max(...teacherStats[selectedTeacher.name].map(s => s.proxiesServed)) || 5;
-                          const heightPercent = (stat.proxiesServed / maxProxies) * 100;
-                          return (
-                            <div key={stat.day} className="flex-1 flex flex-col items-center gap-1">
-                              <div className="w-full bg-blue-200 rounded-t-md hover:bg-blue-300 transition-colors" style={{ height: `${heightPercent || 10}%`, minHeight: "4px" }} title={`${stat.proxiesServed} proxies`} />
-                              <p className="text-xs font-medium text-muted-foreground">{stat.day}</p>
-                              <p className="text-[10px] font-semibold text-blue-600">{stat.proxiesServed}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-medium">Free Periods</p>
-                        <p className="text-xs text-muted-foreground">by day</p>
-                      </div>
-                      <div className="flex items-end justify-between gap-2 h-24">
-                        {teacherStats[selectedTeacher.name]?.map((stat) => {
-                          const maxFree = Math.max(...teacherStats[selectedTeacher.name].map(s => s.freePeriods)) || 5;
-                          const heightPercent = (stat.freePeriods / maxFree) * 100;
-                          return (
-                            <div key={stat.day} className="flex-1 flex flex-col items-center gap-1">
-                              <div className="w-full bg-emerald-200 rounded-t-md hover:bg-emerald-300 transition-colors" style={{ height: `${heightPercent || 10}%`, minHeight: "4px" }} title={`${stat.freePeriods} free periods`} />
-                              <p className="text-xs font-medium text-muted-foreground">{stat.day}</p>
-                              <p className="text-[10px] font-semibold text-emerald-600">{stat.freePeriods}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </>
-            )}
-          </Card>
-          <div className="space-y-4">
-            <Card className="p-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold">Available Now</h4>
-                <Badge variant="secondary">{currentPeriod.label}</Badge>
-              </div>
-              <div className="mt-3 space-y-2">
-                {availableTeachers.map((teacher) => (
-                  <div key={teacher.name} className="flex items-center justify-between text-sm">
-                    <div>
-                      <p className="font-medium">{teacher.name}</p>
-                      <p className="text-xs text-muted-foreground">{teacher.department}</p>
-                    </div>
-                    <div className="text-xs text-muted-foreground">Next: P{teacher.assigned.find((period) => period > currentPeriod.id) || "-"}</div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-            <Card className="p-4">
-              <h4 className="font-semibold">Today’s Proxy Assignments</h4>
-              <div className="mt-3 space-y-3">
-                {substituteAssignments.map((assignment) => (
-                  <div key={assignment.teacher} className="border border-border rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold">{assignment.teacher}</p>
-                        <p className="text-xs text-muted-foreground">{assignment.reason}</p>
-                      </div>
-                      <Badge variant={assignment.status === "pending" ? "destructive" : "secondary"}>
-                        {assignment.status === "pending" ? "Action Required" : "Assigned"}
-                      </Badge>
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      Substitute: <span className="text-foreground">{assignment.substitute || "No replacement assigned"}</span>
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground">{assignment.period} • {assignment.className}</div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </div>
-
-        <Card className="p-4">
-          <h4 className="font-semibold mb-3">School Events Today</h4>
-          <div className="space-y-2">
-            {eventsToday.map((event) => (
-              <div key={event.title} className="border border-border rounded-lg p-3">
-                <div className="flex items-center justify-between">
+        <div className="space-y-4 min-w-0">
+            <div
+              className={`overflow-hidden rounded-2xl transition-all duration-300 ease-out ${
+                activeSection === "Class Timetable" ? "max-h-[2600px] opacity-100 translate-y-0" : "pointer-events-none max-h-0 opacity-0 -translate-y-2"
+              }`}
+            >
+              <Card className="p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <div>
-                    <p className="font-medium">{event.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{event.location} • {event.owner}</p>
+                    <h3 className="text-lg font-semibold">Class Timetable</h3>
+                    <p className="text-sm text-muted-foreground">3 lectures • short break • 3 lectures • lunch • 2 lectures</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline">{event.time}</Badge>
-                    <Badge variant={event.status === "completed" ? "secondary" : event.status === "running" ? "default" : event.status === "cancelled" ? "destructive" : "outline"}>
-                      {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                    </Badge>
+                    <span className="text-xs text-muted-foreground">Select class</span>
+                    <select
+                      className="h-9 rounded-md border border-border bg-background px-3 text-sm"
+                      value={selectedClassName}
+                      onChange={(event) => setSelectedClassName(event.target.value)}
+                    >
+                      {classSchedules.map((cls) => (
+                        <option key={cls.className} value={cls.className}>
+                          {cls.className}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Exam Operations</h3>
-            <Badge variant="secondary">Visible on Exam Days</Badge>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {examsToday.map((exam) => (
-              <Card key={exam.subject} className="p-4">
-                <p className="font-semibold">{exam.subject}</p>
-                <p className="text-xs text-muted-foreground">{exam.className}</p>
-                <p className="text-xs text-muted-foreground mt-2">{exam.time}</p>
-                <p className="text-xs text-muted-foreground">Invigilator: {exam.invigilator}</p>
-                <p className="text-xs text-muted-foreground">Room: {exam.room}</p>
+                {selectedClass ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                    {selectedClass.schedule.map((slot, index) => (
+                      <Card key={`${slot.time}-${index}`} className={slot.type === "lecture" ? "p-4" : "p-4 bg-muted/50"}>
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold">
+                            {slot.type === "lecture" ? `Period ${slot.period}` : slot.label}
+                          </p>
+                          {slot.room && <Badge variant="outline">{slot.room}</Badge>}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">{slot.time}</p>
+                        {slot.subject && <p className="text-xs text-muted-foreground">{slot.subject}</p>}
+                        {slot.teacher && <p className="text-xs text-muted-foreground">{slot.teacher}</p>}
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">No class selected.</div>
+                )}
               </Card>
-            ))}
-          </div>
-        </Card>
+            </div>
+
+            <div
+              className={`overflow-hidden rounded-2xl transition-all duration-300 ease-out ${
+                activeSection === "Teacher Schedule & Availability" ? "max-h-[2600px] opacity-100 translate-y-0" : "pointer-events-none max-h-0 opacity-0 -translate-y-2"
+              }`}
+            >
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                <Card className="p-5 xl:col-span-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">Teacher Schedule & Availability</h3>
+                      <p className="text-sm text-muted-foreground">Live status by period and free slots.</p>
+                    </div>
+                    <Badge variant="secondary">Current period {currentPeriod.label}</Badge>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Select teacher</span>
+                      <select
+                        className="h-9 rounded-md border border-border bg-background px-3 text-sm"
+                        value={selectedTeacherIndex}
+                        onChange={(event) => setSelectedTeacherIndex(Number(event.target.value))}
+                      >
+                        {teacherAvailability.map((teacher, index) => (
+                          <option key={teacher.name} value={index}>
+                            {teacher.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handlePreviousTeacher}
+                      >
+                        ? Previous
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleNextTeacher}
+                      >
+                        Next ?
+                      </Button>
+                    </div>
+                  </div>
+
+                  {selectedTeacher && (
+                    <>
+                      <Card className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xl font-semibold">{selectedTeacher.name}</p>
+                            <p className="text-sm text-muted-foreground mt-1">{selectedTeacher.department}</p>
+                          </div>
+                          <Badge variant={selectedTeacher.status === "Available" ? "secondary" : "outline"}>{selectedTeacher.status}</Badge>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map((period) => (
+                            <span
+                              key={period}
+                              className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors ${selectedTeacher.assigned.includes(period) ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}
+                            >
+                              P{period} {selectedTeacher.assigned.includes(period) ? "✓" : "FREE"}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="mt-4 text-sm text-muted-foreground">
+                          Free periods: <span className="text-foreground">{selectedTeacher.free.join(", ")}</span>
+                        </div>
+                      </Card>
+
+                      <Card className="p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+                          <div>
+                            <h4 className="font-semibold text-lg">Performance - Last 7 Days</h4>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Proxy coverage and free time for the selected teacher over the last week.
+                            </p>
+                          </div>
+                          <Badge variant="outline">Weekly view</Badge>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                          <div className="rounded-xl border border-border bg-muted/30 p-3">
+                            <p className="text-xs text-muted-foreground">Avg. proxies</p>
+                            <p className="mt-1 text-2xl font-semibold">
+                              {Math.round(
+                                teacherStats[selectedTeacher.name].reduce((sum, stat) => sum + stat.proxiesServed, 0) /
+                                  teacherStats[selectedTeacher.name].length
+                              )}
+                            </p>
+                          </div>
+                          <div className="rounded-xl border border-border bg-muted/30 p-3">
+                            <p className="text-xs text-muted-foreground">Busiest day</p>
+                            <p className="mt-1 text-2xl font-semibold">
+                              {
+                                teacherStats[selectedTeacher.name].reduce((best, stat) =>
+                                  stat.proxiesServed > best.proxiesServed ? stat : best
+                                ).day
+                              }
+                            </p>
+                          </div>
+                          <div className="rounded-xl border border-border bg-muted/30 p-3">
+                            <p className="text-xs text-muted-foreground">Most free periods</p>
+                            <p className="mt-1 text-2xl font-semibold">
+                              {
+                                teacherStats[selectedTeacher.name].reduce((best, stat) =>
+                                  stat.freePeriods > best.freePeriods ? stat : best
+                                ).day
+                              }
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-6">
+                          <div>
+                            <div className="flex items-center justify-between mb-3">
+                              <p className="text-sm font-medium">Proxies Served</p>
+                              <p className="text-xs text-muted-foreground">by day</p>
+                            </div>
+                            <div className="grid grid-cols-7 gap-2 items-end h-32">
+                              {teacherStats[selectedTeacher.name]?.map((stat) => {
+                                const maxProxies = Math.max(...teacherStats[selectedTeacher.name].map((s) => s.proxiesServed)) || 1;
+                                const heightPercent = Math.max(8, (stat.proxiesServed / maxProxies) * 100);
+                                return (
+                                  <div key={stat.day} className="flex h-full flex-col items-center justify-end gap-2">
+                                    <div className="flex h-full w-full items-end">
+                                      <div
+                                        className="w-full rounded-t-md bg-blue-300 transition-all duration-300 hover:bg-blue-400"
+                                        style={{ height: `${heightPercent}%`, minHeight: "8px" }}
+                                        title={`${stat.proxiesServed} proxies`}
+                                      />
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-xs font-medium text-muted-foreground">{stat.day}</p>
+                                      <p className="text-[10px] font-semibold text-blue-600">{stat.proxiesServed}</p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-3">
+                              <p className="text-sm font-medium">Free Periods</p>
+                              <p className="text-xs text-muted-foreground">by day</p>
+                            </div>
+                            <div className="grid grid-cols-7 gap-2 items-end h-32">
+                              {teacherStats[selectedTeacher.name]?.map((stat) => {
+                                const maxFree = Math.max(...teacherStats[selectedTeacher.name].map((s) => s.freePeriods)) || 1;
+                                const heightPercent = Math.max(8, (stat.freePeriods / maxFree) * 100);
+                                return (
+                                  <div key={stat.day} className="flex h-full flex-col items-center justify-end gap-2">
+                                    <div className="flex h-full w-full items-end">
+                                      <div
+                                        className="w-full rounded-t-md bg-emerald-300 transition-all duration-300 hover:bg-emerald-400"
+                                        style={{ height: `${heightPercent}%`, minHeight: "8px" }}
+                                        title={`${stat.freePeriods} free periods`}
+                                      />
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-xs font-medium text-muted-foreground">{stat.day}</p>
+                                      <p className="text-[10px] font-semibold text-emerald-600">{stat.freePeriods}</p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    </>
+                  )}
+                </Card>
+
+                <div className="space-y-4">
+                  <Card className="p-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold">Available Now</h4>
+                      <Badge variant="secondary">{currentPeriod.label}</Badge>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {availableTeachers.map((teacher) => (
+                        <div key={teacher.name} className="flex items-center justify-between text-sm">
+                          <div>
+                            <p className="font-medium">{teacher.name}</p>
+                            <p className="text-xs text-muted-foreground">{teacher.department}</p>
+                          </div>
+                          <div className="text-xs text-muted-foreground">Next: P{teacher.assigned.find((period) => period > currentPeriod.id) || "-"}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                  <Card className="p-4">
+                    <h4 className="font-semibold">Today’s Proxy Assignments</h4>
+                    <div className="mt-3 space-y-3">
+                      {substituteAssignments.map((assignment) => (
+                        <div key={assignment.teacher} className="border border-border rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-semibold">{assignment.teacher}</p>
+                              <p className="text-xs text-muted-foreground">{assignment.reason}</p>
+                            </div>
+                            <Badge variant={assignment.status === "pending" ? "destructive" : "secondary"}>
+                              {assignment.status === "pending" ? "Action Required" : "Assigned"}
+                            </Badge>
+                          </div>
+                          <div className="mt-2 text-xs text-muted-foreground">
+                            Substitute: <span className="text-foreground">{assignment.substitute || "No replacement assigned"}</span>
+                          </div>
+                          <div className="mt-1 text-xs text-muted-foreground">{assignment.period} • {assignment.className}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className={`overflow-hidden rounded-2xl transition-all duration-300 ease-out ${
+                activeSection === "School Events Today" ? "max-h-[2600px] opacity-100 translate-y-0" : "pointer-events-none max-h-0 opacity-0 -translate-y-2"
+              }`}
+            >
+              <Card className="p-4">
+                <h4 className="font-semibold mb-3">School Events Today</h4>
+                <div className="space-y-2">
+                  {eventsToday.map((event) => (
+                    <div key={event.title} className="border border-border rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">{event.title}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{event.location} • {event.owner}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{event.time}</Badge>
+                          <Badge variant={event.status === "completed" ? "secondary" : event.status === "running" ? "default" : event.status === "cancelled" ? "destructive" : "outline"}>
+                            {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            <div
+              className={`overflow-hidden rounded-2xl transition-all duration-300 ease-out ${
+                activeSection === "Exam Operations" ? "max-h-[2600px] opacity-100 translate-y-0" : "pointer-events-none max-h-0 opacity-0 -translate-y-2"
+              }`}
+            >
+              <Card className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Exam Operations</h3>
+                  <Badge variant="secondary">Visible on Exam Days</Badge>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {examsToday.map((exam) => (
+                    <Card key={exam.subject} className="p-4">
+                      <p className="font-semibold">{exam.subject}</p>
+                      <p className="text-xs text-muted-foreground">{exam.className}</p>
+                      <p className="text-xs text-muted-foreground mt-2">{exam.time}</p>
+                      <p className="text-xs text-muted-foreground">Invigilator: {exam.invigilator}</p>
+                      <p className="text-xs text-muted-foreground">Room: {exam.room}</p>
+                    </Card>
+                  ))}
+                </div>
+              </Card>
+            </div>
+        </div>
       </div>
 
     </div>
