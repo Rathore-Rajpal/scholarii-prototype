@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
@@ -18,6 +19,10 @@ import {
   Search,
   Users,
   Wrench,
+  LayoutGrid,
+  Calendar,
+  Library,
+  Lightbulb,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/facilities")({ component: FacilitiesPage });
@@ -218,6 +223,7 @@ function FacilitiesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<FacilityStatus | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
+  const [activeTab, setActiveTab] = useState("facilities");
   const scheduleSectionRef = useRef<HTMLDivElement | null>(null);
 
   const filteredFacilities = useMemo(() => {
@@ -307,175 +313,210 @@ function FacilitiesPage() {
         })}
       </div>
 
-      <Card className="border-border/60 p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Search & Filters</p>
-            <h3 className="mt-1 text-xl font-semibold tracking-tight">Find a facility, class, or teacher</h3>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="rounded-full">
-              Available
-            </Badge>
-            <Badge variant="outline" className="rounded-full">
-              Occupied
-            </Badge>
-            <Badge variant="outline" className="rounded-full">
-              Scheduled
-            </Badge>
-          </div>
+      <Card className="overflow-hidden backdrop-blur bg-card/50 border-border/50">
+        <div className="p-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="bg-white border border-emerald-200 p-1 rounded-full">
+              <TabsTrigger value="facilities" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                <LayoutGrid className="mr-2 size-4" />
+                Facilities
+              </TabsTrigger>
+              <TabsTrigger value="schedule" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                <Calendar className="mr-2 size-4" />
+                Schedule
+              </TabsTrigger>
+              <TabsTrigger value="library" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                <Library className="mr-2 size-4" />
+                Library
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                <Lightbulb className="mr-2 size-4" />
+                Insights
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
-        <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search facility name, class, or teacher..."
-              className="h-11 rounded-2xl border-border pl-10"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {(["Available", "Occupied", "Scheduled"] as FacilityStatus[]).map((item) => (
-              <Button
-                key={item}
-                type="button"
-                variant={statusFilter === item ? "default" : "outline"}
-                className={cn("h-11 rounded-2xl px-4", statusFilter === item && "bg-brand-gradient text-white border-0")}
-                onClick={() => setStatusFilter((current) => (current === item ? null : item))}
-              >
-                {item}
-              </Button>
-            ))}
-          </div>
+        <div className="p-5">
+          {activeTab === "facilities" && (
+            <div>
+              <Card className="border-border/60 p-5 shadow-sm">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Search & Filters</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight">Find a facility, class, or teacher</h3>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="rounded-full">
+                      Available
+                    </Badge>
+                    <Badge variant="outline" className="rounded-full">
+                      Occupied
+                    </Badge>
+                    <Badge variant="outline" className="rounded-full">
+                      Scheduled
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder="Search facility name, class, or teacher..."
+                      className="h-11 rounded-2xl border-border pl-10"
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {(["Available", "Occupied", "Scheduled"] as FacilityStatus[]).map((item) => (
+                      <Button
+                        key={item}
+                        type="button"
+                        variant={statusFilter === item ? "default" : "outline"}
+                        className={cn("h-11 rounded-2xl px-4", statusFilter === item && "bg-brand-gradient text-white border-0")}
+                        onClick={() => setStatusFilter((current) => (current === item ? null : item))}
+                      >
+                        {item}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="mt-4 border-border/60 p-5 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Facility Status</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight">Major school facilities</h3>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                      Green Available
+                    </Badge>
+                    <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
+                      Blue Occupied
+                    </Badge>
+                    <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                      Yellow Scheduled
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {filteredFacilities.map((facility) => (
+                    <button
+                      key={facility.id}
+                      type="button"
+                      onClick={() => openFacility(facility)}
+                      className="rounded-3xl border border-border bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-base font-semibold">{facility.name}</div>
+                          <Badge variant="outline" className={cn("mt-2", statusClass(facility.status))}>
+                            {facility.status}
+                          </Badge>
+                        </div>
+                        <Building2 className="size-5 text-muted-foreground" />
+                      </div>
+
+                      <div className="mt-4 grid gap-3 text-sm">
+                        <Row label="Current Class" value={facility.currentClass} />
+                        <Row label="Current Teacher" value={facility.currentTeacher} />
+                        <Row label="Time Slot" value={facility.timeSlot} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "schedule" && (
+            <div ref={scheduleSectionRef}>
+              <Card className="border-border/60 p-5 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Today&apos;s Schedule</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight">Bookings for today</h3>
+                  </div>
+                  <Badge variant="outline">{filteredSchedule.length} sessions</Badge>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  {filteredSchedule.map((entry) => (
+                    <button
+                      key={`${entry.facility}-${entry.time}`}
+                      type="button"
+                      onClick={() => openFacility(facilities.find((facility) => facility.name === entry.facility) ?? facilities[0])}
+                      className="grid w-full gap-3 rounded-2xl border border-border bg-white px-4 py-4 text-left transition-colors hover:bg-slate-50 lg:grid-cols-[1.3fr_1fr_1fr_1fr_0.7fr]"
+                    >
+                      <div>
+                        <div className="font-semibold">{entry.facility}</div>
+                        <div className="text-sm text-muted-foreground lg:hidden">{entry.time}</div>
+                      </div>
+                      <div className="text-sm text-muted-foreground">{entry.time}</div>
+                      <div className="text-sm text-muted-foreground">{entry.className}</div>
+                      <div className="text-sm text-muted-foreground">{entry.teacher}</div>
+                      <div>
+                        <Badge variant="outline" className={cn("rounded-full", statusClass(entry.status))}>
+                          {entry.status}
+                        </Badge>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "library" && (
+            <Card className="border-border/60 p-5 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Library Overview</p>
+                  <h3 className="mt-1 text-xl font-semibold tracking-tight">Library usage at a glance</h3>
+                </div>
+                <Badge variant="outline">Books</Badge>
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {libraryStats.map((item) => (
+                  <div key={item.label} className="rounded-2xl border border-border bg-slate-50/70 p-4">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">{item.label}</div>
+                    <div className="mt-2 text-2xl font-semibold tracking-tight">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {activeTab === "insights" && (
+            <Card className="border-border/60 p-5 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Resource Insights</p>
+                  <h3 className="mt-1 text-xl font-semibold tracking-tight">Simple utilization signals</h3>
+                </div>
+                <Badge variant="outline">Concise</Badge>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {insights.map((item) => (
+                  <div key={item} className="rounded-2xl border border-border bg-white p-4">
+                    <div className="flex items-start gap-3">
+                      <BarChart3 className="mt-0.5 size-4 text-cyan-600" />
+                      <p className="text-sm leading-6 text-foreground">{item}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
       </Card>
-
-      <Card className="border-border/60 p-5 shadow-sm">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Facility Status</p>
-            <h3 className="mt-1 text-xl font-semibold tracking-tight">Major school facilities</h3>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
-              Green Available
-            </Badge>
-            <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
-              Blue Occupied
-            </Badge>
-            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
-              Yellow Scheduled
-            </Badge>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {filteredFacilities.map((facility) => (
-            <button
-              key={facility.id}
-              type="button"
-              onClick={() => openFacility(facility)}
-              className="rounded-3xl border border-border bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-base font-semibold">{facility.name}</div>
-                  <Badge variant="outline" className={cn("mt-2", statusClass(facility.status))}>
-                    {facility.status}
-                  </Badge>
-                </div>
-                <Building2 className="size-5 text-muted-foreground" />
-              </div>
-
-              <div className="mt-4 grid gap-3 text-sm">
-                <Row label="Current Class" value={facility.currentClass} />
-                <Row label="Current Teacher" value={facility.currentTeacher} />
-                <Row label="Time Slot" value={facility.timeSlot} />
-              </div>
-            </button>
-          ))}
-        </div>
-      </Card>
-
-      <div ref={scheduleSectionRef}>
-        <Card className="border-border/60 p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Today&apos;s Schedule</p>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight">Bookings for today</h3>
-            </div>
-            <Badge variant="outline">{filteredSchedule.length} sessions</Badge>
-          </div>
-
-          <div className="mt-4 space-y-2">
-            {filteredSchedule.map((entry) => (
-              <button
-                key={`${entry.facility}-${entry.time}`}
-                type="button"
-                onClick={() => openFacility(facilities.find((facility) => facility.name === entry.facility) ?? facilities[0])}
-                className="grid w-full gap-3 rounded-2xl border border-border bg-white px-4 py-4 text-left transition-colors hover:bg-slate-50 lg:grid-cols-[1.3fr_1fr_1fr_1fr_0.7fr]"
-              >
-                <div>
-                  <div className="font-semibold">{entry.facility}</div>
-                  <div className="text-sm text-muted-foreground lg:hidden">{entry.time}</div>
-                </div>
-                <div className="text-sm text-muted-foreground">{entry.time}</div>
-                <div className="text-sm text-muted-foreground">{entry.className}</div>
-                <div className="text-sm text-muted-foreground">{entry.teacher}</div>
-                <div>
-                  <Badge variant="outline" className={cn("rounded-full", statusClass(entry.status))}>
-                    {entry.status}
-                  </Badge>
-                </div>
-              </button>
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-        <Card className="border-border/60 p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Library Overview</p>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight">Library usage at a glance</h3>
-            </div>
-            <Badge variant="outline">Books</Badge>
-          </div>
-
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {libraryStats.map((item) => (
-              <div key={item.label} className="rounded-2xl border border-border bg-slate-50/70 p-4">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">{item.label}</div>
-                <div className="mt-2 text-2xl font-semibold tracking-tight">{item.value}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="border-border/60 p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Resource Insights</p>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight">Simple utilization signals</h3>
-            </div>
-            <Badge variant="outline">Concise</Badge>
-          </div>
-
-          <div className="mt-4 space-y-3">
-            {insights.map((item) => (
-              <div key={item} className="rounded-2xl border border-border bg-white p-4">
-                <div className="flex items-start gap-3">
-                  <BarChart3 className="mt-0.5 size-4 text-cyan-600" />
-                  <p className="text-sm leading-6 text-foreground">{item}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         {["Book Facility", "View Full Schedule", "Generate Utilization Report"].map((label) => (

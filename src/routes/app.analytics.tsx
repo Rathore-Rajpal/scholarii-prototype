@@ -5,10 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import {
   ArrowDownRight,
   ArrowUpRight,
+  BarChart3,
   BrainCircuit,
   Briefcase,
   DollarSign,
@@ -18,6 +20,7 @@ import {
   FileText,
   MessageSquareMore,
   Sparkles,
+  TrendingUp,
   Users,
 } from "lucide-react";
 
@@ -121,6 +124,7 @@ function miniTone(score: number) {
 
 function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>("Last 30 Days");
+  const [activeTab, setActiveTab] = useState("attendance");
 
   const kpis: KpiCard[] = [
     { label: "Attendance Health", value: "94%", change: "+2% vs last month", direction: "up", hint: "Attendance is steady across most grades.", icon: Users, tone: "from-emerald-500 to-teal-500" },
@@ -150,20 +154,6 @@ function AnalyticsPage() {
     { label: "Top Class", value: "10A", hint: "89% average" },
     { label: "Weakest Class", value: "8B", hint: "71% average" },
     { label: "Students At Risk", value: "21", hint: "Need support" },
-  ];
-
-  const financeMetrics: MetricCard[] = [
-    { label: "Collection Rate", value: "82%", hint: "Current month" },
-    { label: "Outstanding Dues", value: "Rs. 14.2L", hint: "Pending collection" },
-    { label: "Defaulters", value: "84", hint: "Families" },
-    { label: "Forecast", value: "Rs. 10.6L", hint: "Expected next cycle" },
-  ];
-
-  const staffMetrics: MetricCard[] = [
-    { label: "Staff Attendance", value: "91%", hint: "Current period" },
-    { label: "Overloaded Teachers", value: "5", hint: "Need workload review" },
-    { label: "Available Teachers", value: "12", hint: "With free periods" },
-    { label: "Pending Substitutions", value: "4", hint: "Upcoming" },
   ];
 
   const parentMetrics: MetricCard[] = [
@@ -276,293 +266,268 @@ function AnalyticsPage() {
           })}
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[1.05fr_0.95fr] gap-4">
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Attendance Analytics</h3>
-                <p className="text-sm text-muted-foreground">Understand attendance trends and where intervention is needed.</p>
-              </div>
-              <Badge variant="outline">Trend focus</Badge>
-            </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-              {attendanceMetrics.map((metric) => (
-                <Card key={metric.label} className="p-4 border-border/60">
-                  <p className="text-xs text-muted-foreground">{metric.label}</p>
-                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
-                </Card>
-              ))}
-            </div>
-            <div className="mt-5 rounded-2xl border border-border bg-background p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-medium">Attendance trend</p>
-                <Badge variant="outline">One chart only</Badge>
-              </div>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={attendanceChart} margin={{ top: 10, right: 12, left: -8, bottom: 20 }}>
-                    <defs>
-                      <linearGradient id="attendanceFill" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis dataKey="month" stroke="var(--muted-foreground)" tickMargin={12} interval={0} />
-                    <YAxis domain={[85, 100]} stroke="var(--muted-foreground)" width={34} />
-                    <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 12 }} />
-                    <Area type="monotone" dataKey="value" stroke="#10b981" fill="url(#attendanceFill)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-sm font-medium">Attendance by weekday</p>
-                  <Badge variant="outline">Compact view</Badge>
-                </div>
-                <div className="h-40">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={attendanceByDay} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.15} vertical={false} />
-                      <XAxis dataKey="day" stroke="var(--muted-foreground)" tickMargin={10} interval={0} />
-                      <YAxis domain={[80, 100]} stroke="var(--muted-foreground)" width={30} />
-                      <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 12 }} />
-                      <Bar dataKey="value" fill="#14b8a6" radius={[8, 8, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-            <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
-              {[
-                "Grade 9 attendance declined by 4% this month.",
-                "Monday attendance remains the lowest across the school.",
-                "34 students remain below the attendance threshold.",
-              ].map((item) => (
-                <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
-                  <p className="text-sm text-muted-foreground">{item}</p>
-                </Card>
-              ))}
-            </div>
-          </Card>
+        <Card className="overflow-hidden backdrop-blur bg-card/50 border-border/50">
+          <div className="p-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="bg-white border border-emerald-200 p-1 rounded-full">
+                <TabsTrigger value="attendance" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <BarChart3 className="mr-2 size-4" />
+                  Attendance Analytics
+                </TabsTrigger>
+                <TabsTrigger value="academic" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <GraduationCap className="mr-2 size-4" />
+                  Academic Analytics
+                </TabsTrigger>
+                <TabsTrigger value="parent" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <Users className="mr-2 size-4" />
+                  Parent Engagement Analytics
+                </TabsTrigger>
+                <TabsTrigger value="adoption" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <TrendingUp className="mr-2 size-4" />
+                  Scholarii Adoption Analytics
+                </TabsTrigger>
+                <TabsTrigger value="insights" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <BrainCircuit className="mr-2 size-4" />
+                  AI Insights
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Academic Analytics</h3>
-                <p className="text-sm text-muted-foreground">Understand academic performance and subject pressure points.</p>
-              </div>
-              <Badge variant="outline">Intervention ready</Badge>
-            </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {academicMetrics.map((metric) => (
-                <Card key={metric.label} className="p-4 border-border/60">
-                  <p className="text-xs text-muted-foreground">{metric.label}</p>
-                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
-                </Card>
-              ))}
-            </div>
-            <div className="mt-5 space-y-3">
-              <p className="text-sm font-medium">Subject Performance Summary</p>
-              <div className="grid grid-cols-1 gap-3">
-                {subjectSummary.map((subject) => (
-                  <Card key={subject.subject} className="p-4 border-border/60">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="font-medium">{subject.subject}</p>
-                        <p className="text-xs text-muted-foreground">{subject.status}</p>
+          <div className="p-5">
+            {activeTab === "attendance" && (
+              <Card className="p-5 border-border/60">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold">Attendance Analytics</h3>
+                      <p className="text-sm text-muted-foreground">Understand attendance trends and where intervention is needed.</p>
+                    </div>
+                    <Badge variant="outline">Trend focus</Badge>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                    {attendanceMetrics.map((metric) => (
+                      <Card key={metric.label} className="p-4 border-border/60">
+                        <p className="text-xs text-muted-foreground">{metric.label}</p>
+                        <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
+                        <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
+                      </Card>
+                    ))}
+                  </div>
+                  <div className="mt-5 rounded-2xl border border-border bg-background p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="text-sm font-medium">Attendance trend</p>
+                      <Badge variant="outline">One chart only</Badge>
+                    </div>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={attendanceChart} margin={{ top: 10, right: 12, left: -8, bottom: 20 }}>
+                          <defs>
+                            <linearGradient id="attendanceFill" x1="0" x2="0" y1="0" y2="1">
+                              <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
+                              <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                          <XAxis dataKey="month" stroke="var(--muted-foreground)" tickMargin={12} interval={0} />
+                          <YAxis domain={[85, 100]} stroke="var(--muted-foreground)" width={34} />
+                          <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 12 }} />
+                          <Area type="monotone" dataKey="value" stroke="#10b981" fill="url(#attendanceFill)" strokeWidth={2} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-4">
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="text-sm font-medium">Attendance by weekday</p>
+                        <Badge variant="outline">Compact view</Badge>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-semibold">{subject.score}%</p>
-                        <p className="text-xs text-muted-foreground">Average</p>
+                      <div className="h-40">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={attendanceByDay} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.15} vertical={false} />
+                            <XAxis dataKey="day" stroke="var(--muted-foreground)" tickMargin={10} interval={0} />
+                            <YAxis domain={[80, 100]} stroke="var(--muted-foreground)" width={30} />
+                            <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 12 }} />
+                            <Bar dataKey="value" fill="#14b8a6" radius={[8, 8, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
                       </div>
-                    </div>
-                    <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${
-                          subject.score >= 85 ? "bg-emerald-500" : subject.score >= 75 ? "bg-amber-500" : "bg-rose-500"
-                        }`}
-                        style={{ width: `${subject.score}%` }}
-                      />
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              {[
-                "Mathematics remains the weakest subject.",
-                "Class 8B requires intervention.",
-                "Academic performance improved by 3% this term.",
-              ].map((item) => (
-                <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
-                  <p className="text-sm text-muted-foreground">{item}</p>
-                </Card>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-4">
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Finance Analytics</h3>
-                <p className="text-sm text-muted-foreground">Understand financial trends without a finance-system feel.</p>
-              </div>
-              <Badge variant="outline">Collection focus</Badge>
-            </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {financeMetrics.map((metric) => (
-                <Card key={metric.label} className="p-4 border-border/60">
-                  <p className="text-xs text-muted-foreground">{metric.label}</p>
-                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
-                </Card>
-              ))}
-            </div>
-            <div className="mt-5 space-y-3">
-              {[
-                "Collection performance improved by 12%.",
-                "Grade 8 has the highest default rate.",
-                "Current trends indicate monthly targets are achievable.",
-              ].map((item) => (
-                <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
-                  <p className="text-sm text-muted-foreground">{item}</p>
-                </Card>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Staff Analytics</h3>
-                <p className="text-sm text-muted-foreground">Monitor workload and staffing health across the school.</p>
-              </div>
-              <Badge variant="outline">Workforce health</Badge>
-            </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {staffMetrics.map((metric) => (
-                <Card key={metric.label} className="p-4 border-border/60">
-                  <p className="text-xs text-muted-foreground">{metric.label}</p>
-                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
-                </Card>
-              ))}
-            </div>
-            <div className="mt-5 space-y-3">
-              {[
-                "Science department has the highest workload.",
-                "Five teachers currently have no free periods.",
-                "Teacher attendance improved this month.",
-              ].map((item) => (
-                <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
-                  <p className="text-sm text-muted-foreground">{item}</p>
-                </Card>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-4">
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Parent Engagement Analytics</h3>
-                <p className="text-sm text-muted-foreground">Understand communication effectiveness and parent response patterns.</p>
-              </div>
-              <Badge variant="outline">Communication</Badge>
-            </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {parentMetrics.map((metric) => (
-                <Card key={metric.label} className="p-4 border-border/60">
-                  <p className="text-xs text-muted-foreground">{metric.label}</p>
-                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
-                </Card>
-              ))}
-            </div>
-            <div className="mt-5 space-y-3">
-              {[
-                "Grade 8 parent engagement is lowest.",
-                "PTM participation improved by 9%.",
-                "WhatsApp communication drives the highest engagement.",
-              ].map((item) => (
-                <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
-                  <p className="text-sm text-muted-foreground">{item}</p>
-                </Card>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Scholarii Adoption Analytics</h3>
-                <p className="text-sm text-muted-foreground">The school’s usage of Scholarii across teachers, students, and staff.</p>
-              </div>
-              <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">86 / 100</Badge>
-            </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {adoptionMetrics.map((metric) => (
-                <Card key={metric.label} className={`p-4 border ${miniTone(metric.label === "Hours Saved" ? 95 : metric.label === "Staff Adoption Rate" ? 93 : 88)}`}>
-                  <p className="text-xs text-muted-foreground">{metric.label}</p>
-                  <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
-                </Card>
-              ))}
-            </div>
-            <div className="mt-5 space-y-3">
-              <p className="text-sm font-medium">Usage Trends</p>
-              <div className="space-y-2">
-                {adoptionGrowth.map((item) => (
-                  <div key={item.label} className="rounded-xl border border-border p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-medium">{item.label}</p>
-                      <p className="text-sm text-muted-foreground">{item.value.toLocaleString("en-IN")}</p>
-                    </div>
-                    <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-sky-600"
-                        style={{ width: `${Math.min(100, Math.round(item.value / 300))}%` }}
-                      />
                     </div>
                   </div>
-                ))}
-              </div>
-              <div className="grid grid-cols-1 gap-3">
-                {[
-                  "Teacher AI usage increased by 18%.",
-                  "Over 1,200 hours saved through automation.",
-                  "Staff adoption remains above 90%.",
-                ].map((item) => (
-                  <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
-                    <p className="text-sm text-muted-foreground">{item}</p>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </Card>
-        </div>
+                  <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {[
+                      "Grade 9 attendance declined by 4% this month.",
+                      "Monday attendance remains the lowest across the school.",
+                      "34 students remain below the attendance threshold.",
+                    ].map((item) => (
+                      <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
+                        <p className="text-sm text-muted-foreground">{item}</p>
+                      </Card>
+                    ))}
+                  </div>
+                </Card>
+            )}
 
-        <Card className="p-5 border-border/60">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h3 className="text-lg font-semibold">AI Insights</h3>
-              <p className="text-sm text-muted-foreground">Concise intelligent observations across departments.</p>
-            </div>
-            <Badge variant="outline">7 insights</Badge>
-          </div>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {analyticsInsights.map((insight) => (
-              <Card key={insight.title} className="p-4 border-border/60 bg-slate-50/60">
-                <p className="font-medium">{insight.title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{insight.detail}</p>
+            {activeTab === "academic" && (
+              <Card className="p-5 border-border/60">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold">Academic Analytics</h3>
+                      <p className="text-sm text-muted-foreground">Understand academic performance and subject pressure points.</p>
+                    </div>
+                    <Badge variant="outline">Intervention ready</Badge>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {academicMetrics.map((metric) => (
+                      <Card key={metric.label} className="p-4 border-border/60">
+                        <p className="text-xs text-muted-foreground">{metric.label}</p>
+                        <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
+                        <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
+                      </Card>
+                    ))}
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    <p className="text-sm font-medium">Subject Performance Summary</p>
+                    <div className="grid grid-cols-1 gap-3">
+                      {subjectSummary.map((subject) => (
+                        <Card key={subject.subject} className="p-4 border-border/60">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="font-medium">{subject.subject}</p>
+                              <p className="text-xs text-muted-foreground">{subject.status}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-semibold">{subject.score}%</p>
+                              <p className="text-xs text-muted-foreground">Average</p>
+                            </div>
+                          </div>
+                          <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${
+                                subject.score >= 85 ? "bg-emerald-500" : subject.score >= 75 ? "bg-amber-500" : "bg-rose-500"
+                              }`}
+                              style={{ width: `${subject.score}%` }}
+                            />
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    {[
+                      "Mathematics remains the weakest subject.",
+                      "Class 8B requires intervention.",
+                      "Academic performance improved by 3% this term.",
+                    ].map((item) => (
+                      <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
+                        <p className="text-sm text-muted-foreground">{item}</p>
+                      </Card>
+                    ))}
+                  </div>
+                </Card>
+            )}
+
+            {activeTab === "parent" && (
+              <Card className="p-5 border-border/60">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold">Parent Engagement Analytics</h3>
+                      <p className="text-sm text-muted-foreground">Understand communication effectiveness and parent response patterns.</p>
+                    </div>
+                    <Badge variant="outline">Communication</Badge>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {parentMetrics.map((metric) => (
+                      <Card key={metric.label} className="p-4 border-border/60">
+                        <p className="text-xs text-muted-foreground">{metric.label}</p>
+                        <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
+                        <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
+                      </Card>
+                    ))}
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    {[
+                      "Grade 8 parent engagement is lowest.",
+                      "PTM participation improved by 9%.",
+                      "WhatsApp communication drives the highest engagement.",
+                    ].map((item) => (
+                      <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
+                        <p className="text-sm text-muted-foreground">{item}</p>
+                      </Card>
+                    ))}
+                  </div>
+                </Card>
+            )}
+
+            {activeTab === "adoption" && (
+              <Card className="p-5 border-border/60">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold">Scholarii Adoption Analytics</h3>
+                      <p className="text-sm text-muted-foreground">The school's usage of Scholarii across teachers, students, and staff.</p>
+                    </div>
+                    <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">86 / 100</Badge>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {adoptionMetrics.map((metric) => (
+                      <Card key={metric.label} className={`p-4 border ${miniTone(metric.label === "Hours Saved" ? 95 : metric.label === "Staff Adoption Rate" ? 93 : 88)}`}>
+                        <p className="text-xs text-muted-foreground">{metric.label}</p>
+                        <div className="mt-2 text-2xl font-semibold">{metric.value}</div>
+                        <p className="mt-1 text-xs text-muted-foreground">{metric.hint}</p>
+                      </Card>
+                    ))}
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    <p className="text-sm font-medium">Usage Trends</p>
+                    <div className="space-y-2">
+                      {adoptionGrowth.map((item) => (
+                        <div key={item.label} className="rounded-xl border border-border p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-sm font-medium">{item.label}</p>
+                            <p className="text-sm text-muted-foreground">{item.value.toLocaleString("en-IN")}</p>
+                          </div>
+                          <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-sky-600"
+                              style={{ width: `${Math.min(100, Math.round(item.value / 300))}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      {[
+                        "Teacher AI usage increased by 18%.",
+                        "Over 1,200 hours saved through automation.",
+                        "Staff adoption remains above 90%.",
+                      ].map((item) => (
+                        <Card key={item} className="p-4 border-border/60 bg-slate-50/60">
+                          <p className="text-sm text-muted-foreground">{item}</p>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+            )}
+
+            {activeTab === "insights" && (
+              <Card className="p-5 border-border/60">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold">AI Insights</h3>
+                    <p className="text-sm text-muted-foreground">Concise intelligent observations across departments.</p>
+                  </div>
+                  <Badge variant="outline">7 insights</Badge>
+                </div>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {analyticsInsights.map((insight) => (
+                    <Card key={insight.title} className="p-4 border-border/60 bg-slate-50/60">
+                      <p className="font-medium">{insight.title}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{insight.detail}</p>
+                    </Card>
+                  ))}
+                </div>
               </Card>
-            ))}
+            )}
           </div>
         </Card>
       </div>

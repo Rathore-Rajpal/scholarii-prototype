@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CalendarDays,
   CheckCircle2,
@@ -16,6 +17,12 @@ import {
   Search,
   ShieldCheck,
   Upload,
+  LayoutDashboard,
+  ClipboardList,
+  AlertTriangle,
+  ClipboardCheck,
+  Calendar,
+  Users,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/compliance")({ component: CompliancePage });
@@ -200,6 +207,7 @@ function CompliancePage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [selectedPanel, setSelectedPanel] = useState<{ kind: "score" } | { kind: "item"; item: ComplianceItem } | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const filteredItems = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -295,221 +303,295 @@ function CompliancePage() {
           </div>
         </Card>
 
-        <Card className="p-4 border-border/60">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">Search and Filters</h3>
-              <p className="text-sm text-muted-foreground">Search certificate name, compliance item, or document name.</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  className="w-full pl-9 lg:w-[300px]"
-                  placeholder="Search certificate, item, document..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
+        <Card className="overflow-hidden backdrop-blur bg-card/50 border-border/50">
+          <div className="p-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="bg-white border border-emerald-200 p-1 rounded-full">
+                <TabsTrigger value="overview" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <LayoutDashboard className="mr-2 size-4" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="items" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <ClipboardList className="mr-2 size-4" />
+                  Compliance Items
+                </TabsTrigger>
+                <TabsTrigger value="expiring" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <AlertTriangle className="mr-2 size-4" />
+                  Expiring Certificates
+                </TabsTrigger>
+                <TabsTrigger value="inspection" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <ClipboardCheck className="mr-2 size-4" />
+                  Inspection Readiness
+                </TabsTrigger>
+                <TabsTrigger value="calendar" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <Calendar className="mr-2 size-4" />
+                  Calendar
+                </TabsTrigger>
+                <TabsTrigger value="staff" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <Users className="mr-2 size-4" />
+                  Staff
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          <div className="p-5">
+            {activeTab === "overview" && (
+              <div>
+                <Card className="p-5 border-border/60">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold">Compliance Overview</h3>
+                      <p className="text-sm text-muted-foreground">Summary of all compliance areas and their current status.</p>
+                    </div>
+                    <Badge variant="outline">Summary</Badge>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {complianceItems.map((item) => {
+                      const theme = toneClasses(item.statusLevel);
+                      return (
+                        <div key={item.id} className={`rounded-xl border p-4 ${theme.card}`}>
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-xs text-muted-foreground">{item.category}</p>
+                              <p className="mt-1 font-medium">{item.name}</p>
+                            </div>
+                            <Badge className={theme.badge}>{item.statusLevel}</Badge>
+                          </div>
+                          <div className="mt-3 text-sm text-muted-foreground">{item.statusLabel}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[170px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="Healthy">Healthy</SelectItem>
-                  <SelectItem value="Warning">Warning</SelectItem>
-                  <SelectItem value="Critical">Critical</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
-                  <SelectItem value="Regulatory">Regulatory</SelectItem>
-                  <SelectItem value="Safety">Safety</SelectItem>
-                  <SelectItem value="Infrastructure">Infrastructure</SelectItem>
-                  <SelectItem value="Government Submission">Government Submission</SelectItem>
-                  <SelectItem value="Staff">Staff</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button size="sm" variant="ghost" onClick={resetFilters}>
-                Clear
-              </Button>
-            </div>
+            )}
+
+            {activeTab === "items" && (
+              <div>
+                <Card className="p-4 border-border/60">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">Search and Filters</h3>
+                      <p className="text-sm text-muted-foreground">Search certificate name, compliance item, or document name.</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          className="w-full pl-9 lg:w-[300px]"
+                          placeholder="Search certificate, item, document..."
+                          value={query}
+                          onChange={(e) => setQuery(e.target.value)}
+                        />
+                      </div>
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[170px]">
+                          <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All statuses</SelectItem>
+                          <SelectItem value="Healthy">Healthy</SelectItem>
+                          <SelectItem value="Warning">Warning</SelectItem>
+                          <SelectItem value="Critical">Critical</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All categories</SelectItem>
+                          <SelectItem value="Regulatory">Regulatory</SelectItem>
+                          <SelectItem value="Safety">Safety</SelectItem>
+                          <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                          <SelectItem value="Government Submission">Government Submission</SelectItem>
+                          <SelectItem value="Staff">Staff</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button size="sm" variant="ghost" onClick={resetFilters}>
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold">Core Compliance Status</h3>
+                      <p className="text-sm text-muted-foreground">The most important compliance areas relevant to Maharashtra school oversight.</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {filteredItems.map((item) => {
+                      const theme = toneClasses(item.statusLevel);
+                      return (
+                        <button key={item.id} type="button" className="text-left" onClick={() => setSelectedPanel({ kind: "item", item })}>
+                          <Card className={`h-full p-4 border-border/60 transition hover:-translate-y-0.5 hover:shadow-md ${theme.card}`}>
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-xs text-muted-foreground">{item.category}</p>
+                                <h4 className="mt-1 text-base font-semibold">{item.name}</h4>
+                              </div>
+                              <Badge className={theme.badge}>{item.statusLevel}</Badge>
+                            </div>
+                            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-xs text-muted-foreground">Status</p>
+                                <p className="mt-1 font-medium">{item.statusLabel}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground">{item.primaryLabel}</p>
+                                <p className="mt-1 font-medium">{item.primaryValue}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground">{item.secondaryLabel}</p>
+                                <p className={`mt-1 font-medium ${theme.text}`}>{item.secondaryValue}</p>
+                              </div>
+                              <div className="flex items-end justify-end">
+                                <span className="text-xs text-muted-foreground">Tap for details</span>
+                              </div>
+                            </div>
+                          </Card>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {filteredItems.length === 0 ? (
+                    <Card className="p-5 border-border/60">
+                      <p className="text-sm text-muted-foreground">No compliance items match the current filters.</p>
+                    </Card>
+                  ) : null}
+                </div>
+              </div>
+            )}
+
+            {activeTab === "expiring" && (
+              <Card className="p-5 border-border/60">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold">Expiring Certificates & Renewals</h3>
+                    <p className="text-sm text-muted-foreground">Sorted by nearest expiry so upcoming risks are visible first.</p>
+                  </div>
+                  <Badge variant="outline">{expiringCertificates.length} Items</Badge>
+                </div>
+                <div className="mt-4 space-y-3">
+                  {expiringCertificates.map((item) => {
+                    const theme = toneClasses(item.statusLevel);
+                    return (
+                      <button key={item.id} type="button" className="w-full text-left" onClick={() => setSelectedPanel({ kind: "item", item })}>
+                        <div className={`rounded-xl border p-4 transition hover:shadow-sm ${theme.card}`}>
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="font-medium">{item.name}</p>
+                              <p className="mt-1 text-sm text-muted-foreground">{item.statusLabel}</p>
+                            </div>
+                            <Badge className={theme.badge}>{item.daysRemaining} Days Left</Badge>
+                          </div>
+                          <div className="mt-3 flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Expiry Date</span>
+                            <span className="font-semibold">{item.expiryDate}</span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+
+            {activeTab === "inspection" && (
+              <Card className="p-5 border-border/60">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold">Inspection Readiness</h3>
+                    <p className="text-sm text-muted-foreground">Quick view of what is inspection-ready and what needs attention.</p>
+                  </div>
+                  <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">Inspection Ready</Badge>
+                </div>
+                <div className="mt-4 rounded-2xl border border-border bg-background p-4">
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Inspection Readiness</p>
+                      <p className="mt-1 text-3xl font-semibold tracking-tight">89%</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">Overall Status</p>
+                      <p className="mt-1 text-sm font-semibold text-emerald-700">Inspection Ready</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full w-[89%] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700" />
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {inspectionChecklist.map((item) => (
+                    <div key={item.label} className="flex items-center justify-between rounded-xl border border-border px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        {item.done ? <CheckCircle2 className="size-4 text-emerald-600" /> : <CircleAlert className="size-4 text-amber-600" />}
+                        <span className="text-sm font-medium">{item.label}</span>
+                      </div>
+                      <Badge className={item.done ? "bg-emerald-600 text-white hover:bg-emerald-600" : "bg-amber-600 text-white hover:bg-amber-600"}>
+                        {item.done ? "Ready" : "Attention"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {activeTab === "calendar" && (
+              <Card className="p-5 border-border/60">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold">Compliance Calendar</h3>
+                    <p className="text-sm text-muted-foreground">Upcoming compliance events in a simple timeline.</p>
+                  </div>
+                  <Badge variant="outline">Timeline</Badge>
+                </div>
+                <div className="mt-4 space-y-4">
+                  {complianceCalendar.map((event, index) => (
+                    <div key={event.title} className="flex gap-3">
+                      <div className="flex flex-col items-center">
+                        <div className="flex size-10 items-center justify-center rounded-full border border-border bg-slate-50 text-slate-700">
+                          <Clock3 className="size-4" />
+                        </div>
+                        {index < complianceCalendar.length - 1 ? <div className="mt-2 h-full w-px bg-border" /> : null}
+                      </div>
+                      <div className="pb-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{event.date}</p>
+                        <p className="mt-1 font-medium">{event.title}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{event.detail}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {activeTab === "staff" && (
+              <Card className="p-5 border-border/60">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold">Staff Compliance Overview</h3>
+                    <p className="text-sm text-muted-foreground">Staff verification and renewal status at a glance.</p>
+                  </div>
+                  <Badge variant="outline">Staff</Badge>
+                </div>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {staffOverview.map((item) => (
+                    <Card key={item.label} className="p-4 border-border/60">
+                      <p className="text-xs text-muted-foreground">{item.label}</p>
+                      <p className="mt-2 text-2xl font-semibold">{item.value}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
+                    </Card>
+                  ))}
+                </div>
+              </Card>
+            )}
           </div>
         </Card>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h3 className="text-lg font-semibold">Core Compliance Status</h3>
-              <p className="text-sm text-muted-foreground">The most important compliance areas relevant to Maharashtra school oversight.</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {filteredItems.map((item) => {
-              const theme = toneClasses(item.statusLevel);
-              return (
-                <button key={item.id} type="button" className="text-left" onClick={() => setSelectedPanel({ kind: "item", item })}>
-                  <Card className={`h-full p-4 border-border/60 transition hover:-translate-y-0.5 hover:shadow-md ${theme.card}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs text-muted-foreground">{item.category}</p>
-                        <h4 className="mt-1 text-base font-semibold">{item.name}</h4>
-                      </div>
-                      <Badge className={theme.badge}>{item.statusLevel}</Badge>
-                    </div>
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Status</p>
-                        <p className="mt-1 font-medium">{item.statusLabel}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">{item.primaryLabel}</p>
-                        <p className="mt-1 font-medium">{item.primaryValue}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">{item.secondaryLabel}</p>
-                        <p className={`mt-1 font-medium ${theme.text}`}>{item.secondaryValue}</p>
-                      </div>
-                      <div className="flex items-end justify-end">
-                        <span className="text-xs text-muted-foreground">Tap for details</span>
-                      </div>
-                    </div>
-                  </Card>
-                </button>
-              );
-            })}
-          </div>
-          {filteredItems.length === 0 ? (
-            <Card className="p-5 border-border/60">
-              <p className="text-sm text-muted-foreground">No compliance items match the current filters.</p>
-            </Card>
-          ) : null}
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-[1.05fr_0.95fr] gap-4">
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Expiring Certificates & Renewals</h3>
-                <p className="text-sm text-muted-foreground">Sorted by nearest expiry so upcoming risks are visible first.</p>
-              </div>
-              <Badge variant="outline">{expiringCertificates.length} Items</Badge>
-            </div>
-            <div className="mt-4 space-y-3">
-              {expiringCertificates.map((item) => {
-                const theme = toneClasses(item.statusLevel);
-                return (
-                  <button key={item.id} type="button" className="w-full text-left" onClick={() => setSelectedPanel({ kind: "item", item })}>
-                    <div className={`rounded-xl border p-4 transition hover:shadow-sm ${theme.card}`}>
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">{item.statusLabel}</p>
-                        </div>
-                        <Badge className={theme.badge}>{item.daysRemaining} Days Left</Badge>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Expiry Date</span>
-                        <span className="font-semibold">{item.expiryDate}</span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
-
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Inspection Readiness</h3>
-                <p className="text-sm text-muted-foreground">Quick view of what is inspection-ready and what needs attention.</p>
-              </div>
-              <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">Inspection Ready</Badge>
-            </div>
-            <div className="mt-4 rounded-2xl border border-border bg-background p-4">
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Inspection Readiness</p>
-                  <p className="mt-1 text-3xl font-semibold tracking-tight">89%</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Overall Status</p>
-                  <p className="mt-1 text-sm font-semibold text-emerald-700">Inspection Ready</p>
-                </div>
-              </div>
-              <div className="mt-4 h-2 rounded-full bg-muted overflow-hidden">
-                <div className="h-full w-[89%] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700" />
-              </div>
-            </div>
-            <div className="mt-4 space-y-2">
-              {inspectionChecklist.map((item) => (
-                <div key={item.label} className="flex items-center justify-between rounded-xl border border-border px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    {item.done ? <CheckCircle2 className="size-4 text-emerald-600" /> : <CircleAlert className="size-4 text-amber-600" />}
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </div>
-                  <Badge className={item.done ? "bg-emerald-600 text-white hover:bg-emerald-600" : "bg-amber-600 text-white hover:bg-amber-600"}>
-                    {item.done ? "Ready" : "Attention"}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-4">
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Compliance Calendar</h3>
-                <p className="text-sm text-muted-foreground">Upcoming compliance events in a simple timeline.</p>
-              </div>
-              <Badge variant="outline">Timeline</Badge>
-            </div>
-            <div className="mt-4 space-y-4">
-              {complianceCalendar.map((event, index) => (
-                <div key={event.title} className="flex gap-3">
-                  <div className="flex flex-col items-center">
-                    <div className="flex size-10 items-center justify-center rounded-full border border-border bg-slate-50 text-slate-700">
-                      <Clock3 className="size-4" />
-                    </div>
-                    {index < complianceCalendar.length - 1 ? <div className="mt-2 h-full w-px bg-border" /> : null}
-                  </div>
-                  <div className="pb-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{event.date}</p>
-                    <p className="mt-1 font-medium">{event.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{event.detail}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">Staff Compliance Overview</h3>
-                <p className="text-sm text-muted-foreground">Staff verification and renewal status at a glance.</p>
-              </div>
-              <Badge variant="outline">Staff</Badge>
-            </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {staffOverview.map((item) => (
-                <Card key={item.label} className="p-4 border-border/60">
-                  <p className="text-xs text-muted-foreground">{item.label}</p>
-                  <p className="mt-2 text-2xl font-semibold">{item.value}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
-                </Card>
-              ))}
-            </div>
-          </Card>
-        </div>
 
         <Card className="p-5 border-border/60 bg-slate-50/40">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
