@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   ArrowRight,
@@ -24,6 +25,12 @@ import {
   Sparkles,
   Users,
   BellRing,
+  LayoutDashboard,
+  MessageSquare,
+  BookOpen,
+  Heart,
+  Radio,
+  Calendar,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/communication")({ component: CommunicationPage });
@@ -210,6 +217,7 @@ function CommunicationPage() {
   const [selectedMetric, setSelectedMetric] = useState<HealthMetric>(communicationHealthMetrics[0]);
   const [metricPanelOpen, setMetricPanelOpen] = useState(false);
   const [selectedCommunication, setSelectedCommunication] = useState<CommunicationCard | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const kpis = [
     { label: "Announcements Sent", value: "128", suffix: "This Month", icon: Megaphone, tone: "bg-sky-50 text-sky-700 border-sky-200" },
@@ -344,201 +352,272 @@ function CommunicationPage() {
           </Card>
         </div>
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  className="w-full pl-9 lg:w-[280px]"
-                  placeholder="Search announcement title, circular title, keyword"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                />
-              </div>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Communication type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All types</SelectItem>
-                  <SelectItem value="Announcement">Announcement</SelectItem>
-                  <SelectItem value="Circular">Circular</SelectItem>
-                  <SelectItem value="PTM Reminder">PTM Reminder</SelectItem>
-                  <SelectItem value="Fee Reminder">Fee Reminder</SelectItem>
-                  <SelectItem value="Exam Notice">Exam Notice</SelectItem>
-                  <SelectItem value="Holiday Notice">Holiday Notice</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All status</SelectItem>
-                  <SelectItem value="Sent">Sent</SelectItem>
-                  <SelectItem value="Scheduled">Scheduled</SelectItem>
-                  <SelectItem value="Delivered">Delivered</SelectItem>
-                  <SelectItem value="Pending Read">Pending Read</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
-              Clear Filters
-            </Button>
+        <Card className="overflow-hidden backdrop-blur bg-card/50 border-border/50">
+          <div className="p-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="bg-white border border-emerald-200 p-1 rounded-full">
+                <TabsTrigger value="overview" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <LayoutDashboard className="mr-2 size-4" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="recent" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <MessageSquare className="mr-2 size-4" />
+                  Recent Communications
+                </TabsTrigger>
+                <TabsTrigger value="circulars" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <BookOpen className="mr-2 size-4" />
+                  Circulars
+                </TabsTrigger>
+                <TabsTrigger value="engagement" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <Heart className="mr-2 size-4" />
+                  Engagement
+                </TabsTrigger>
+                <TabsTrigger value="channels" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <Radio className="mr-2 size-4" />
+                  Channels
+                </TabsTrigger>
+                <TabsTrigger value="upcoming" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <Calendar className="mr-2 size-4" />
+                  Upcoming
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
-        </div>
 
-        <Card className="p-5 border-border/60">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h3 className="text-lg font-semibold">Recent Communications</h3>
-              <p className="text-sm text-muted-foreground">Only the latest school communications are shown here.</p>
-            </div>
-            <Button variant="outline" size="sm">
-              View All
-              <ArrowRight className="ml-2 size-4" />
-            </Button>
-          </div>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-            {filteredCommunications.slice(0, 3).map((item) => (
-              <button key={item.id} type="button" onClick={() => setSelectedCommunication(item)} className="text-left">
-                <Card className="h-full p-4 border-border/60 transition hover:-translate-y-0.5 hover:shadow-md">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">{item.title}</p>
-                        <Badge variant={item.status === "Scheduled" ? "outline" : "secondary"}>{item.type}</Badge>
-                      </div>
-                      <p className="mt-2 text-sm text-muted-foreground">{item.sentLabel}</p>
-                    </div>
-                    <Badge variant={item.status === "Pending Read" ? "destructive" : "outline"}>{item.status}</Badge>
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Read rate</span>
-                      <div className="mt-1 font-semibold">{item.readRate ? `${item.readRate}%` : "Pending"}</div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Action</span>
-                      <div className="mt-1 font-semibold">{item.actionLabel}</div>
-                    </div>
-                  </div>
-                </Card>
-              </button>
-            ))}
-          </div>
-        </Card>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between">
+          <div className="p-5">
+            {activeTab === "overview" && (
               <div>
-                <h3 className="text-lg font-semibold">Circulars Overview</h3>
-                <p className="text-sm text-muted-foreground">A compact view of circular circulation.</p>
-              </div>
-              <Badge variant="outline">84 Circulars Sent</Badge>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <Card className="p-4 bg-slate-50/60 border-border/60">
-                <p className="text-xs text-muted-foreground">Read</p>
-                <div className="mt-2 text-2xl font-semibold">71</div>
-              </Card>
-              <Card className="p-4 bg-slate-50/60 border-border/60">
-                <p className="text-xs text-muted-foreground">Unread</p>
-                <div className="mt-2 text-2xl font-semibold text-amber-700">13</div>
-              </Card>
-              <Card className="p-4 bg-slate-50/60 border-border/60">
-                <p className="text-xs text-muted-foreground">Pending</p>
-                <div className="mt-2 text-2xl font-semibold text-sky-700">6</div>
-              </Card>
-              <Card className="p-4 bg-slate-50/60 border-border/60">
-                <p className="text-xs text-muted-foreground">Total</p>
-                <div className="mt-2 text-2xl font-semibold">84</div>
-              </Card>
-            </div>
-          </Card>
-
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">Parent Engagement Overview</h3>
-                <p className="text-sm text-muted-foreground">High-level view of parent response and read behavior.</p>
-              </div>
-              <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">Healthy</Badge>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <Card className="p-4 border-border/60">
-                <p className="text-xs text-muted-foreground">Active Parents</p>
-                <div className="mt-2 text-2xl font-semibold">92%</div>
-              </Card>
-              <Card className="p-4 border-border/60">
-                <p className="text-xs text-muted-foreground">PTM Responses</p>
-                <div className="mt-2 text-2xl font-semibold">76%</div>
-              </Card>
-              <Card className="p-4 border-border/60">
-                <p className="text-xs text-muted-foreground">Circular Reads</p>
-                <div className="mt-2 text-2xl font-semibold">84%</div>
-              </Card>
-              <Card className="p-4 border-border/60">
-                <p className="text-xs text-muted-foreground">Announcement Engagement</p>
-                <div className="mt-2 text-2xl font-semibold">78%</div>
-              </Card>
-            </div>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">Upcoming Communications</h3>
-                <p className="text-sm text-muted-foreground">Scheduled items that need principal visibility.</p>
-              </div>
-              <Badge variant="outline">8 Scheduled</Badge>
-            </div>
-            <div className="mt-4 space-y-3">
-              {upcomingCommunications.map((item) => (
-                <div key={item.title} className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
-                  <div>
-                    <p className="font-medium">{item.title}</p>
-                    <p className="text-sm text-muted-foreground">{item.detail}</p>
-                  </div>
-                  <Badge variant="outline">{item.when}</Badge>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-5 border-border/60">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">Communication Channel Overview</h3>
-                <p className="text-sm text-muted-foreground">High-level usage across school communication channels.</p>
-              </div>
-              <Badge variant="outline">Multi-channel</Badge>
-            </div>
-            <div className="mt-4 space-y-3">
-              {channelStats.map((channel) => (
-                <div key={channel.channel} className="rounded-xl border border-border p-4">
+                <Card className="p-5 border-border/60">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">{channel.channel}</p>
-                        <Badge variant="secondary">{channel.badge}</Badge>
+                      <h3 className="text-lg font-semibold">Communication Overview</h3>
+                      <p className="text-sm text-muted-foreground">Summary of all communication activities and their performance.</p>
+                    </div>
+                    <Badge variant="outline">Summary</Badge>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {recentCommunications.slice(0, 3).map((item) => (
+                      <div key={item.id} className="rounded-xl border border-border bg-slate-50/60 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="font-medium">{item.title}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">{item.sentLabel}</p>
+                          </div>
+                          <Badge variant={item.status === "Pending Read" ? "destructive" : "outline"}>{item.status}</Badge>
+                        </div>
+                        <div className="mt-3 text-sm text-muted-foreground">Read rate: {item.readRate}%</div>
                       </div>
-                      <p className="mt-1 text-sm text-muted-foreground">{channel.usage}</p>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {activeTab === "recent" && (
+              <div>
+                <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 mb-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          className="w-full pl-9 lg:w-[280px]"
+                          placeholder="Search announcement title, circular title, keyword"
+                          value={query}
+                          onChange={(event) => setQuery(event.target.value)}
+                        />
+                      </div>
+                      <Select value={typeFilter} onValueChange={setTypeFilter}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Communication type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All types</SelectItem>
+                          <SelectItem value="Announcement">Announcement</SelectItem>
+                          <SelectItem value="Circular">Circular</SelectItem>
+                          <SelectItem value="PTM Reminder">PTM Reminder</SelectItem>
+                          <SelectItem value="Fee Reminder">Fee Reminder</SelectItem>
+                          <SelectItem value="Exam Notice">Exam Notice</SelectItem>
+                          <SelectItem value="Holiday Notice">Holiday Notice</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[160px]">
+                          <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All status</SelectItem>
+                          <SelectItem value="Sent">Sent</SelectItem>
+                          <SelectItem value="Scheduled">Scheduled</SelectItem>
+                          <SelectItem value="Delivered">Delivered</SelectItem>
+                          <SelectItem value="Pending Read">Pending Read</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="text-right">
-                      <div className="font-semibold">{channel.sent}</div>
-                      <div className="text-sm text-muted-foreground">{channel.delivered}</div>
-                    </div>
+                    <Button variant="ghost" size="sm" onClick={clearFilters}>
+                      Clear Filters
+                    </Button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+
+                <Card className="p-5 border-border/60">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold">Recent Communications</h3>
+                      <p className="text-sm text-muted-foreground">Only the latest school communications are shown here.</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      View All
+                      <ArrowRight className="ml-2 size-4" />
+                    </Button>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {filteredCommunications.slice(0, 3).map((item) => (
+                      <button key={item.id} type="button" onClick={() => setSelectedCommunication(item)} className="text-left">
+                        <Card className="h-full p-4 border-border/60 transition hover:-translate-y-0.5 hover:shadow-md">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold">{item.title}</p>
+                                <Badge variant={item.status === "Scheduled" ? "outline" : "secondary"}>{item.type}</Badge>
+                              </div>
+                              <p className="mt-2 text-sm text-muted-foreground">{item.sentLabel}</p>
+                            </div>
+                            <Badge variant={item.status === "Pending Read" ? "destructive" : "outline"}>{item.status}</Badge>
+                          </div>
+                          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Read rate</span>
+                              <div className="mt-1 font-semibold">{item.readRate ? `${item.readRate}%` : "Pending"}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Action</span>
+                              <div className="mt-1 font-semibold">{item.actionLabel}</div>
+                            </div>
+                          </div>
+                        </Card>
+                      </button>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {activeTab === "circulars" && (
+              <Card className="p-5 border-border/60">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Circulars Overview</h3>
+                    <p className="text-sm text-muted-foreground">A compact view of circular circulation.</p>
+                  </div>
+                  <Badge variant="outline">84 Circulars Sent</Badge>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <Card className="p-4 bg-slate-50/60 border-border/60">
+                    <p className="text-xs text-muted-foreground">Read</p>
+                    <div className="mt-2 text-2xl font-semibold">71</div>
+                  </Card>
+                  <Card className="p-4 bg-slate-50/60 border-border/60">
+                    <p className="text-xs text-muted-foreground">Unread</p>
+                    <div className="mt-2 text-2xl font-semibold text-amber-700">13</div>
+                  </Card>
+                  <Card className="p-4 bg-slate-50/60 border-border/60">
+                    <p className="text-xs text-muted-foreground">Pending</p>
+                    <div className="mt-2 text-2xl font-semibold text-sky-700">6</div>
+                  </Card>
+                  <Card className="p-4 bg-slate-50/60 border-border/60">
+                    <p className="text-xs text-muted-foreground">Total</p>
+                    <div className="mt-2 text-2xl font-semibold">84</div>
+                  </Card>
+                </div>
+              </Card>
+            )}
+
+            {activeTab === "engagement" && (
+              <Card className="p-5 border-border/60">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Parent Engagement Overview</h3>
+                    <p className="text-sm text-muted-foreground">High-level view of parent response and read behavior.</p>
+                  </div>
+                  <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">Healthy</Badge>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <Card className="p-4 border-border/60">
+                    <p className="text-xs text-muted-foreground">Active Parents</p>
+                    <div className="mt-2 text-2xl font-semibold">92%</div>
+                  </Card>
+                  <Card className="p-4 border-border/60">
+                    <p className="text-xs text-muted-foreground">PTM Responses</p>
+                    <div className="mt-2 text-2xl font-semibold">76%</div>
+                  </Card>
+                  <Card className="p-4 border-border/60">
+                    <p className="text-xs text-muted-foreground">Circular Reads</p>
+                    <div className="mt-2 text-2xl font-semibold">84%</div>
+                  </Card>
+                  <Card className="p-4 border-border/60">
+                    <p className="text-xs text-muted-foreground">Announcement Engagement</p>
+                    <div className="mt-2 text-2xl font-semibold">78%</div>
+                  </Card>
+                </div>
+              </Card>
+            )}
+
+            {activeTab === "channels" && (
+              <Card className="p-5 border-border/60">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Communication Channel Overview</h3>
+                    <p className="text-sm text-muted-foreground">High-level usage across school communication channels.</p>
+                  </div>
+                  <Badge variant="outline">Multi-channel</Badge>
+                </div>
+                <div className="mt-4 space-y-3">
+                  {channelStats.map((channel) => (
+                    <div key={channel.channel} className="rounded-xl border border-border p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold">{channel.channel}</p>
+                            <Badge variant="secondary">{channel.badge}</Badge>
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">{channel.usage}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold">{channel.sent}</div>
+                          <div className="text-sm text-muted-foreground">{channel.delivered}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {activeTab === "upcoming" && (
+              <Card className="p-5 border-border/60">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Upcoming Communications</h3>
+                    <p className="text-sm text-muted-foreground">Scheduled items that need principal visibility.</p>
+                  </div>
+                  <Badge variant="outline">8 Scheduled</Badge>
+                </div>
+                <div className="mt-4 space-y-3">
+                  {upcomingCommunications.map((item) => (
+                    <div key={item.title} className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
+                      <div>
+                        <p className="font-medium">{item.title}</p>
+                        <p className="text-sm text-muted-foreground">{item.detail}</p>
+                      </div>
+                      <Badge variant="outline">{item.when}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+          </div>
+        </Card>
 
         <Card className="p-5 border-border/60 bg-slate-50/40">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

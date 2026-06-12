@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import {
@@ -23,6 +24,10 @@ import {
   Share2,
   ShieldCheck,
   Upload,
+  Clock,
+  Pin,
+  HardDrive,
+  BrainCircuit,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/documents")({ component: DocumentsPage });
@@ -190,6 +195,7 @@ function DocumentsPage() {
   const [dateFilter, setDateFilter] = useState("All Dates");
   const [previewDocument, setPreviewDocument] = useState<LibraryDocument | null>(null);
   const [openCategories, setOpenCategories] = useState<string[]>(["Academic Documents", "Student Documents", "Staff Documents"]);
+  const [activeTab, setActiveTab] = useState("library");
 
   const filteredDocuments = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -259,197 +265,234 @@ function DocumentsPage() {
         })}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
-        <Card className="border-border/60 p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-3">
+      <Card className="overflow-hidden backdrop-blur bg-card/50 border-border/50">
+        <div className="p-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="bg-white border border-emerald-200 p-1 rounded-full">
+              <TabsTrigger value="library" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                <FileText className="mr-2 size-4" />
+                Document Library
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                <FolderOpen className="mr-2 size-4" />
+                Categories
+              </TabsTrigger>
+              <TabsTrigger value="recent" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                <Clock className="mr-2 size-4" />
+                Recent Documents
+              </TabsTrigger>
+              <TabsTrigger value="quick" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                <Pin className="mr-2 size-4" />
+                Quick Access
+              </TabsTrigger>
+              <TabsTrigger value="storage" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                <HardDrive className="mr-2 size-4" />
+                Storage Overview
+              </TabsTrigger>
+              <TabsTrigger value="ai" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
+                <BrainCircuit className="mr-2 size-4" />
+                AI Indexing Status
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        <div className="p-5">
+          {activeTab === "library" && (
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Category Tree</p>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight">Browse by folder</h3>
-            </div>
-            <Badge variant="outline">{categoryTree.length} groups</Badge>
-          </div>
+              <Card className="border-border/60 p-5 shadow-sm">
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Search</p>
+                      <h3 className="mt-1 text-xl font-semibold tracking-tight">Document Library</h3>
+                    </div>
+                    <Badge variant="outline">Quick access first</Badge>
+                  </div>
 
-          <ScrollArea className="mt-4 h-[640px] pr-3">
-            <div className="space-y-3">
-              {categoryTree.map((category) => {
-                const expanded = openCategories.includes(category.label);
-                return (
-                  <Collapsible key={category.label} open={expanded} onOpenChange={() => toggleCategory(category.label)}>
-                    <CollapsibleTrigger asChild>
-                      <button
-                        type="button"
-                        className="flex w-full items-center justify-between rounded-2xl border border-border bg-white px-4 py-3 text-left transition-colors hover:border-slate-300 hover:bg-slate-50"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="grid size-9 place-items-center rounded-xl bg-slate-50 text-slate-700">
-                            <FolderOpen className="size-4.5" />
-                          </div>
-                          <div>
-                            <div className="font-semibold">{category.label}</div>
-                            {category.count && <div className="text-xs text-muted-foreground">{category.count} items</div>}
-                          </div>
-                        </div>
-                        <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", expanded && "rotate-180")} />
-                      </button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-2">
-                      <div className="ml-6 rounded-2xl border border-dashed border-border bg-slate-50/80 p-3">
-                        {category.children?.map((child) => (
-                          <button
-                            key={child}
-                            type="button"
-                            onClick={() => setCategoryFilter(category.label)}
-                            className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-white"
-                          >
-                            <span>{child}</span>
-                            <ArrowRight className="size-3.5 text-muted-foreground" />
-                          </button>
+                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_160px_160px_160px]">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        placeholder="Search documents..."
+                        className="h-11 rounded-2xl border-border pl-10"
+                      />
+                    </div>
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                      <SelectTrigger className="h-11 rounded-2xl">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {documentFilters.category.map((item) => (
+                          <SelectItem key={item} value={item}>
+                            {item}
+                          </SelectItem>
                         ))}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                );
-              })}
-            </div>
-          </ScrollArea>
-        </Card>
+                      </SelectContent>
+                    </Select>
+                    <Select value={typeFilter} onValueChange={setTypeFilter}>
+                      <SelectTrigger className="h-11 rounded-2xl">
+                        <SelectValue placeholder="Document Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {documentFilters.type.map((item) => (
+                          <SelectItem key={item} value={item}>
+                            {item}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="h-11 rounded-2xl">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {documentFilters.status.map((item) => (
+                          <SelectItem key={item} value={item}>
+                            {item}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-        <div className="space-y-6">
-          <Card className="border-border/60 p-5 shadow-sm">
-            <div className="flex flex-col gap-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {["All Dates", "Today", "This Week", "This Month"].map((item) => (
+                      <Button
+                        key={item}
+                        type="button"
+                        variant={dateFilter === item ? "default" : "outline"}
+                        size="sm"
+                        className={cn("h-9 rounded-full px-3", dateFilter === item && "bg-brand-gradient text-white border-0")}
+                        onClick={() => setDateFilter(item)}
+                      >
+                        {item}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="mt-4 border-border/60 p-5 shadow-sm">
+                <div className="overflow-hidden rounded-2xl border border-border">
+                  <div className="grid grid-cols-[2fr_1fr_1fr_1fr_0.9fr_0.8fr] gap-3 border-b border-border bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <div>Document Name</div>
+                    <div>Category</div>
+                    <div>Uploaded By</div>
+                    <div>Upload Date</div>
+                    <div>Status</div>
+                    <div>Actions</div>
+                  </div>
+                  <div className="divide-y divide-border bg-white">
+                    {filteredDocuments.slice(0, 6).map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setPreviewDocument(item)}
+                        className="grid w-full grid-cols-[2fr_1fr_1fr_1fr_0.9fr_0.8fr] gap-3 px-4 py-4 text-left transition-colors hover:bg-slate-50"
+                      >
+                        <div>
+                          <div className="font-semibold">{item.name}</div>
+                          <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{item.description}</p>
+                        </div>
+                        <div className="text-sm text-muted-foreground">{item.category}</div>
+                        <div className="text-sm text-muted-foreground">{item.uploadedBy}</div>
+                        <div className="text-sm text-muted-foreground">{item.uploadDate}</div>
+                        <div>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              item.status === "Indexed" && "border-emerald-200 bg-emerald-50 text-emerald-700",
+                              item.status === "Processing" && "border-amber-200 bg-amber-50 text-amber-700",
+                              item.status === "Private" && "border-slate-200 bg-slate-50 text-slate-700",
+                              item.status === "Shared" && "border-sky-200 bg-sky-50 text-sky-700",
+                            )}
+                          >
+                            {item.status}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground">View</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {Math.min(filteredDocuments.length, 6)} of {filteredDocuments.length} documents
+                  </div>
+                  <Button type="button" variant="outline" className="rounded-full">
+                    Export list
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "categories" && (
+            <Card className="border-border/60 p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Search</p>
-                  <h3 className="mt-1 text-xl font-semibold tracking-tight">Document Library</h3>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Category Tree</p>
+                  <h3 className="mt-1 text-xl font-semibold tracking-tight">Browse by folder</h3>
                 </div>
-                <Badge variant="outline">Quick access first</Badge>
+                <Badge variant="outline">{categoryTree.length} groups</Badge>
               </div>
 
-              <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_160px_160px_160px]">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Search documents..."
-                    className="h-11 rounded-2xl border-border pl-10"
-                  />
+              <ScrollArea className="mt-4 h-[640px] pr-3">
+                <div className="space-y-3">
+                  {categoryTree.map((category) => {
+                    const expanded = openCategories.includes(category.label);
+                    return (
+                      <Collapsible key={category.label} open={expanded} onOpenChange={() => toggleCategory(category.label)}>
+                        <CollapsibleTrigger asChild>
+                          <button
+                            type="button"
+                            className="flex w-full items-center justify-between rounded-2xl border border-border bg-white px-4 py-3 text-left transition-colors hover:border-slate-300 hover:bg-slate-50"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="grid size-9 place-items-center rounded-xl bg-slate-50 text-slate-700">
+                                <FolderOpen className="size-4.5" />
+                              </div>
+                              <div>
+                                <div className="font-semibold">{category.label}</div>
+                                {category.count && <div className="text-xs text-muted-foreground">{category.count} items</div>}
+                              </div>
+                            </div>
+                            <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", expanded && "rotate-180")} />
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="pt-2">
+                          <div className="ml-6 rounded-2xl border border-dashed border-border bg-slate-50/80 p-3">
+                            {category.children?.map((child) => (
+                              <button
+                                key={child}
+                                type="button"
+                                onClick={() => setCategoryFilter(category.label)}
+                                className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-white"
+                              >
+                                <span>{child}</span>
+                                <ArrowRight className="size-3.5 text-muted-foreground" />
+                              </button>
+                            ))}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    );
+                  })}
                 </div>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="h-11 rounded-2xl">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {documentFilters.category.map((item) => (
-                      <SelectItem key={item} value={item}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="h-11 rounded-2xl">
-                    <SelectValue placeholder="Document Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {documentFilters.type.map((item) => (
-                      <SelectItem key={item} value={item}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="h-11 rounded-2xl">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {documentFilters.status.map((item) => (
-                      <SelectItem key={item} value={item}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              </ScrollArea>
+            </Card>
+          )}
 
-              <div className="flex flex-wrap items-center gap-2">
-                {["All Dates", "Today", "This Week", "This Month"].map((item) => (
-                  <Button
-                    key={item}
-                    type="button"
-                    variant={dateFilter === item ? "default" : "outline"}
-                    size="sm"
-                    className={cn("h-9 rounded-full px-3", dateFilter === item && "bg-brand-gradient text-white border-0")}
-                    onClick={() => setDateFilter(item)}
-                  >
-                    {item}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </Card>
-
-          <Card className="border-border/60 p-5 shadow-sm">
-            <div className="overflow-hidden rounded-2xl border border-border">
-              <div className="grid grid-cols-[2fr_1fr_1fr_1fr_0.9fr_0.8fr] gap-3 border-b border-border bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                <div>Document Name</div>
-                <div>Category</div>
-                <div>Uploaded By</div>
-                <div>Upload Date</div>
-                <div>Status</div>
-                <div>Actions</div>
-              </div>
-              <div className="divide-y divide-border bg-white">
-                {filteredDocuments.slice(0, 6).map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setPreviewDocument(item)}
-                    className="grid w-full grid-cols-[2fr_1fr_1fr_1fr_0.9fr_0.8fr] gap-3 px-4 py-4 text-left transition-colors hover:bg-slate-50"
-                  >
-                    <div>
-                      <div className="font-semibold">{item.name}</div>
-                      <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{item.description}</p>
-                    </div>
-                    <div className="text-sm text-muted-foreground">{item.category}</div>
-                    <div className="text-sm text-muted-foreground">{item.uploadedBy}</div>
-                    <div className="text-sm text-muted-foreground">{item.uploadDate}</div>
-                    <div>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          item.status === "Indexed" && "border-emerald-200 bg-emerald-50 text-emerald-700",
-                          item.status === "Processing" && "border-amber-200 bg-amber-50 text-amber-700",
-                          item.status === "Private" && "border-slate-200 bg-slate-50 text-slate-700",
-                          item.status === "Shared" && "border-sky-200 bg-sky-50 text-sky-700",
-                        )}
-                      >
-                        {item.status}
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">View</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between gap-3">
-              <div className="text-sm text-muted-foreground">
-                Showing {Math.min(filteredDocuments.length, 6)} of {filteredDocuments.length} documents
-              </div>
-              <Button type="button" variant="outline" className="rounded-full">
-                Export list
-              </Button>
-            </div>
-          </Card>
-
-          <div className="grid gap-6 lg:grid-cols-2">
+          {activeTab === "recent" && (
             <Card className="border-border/60 p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">Recent Documents</p>
-                  <h3 className="mt-1 text-lg font-semibold">Recently uploaded</h3>
+                  <h3 className="mt-1 text-xl font-semibold tracking-tight">Recently uploaded</h3>
                 </div>
                 <Badge variant="outline">Latest</Badge>
               </div>
@@ -467,12 +510,14 @@ function DocumentsPage() {
                 ))}
               </div>
             </Card>
+          )}
 
+          {activeTab === "quick" && (
             <Card className="border-border/60 p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">Quick Access</p>
-                  <h3 className="mt-1 text-lg font-semibold">Frequently used files</h3>
+                  <h3 className="mt-1 text-xl font-semibold tracking-tight">Frequently used files</h3>
                 </div>
                 <Badge variant="outline">Pinned</Badge>
               </div>
@@ -489,14 +534,14 @@ function DocumentsPage() {
                 ))}
               </div>
             </Card>
-          </div>
+          )}
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          {activeTab === "storage" && (
             <Card className="border-border/60 p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">Storage Overview</p>
-                  <h3 className="mt-1 text-lg font-semibold">Document storage by category</h3>
+                  <h3 className="mt-1 text-xl font-semibold tracking-tight">Document storage by category</h3>
                 </div>
                 <Badge variant="outline">Files</Badge>
               </div>
@@ -509,12 +554,14 @@ function DocumentsPage() {
                 ))}
               </div>
             </Card>
+          )}
 
+          {activeTab === "ai" && (
             <Card className="border-border/60 p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">AI Indexing Status</p>
-                  <h3 className="mt-1 text-lg font-semibold">Availability to Scholarii AI</h3>
+                  <h3 className="mt-1 text-xl font-semibold tracking-tight">Availability to Scholarii AI</h3>
                 </div>
                 <Badge variant="outline">Visibility only</Badge>
               </div>
@@ -529,9 +576,9 @@ function DocumentsPage() {
                 </div>
               </div>
             </Card>
-          </div>
+          )}
         </div>
-      </div>
+      </Card>
 
       <div className="grid gap-3 md:grid-cols-3">
         <Button type="button" className="h-11 justify-start rounded-2xl bg-brand-gradient text-white border-0">
