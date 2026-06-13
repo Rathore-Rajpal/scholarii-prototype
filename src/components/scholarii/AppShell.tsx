@@ -13,6 +13,7 @@ import {
   UserPlus, FolderOpen, FilePlus, ClipboardPlus, GraduationCap as ExamIcon,
   TrendingDown, Megaphone, Mail, Zap, X, Hash,
   Paperclip, Mic, Star, PanelRightOpen,
+  Sparkles, Database,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,8 +60,8 @@ const PRINCIPAL_NAV: PrincipalNav = [
     icon: BarChart3,
     items: [
       { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
-      { to: "/app/ai", label: "Scholarii AI", icon: BrainCircuit },
-      { to: "/app/brain", label: "School Brain", icon: BrainCircuit },
+      { to: "/app/ai", label: "Scholarii AI", icon: Sparkles },
+      { to: "/app/brain", label: "School Brain", icon: Database },
     ],
   },
   {
