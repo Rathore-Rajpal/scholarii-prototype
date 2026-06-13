@@ -1,43 +1,97 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/scholarii/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
-  ArrowRight,
   ArrowUp,
   BarChart3,
   BookOpen,
   BrainCircuit,
   CheckCircle2,
+  ChevronDown,
   Clock3,
+  Copy,
   FileText,
   History,
   Image as ImageIcon,
+  Layers,
   Mic,
+  PanelRightOpen,
   Paperclip,
+  Plus,
+  RefreshCw,
+  Save,
+  Search,
   Send,
+  Share2,
   Sparkles,
-  Table2,
+  Square,
+  Star,
+  Download,
   Trash2,
+  X,
+  Zap,
+  Settings,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/ai")({ component: ScholariiAiPage });
 
-type Mode = "Simple Query" | "Analysis" | "Research" | "Agent";
+type Skill = "Simple Query" | "Analytics" | "Research" | "Agent";
 
-type AttachmentKind = "Document" | "Spreadsheet" | "Image" | "Report" | "Policy" | "Circular" | "File";
+type ModelProvider = "Scholarii" | "OpenAI" | "Anthropic" | "Google";
+
+type ModelId =
+  | "scholarii-default"
+  | "gpt-5"
+  | "gpt-5-mini"
+  | "gpt-4o"
+  | "claude-opus-4"
+  | "claude-sonnet-4"
+  | "gemini-2.5-pro"
+  | "gemini-2.5-flash";
+
+type ModelInfo = {
+  id: ModelId;
+  name: string;
+  provider: ModelProvider;
+  recommended?: boolean;
+  description?: string;
+};
+
+type AttachmentKind = "Document" | "Spreadsheet" | "Image" | "Report" | "File";
 
 type Attachment = {
   name: string;
   kind: AttachmentKind;
   size: string;
+};
+
+type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  skill: Skill;
+  model: ModelId;
+  attachments?: Attachment[];
+  timestamp: Date;
+  response?: AIResponse;
 };
 
 type AIResponse = {
@@ -52,50 +106,50 @@ type AIResponse = {
 };
 
 type HistoryItem = {
-  id: number;
+  id: string;
   title: string;
-  mode: Mode;
-  prompt: string;
-  time: string;
-  response: AIResponse;
+  messages: Message[];
+  createdAt: Date;
 };
 
-const MODES: Mode[] = ["Simple Query", "Analysis", "Research", "Agent"];
-
-const THINKING_STEPS = [
-  "Scholarii AI is thinking...",
-  "Analyzing school data...",
-  "Reviewing documents...",
-  "Generating response...",
+const SKILLS: { id: Skill; label: string; icon: typeof Sparkles; description: string; accent: string }[] = [
+  { id: "Simple Query", label: "Simple Query", icon: Zap, description: "Quick questions and answers", accent: "text-slate-600" },
+  { id: "Analytics", label: "Analytics", icon: BarChart3, description: "Performance analysis and KPIs", accent: "text-cyan-600" },
+  { id: "Research", label: "Research", icon: BookOpen, description: "Deep research and reports", accent: "text-violet-600" },
+  { id: "Agent", label: "Agent", icon: Layers, description: "Autonomous multi-step execution", accent: "text-emerald-600" },
 ];
 
-const modeMeta: Record<Mode, { label: string; hint: string; accent: string }> = {
-  "Simple Query": {
-    label: "Simple Query",
-    hint: "Fast, direct answer",
-    accent: "from-slate-900 to-slate-700",
-  },
-  Analysis: {
-    label: "Analysis",
-    hint: "Insights + KPIs",
-    accent: "from-cyan-600 to-sky-600",
-  },
-  Research: {
-    label: "Research",
-    hint: "Report with sources",
-    accent: "from-violet-600 to-fuchsia-600",
-  },
-  Agent: {
-    label: "Agent",
-    hint: "Action plan",
-    accent: "from-emerald-600 to-teal-600",
-  },
+const MODELS: ModelInfo[] = [
+  { id: "scholarii-default", name: "Scholarii Default", provider: "Scholarii", recommended: true, description: "Optimized for school intelligence" },
+  { id: "gpt-5", name: "GPT-5", provider: "OpenAI", description: "Most capable OpenAI model" },
+  { id: "gpt-5-mini", name: "GPT-5 Mini", provider: "OpenAI", description: "Fast and efficient" },
+  { id: "gpt-4o", name: "GPT-4o", provider: "OpenAI", description: "Multimodal intelligence" },
+  { id: "claude-opus-4", name: "Claude Opus 4", provider: "Anthropic", description: "Most capable Claude model" },
+  { id: "claude-sonnet-4", name: "Claude Sonnet 4", provider: "Anthropic", description: "Balanced performance" },
+  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "Google", description: "Google's flagship model" },
+  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "Google", description: "Fast and versatile" },
+];
+
+const SUGGESTED_PROMPTS = [
+  { text: "Which students are academically at risk?", skill: "Analytics" as Skill },
+  { text: "Analyze fee collection performance.", skill: "Analytics" as Skill },
+  { text: "Generate a school performance summary.", skill: "Research" as Skill },
+  { text: "Identify attendance concerns.", skill: "Analytics" as Skill },
+];
+
+const THINKING_STEPS: Record<Skill, string[]> = {
+  "Simple Query": ["Understanding your question...", "Searching school data...", "Preparing answer..."],
+  Analytics: ["Analyzing attendance trends...", "Processing academic performance data...", "Evaluating fee collection patterns...", "Comparing class-wise metrics...", "Building visualizations...", "Generating insights & recommendations..."],
+  Research: ["Researching topic across school data...", "Reviewing documents & records...", "Cross-referencing sources...", "Analyzing patterns & trends...", "Building comprehensive report...", "Compiling references & citations..."],
+  Agent: ["Understanding objective...", "Evaluating available actions...", "Planning execution sequence...", "Preparing execution plan...", "Finalizing recommended steps..."],
 };
 
-const initialAttachments: Attachment[] = [
-  { name: "Attendance_Report.pdf", kind: "Report", size: "1.4 MB" },
-  { name: "Academic_Performance.xlsx", kind: "Spreadsheet", size: "824 KB" },
-];
+const THINKING_DELAY: Record<Skill, number> = {
+  "Simple Query": 3000,
+  Analytics: 22000,
+  Research: 18000,
+  Agent: 12000,
+};
 
 function inferAttachmentKind(name: string): AttachmentKind {
   const lower = name.toLowerCase();
@@ -106,41 +160,11 @@ function inferAttachmentKind(name: string): AttachmentKind {
   return "File";
 }
 
-function inferAttachmentIcon(kind: AttachmentKind) {
-  switch (kind) {
-    case "Image":
-      return ImageIcon;
-    case "Spreadsheet":
-      return Table2;
-    case "Report":
-    case "Document":
-    case "Policy":
-    case "Circular":
-      return FileText;
-    default:
-      return Paperclip;
-  }
-}
-
-function queryTopic(query: string) {
+function buildMockResponse(skill: Skill, query: string, _attachments: Attachment[]): AIResponse {
   const q = query.toLowerCase();
-  if (q.includes("attendance")) return "attendance";
-  if (q.includes("fee")) return "fee collection";
-  if (q.includes("grade 8")) return "Grade 8";
-  if (q.includes("ptm")) return "PTM";
-  if (q.includes("teacher")) return "teacher workload";
-  if (q.includes("parent")) return "parent engagement";
-  if (q.includes("compliance")) return "compliance";
-  if (q.includes("risk")) return "student risk";
-  return "school operations";
-}
 
-function buildMockResponse(mode: Mode, query: string, attachments: Attachment[]): AIResponse {
-  const q = query.toLowerCase();
-  const references = attachments.slice(0, 3).map((item) => item.name);
-
-  if (mode === "Simple Query") {
-    if (q.includes("absent")) {
+  if (skill === "Simple Query") {
+    if (q.includes("absent") || q.includes("attendance")) {
       return {
         headline: "18 students are absent today.",
         summary: "Most absences are concentrated in Grade 8 and Grade 9, with Monday and Tuesday contributing the largest share.",
@@ -149,10 +173,8 @@ function buildMockResponse(mode: Mode, query: string, attachments: Attachment[])
           "5 families already have follow-up reminders queued.",
           "Attendance staff should prioritise repeat absentees first.",
         ],
-        references,
       };
     }
-
     if (q.includes("fee")) {
       return {
         headline: "84 families currently have pending fee dues.",
@@ -162,10 +184,8 @@ function buildMockResponse(mode: Mode, query: string, attachments: Attachment[])
           "WhatsApp reminders have the highest response rate.",
           "No fee cluster is marked critical yet.",
         ],
-        references,
       };
     }
-
     if (q.includes("teacher")) {
       return {
         headline: "5 teachers are on leave today.",
@@ -175,688 +195,800 @@ function buildMockResponse(mode: Mode, query: string, attachments: Attachment[])
           "Three substitution slots are still open.",
           "No class is left uncovered for the day.",
         ],
-        references,
       };
     }
-
     return {
-      headline: "Here is the latest school answer.",
+      headline: "Here is the latest school update.",
       summary: "The school remains operationally stable and the current data does not show any urgent exception.",
       bullets: [
         "Attendance is within the expected range.",
         "Fee follow-up is concentrated in a few classes.",
         "Parent engagement remains healthy this week.",
       ],
-      references,
     };
   }
 
-  if (mode === "Analysis") {
-    const focus = queryTopic(query);
+  if (skill === "Analytics") {
+    const focus = q.includes("attendance") ? "Attendance" : q.includes("fee") ? "Fee Collection" : q.includes("academic") || q.includes("risk") ? "Academic Performance" : "School Operations";
     return {
-      headline: `${focus.charAt(0).toUpperCase() + focus.slice(1)} shows a healthy baseline with a few pressure points.`,
-      summary: "The pattern suggests the school is stable overall, but one or two cohorts are driving most of the variation.",
+      headline: `${focus} Analysis — Key Findings`,
+      summary: `Based on comprehensive analysis of your school's ${focus.toLowerCase()} data over the past 30 days, here is the detailed performance breakdown. The pattern suggests the school is stable overall, but one or two cohorts are driving most of the variation.`,
       bullets: [
         "Grade 8 is the most likely intervention group in the current snapshot.",
         "Weekday trends suggest early-week support will have the highest return.",
         "The latest data points are consistent across attendance, engagement, and follow-up activity.",
+        "YoY comparison shows a 3.2% improvement in overall metrics.",
       ],
       metrics: [
-        { label: "Current level", value: "84%", note: "Healthy" },
-        { label: "Risk clusters", value: "2", note: "Needs follow-up" },
+        { label: "Current Level", value: "84%", note: "Healthy" },
+        { label: "Risk Clusters", value: "2", note: "Needs follow-up" },
         { label: "Confidence", value: "High", note: "Strong signal" },
         { label: "Priority", value: "Medium", note: "Monitor closely" },
+        { label: "30-Day Trend", value: "+3.2%", note: "Improving" },
+        { label: "Peer Comparison", value: "Top 15%", note: "Above avg" },
       ],
       chartData: [
-        { label: "Mon", value: 88 },
-        { label: "Tue", value: 90 },
-        { label: "Wed", value: 89 },
-        { label: "Thu", value: 92 },
-        { label: "Fri", value: 94 },
+        { label: "Week 1", value: 82 },
+        { label: "Week 2", value: 85 },
+        { label: "Week 3", value: 88 },
+        { label: "Week 4", value: 84 },
+        { label: "Week 5", value: 91 },
+        { label: "Week 6", value: 89 },
+        { label: "Week 7", value: 93 },
+        { label: "Week 8", value: 94 },
       ],
-      references,
     };
   }
 
-  if (mode === "Research") {
-    const topic = queryTopic(query);
+  if (skill === "Research") {
     return {
-      headline: `Research brief on ${topic}.`,
-      summary: "I reviewed the latest files, school records, and operating patterns to identify the likely drivers behind the issue.",
+      headline: "Research Report — School Performance Analysis",
+      summary: "I conducted a deep analysis of your school's academic, operational, and financial data to identify key patterns and provide actionable recommendations.",
       bullets: [
-        "The strongest signal is concentrated in a small group rather than across the whole school.",
-        "Uploaded files support the same pattern that the operational dashboard shows.",
-        "A short intervention cycle should produce the fastest improvement.",
+        "The strongest performance signal is concentrated in Grades 6–7, with Grade 8 showing a decline.",
+        "Fee collection correlates strongly with parent engagement scores.",
+        "Attendance patterns suggest Tuesday and Thursday are the most productive school days.",
+        "Teacher workload distribution is uneven across departments.",
       ],
       reportSections: [
-        {
-          title: "Executive Summary",
-          body:
-            "The available evidence points to a contained issue that can be improved with targeted communication, earlier follow-up, and tighter monitoring over the next cycle.",
-        },
-        {
-          title: "Findings",
-          body:
-            "The data suggests the issue is concentrated in a specific grade band, with a secondary effect visible in parent response timing and early-week attendance.",
-        },
-        {
-          title: "Recommendations",
-          body:
-            "Prioritise targeted outreach, publish a concise parent-facing note, and review the next checkpoint after the weekly follow-up window closes.",
-        },
+        { title: "Executive Summary", body: "The available evidence points to a school that is performing well overall, with specific areas of concern in Grade 8 academic performance and mid-week attendance dips. Targeted interventions in these areas should yield measurable improvements within one academic term." },
+        { title: "Academic Findings", body: "Grades 6 and 7 maintain strong academic performance with average scores above 85%. Grade 8 shows a concerning 6% decline in mathematics scores, primarily driven by 3 students who require immediate attention. Science performance remains consistent across all grades." },
+        { title: "Operational Findings", body: "Teacher attendance is at 94%, with substitute coverage adequately addressing gaps. Library utilization has increased 12% this quarter. Transport routes are running on schedule with 98% punctuality." },
+        { title: "Financial Findings", body: "Fee collection rate stands at 87%, with Grade 8 showing the lowest collection at 79%. WhatsApp-based reminders have proven most effective with a 68% response rate. No critical payment clusters identified." },
+        { title: "Recommendations", body: "1) Initiate targeted academic support for Grade 8 mathematics students. 2) Implement parent engagement campaign for fee defaulter families. 3) Introduce early-week attendance monitoring. 4) Review teacher workload distribution across Science department." },
       ],
-      references: [
-        ...references,
-        "Attendance Policy.pdf",
-        "Grade 8 Reports",
-        "Academic Analytics",
-      ].slice(0, 5),
+      references: ["Attendance_Report_Q4.pdf", "Academic_Performance_2024.xlsx", "Fee_Collection_Analysis.pdf", "Teacher_Workload_Data.csv", "Parent_Engagement_Survey.pdf", "Grade_8_Detailed_Report.pdf"],
     };
   }
 
+  // Agent
   return {
-    headline: "Action plan staged for approval.",
-    summary: "Scholarii AI has translated your prompt into a practical workflow that can be executed after review.",
+    headline: "Execution Plan Ready",
+    summary: "Scholarii AI has analyzed your request and prepared a multi-step execution plan. Review the suggested actions below before proceeding.",
     bullets: [
-      "The plan is staged but nothing has been executed in this prototype.",
-      "You can review the sequence before triggering the action set.",
-      "The likely impact is a cleaner operational follow-through.",
+      "The plan addresses the core issue through a structured 3-step workflow.",
+      "All actions are scoped to your school's current operational context.",
+      "Estimated completion time: 2 business days with automated follow-ups.",
     ],
-    actions:
-      q.includes("fee")
-        ? ["Generate fee reminder", "Notify parents", "Update dashboard"]
-        : q.includes("ptm")
-          ? ["Draft PTM summary", "Schedule communication", "Notify parents"]
-          : q.includes("attendance")
-            ? ["Generate attendance report", "Notify class teachers", "Update dashboard"]
-            : ["Generate report", "Notify stakeholders", "Update dashboard"],
-    references,
+    actions: q.includes("fee")
+      ? ["Generate personalized fee reminders for 84 families", "Send WhatsApp notifications to priority defaulter group", "Schedule follow-up check in 7 days", "Update fee dashboard with latest status"]
+      : q.includes("attendance")
+        ? ["Generate attendance alert report for Grade 8 & 9", "Notify class teachers of repeat absentees", "Send parent notifications for students with 3+ absences", "Update attendance tracking dashboard"]
+        : q.includes("risk")
+          ? ["Identify and flag at-risk students in Grade 8", "Generate intervention recommendations", "Notify academic coordinator", "Schedule follow-up assessment in 2 weeks"]
+          : ["Generate comprehensive analysis report", "Notify stakeholders with findings", "Schedule review meeting", "Update operational dashboard"],
   };
 }
 
-function seedHistory(attachments: Attachment[]): HistoryItem[] {
-  const seeds = [
-    { id: 1, title: "Attendance Analysis", mode: "Analysis" as Mode, prompt: "Analyze attendance trends across the school.", time: "Today" },
-    { id: 2, title: "Fee Collection Review", mode: "Simple Query" as Mode, prompt: "Show fee defaulters for this week.", time: "Yesterday" },
-    { id: 3, title: "PTM Summary", mode: "Research" as Mode, prompt: "Research parent engagement patterns for the PTM cycle.", time: "2 days ago" },
-    { id: 4, title: "Compliance Review", mode: "Research" as Mode, prompt: "Review compliance readiness for the principal.", time: "4 days ago" },
-    { id: 5, title: "Student Risk Analysis", mode: "Analysis" as Mode, prompt: "Identify students at risk of falling behind.", time: "Last week" },
+function seedConversations(): HistoryItem[] {
+  const now = new Date();
+  return [
+    {
+      id: "conv-1",
+      title: "Attendance Analysis",
+      createdAt: new Date(now.getTime() - 3600000),
+      messages: [
+        { id: "m1", role: "user", content: "Analyze attendance trends across the school.", skill: "Analytics", model: "scholarii-default", timestamp: new Date(now.getTime() - 3600000) },
+        { id: "m2", role: "assistant", content: "Attendance analysis complete.", skill: "Analytics", model: "scholarii-default", timestamp: new Date(now.getTime() - 3595000), response: buildMockResponse("Analytics", "attendance", []) },
+      ],
+    },
+    {
+      id: "conv-2",
+      title: "Fee Collection Review",
+      createdAt: new Date(now.getTime() - 86400000),
+      messages: [
+        { id: "m3", role: "user", content: "Show fee defaulters for this week.", skill: "Simple Query", model: "scholarii-default", timestamp: new Date(now.getTime() - 86400000) },
+        { id: "m4", role: "assistant", content: "Fee collection review complete.", skill: "Simple Query", model: "scholarii-default", timestamp: new Date(now.getTime() - 86395000), response: buildMockResponse("Simple Query", "fee defaulters", []) },
+      ],
+    },
+    {
+      id: "conv-3",
+      title: "PTM Research",
+      createdAt: new Date(now.getTime() - 172800000),
+      messages: [
+        { id: "m5", role: "user", content: "Research parent engagement patterns for the PTM cycle.", skill: "Research", model: "scholarii-default", timestamp: new Date(now.getTime() - 172800000) },
+        { id: "m6", role: "assistant", content: "PTM research complete.", skill: "Research", model: "scholarii-default", timestamp: new Date(now.getTime() - 172795000), response: buildMockResponse("Research", "PTM parent engagement", []) },
+      ],
+    },
   ];
-
-  return seeds.map((item) => ({
-    ...item,
-    response: buildMockResponse(item.mode, item.prompt, attachments),
-  }));
 }
 
 function ScholariiAiPage() {
-  const [query, setQuery] = useState("");
-  const [mode, setMode] = useState<Mode>("Simple Query");
-  const [attachments, setAttachments] = useState<Attachment[]>(initialAttachments);
-  const [history, setHistory] = useState<HistoryItem[]>(() => seedHistory(initialAttachments));
-  const [activeHistoryId, setActiveHistoryId] = useState<number | null>(null);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [conversations, setConversations] = useState<HistoryItem[]>(seedConversations);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [skill, setSkill] = useState<Skill>("Simple Query");
+  const [model, setModel] = useState<ModelId>("scholarii-default");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [thinkingStep, setThinkingStep] = useState(0);
-  const [pendingRequest, setPendingRequest] = useState<{ query: string; mode: Mode; attachments: Attachment[] } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const composerRef = useRef<HTMLTextAreaElement | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
+  const [skillOpen, setSkillOpen] = useState(false);
+  const [modelOpen, setModelOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const activeHistory = useMemo(
-    () => history.find((item) => item.id === activeHistoryId) ?? null,
-    [activeHistoryId, history]
-  );
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const currentModel = useMemo(() => MODELS.find((m) => m.id === model) ?? MODELS[0], [model]);
+  const currentSkill = useMemo(() => SKILLS.find((s) => s.id === skill) ?? SKILLS[0], [skill]);
+  const isEmpty = messages.length === 0;
+  const activeConversation = useMemo(() => conversations.find((c) => c.id === activeConversationId) ?? null, [activeConversationId, conversations]);
 
   useEffect(() => {
-    if (!isThinking || !pendingRequest) return;
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isThinking]);
 
+  useEffect(() => {
+    if (!isThinking) return;
     setThinkingStep(0);
-    const stepTimer = window.setInterval(() => {
-      setThinkingStep((current) => (current + 1) % THINKING_STEPS.length);
-    }, 1250);
+    const steps = THINKING_STEPS[skill];
+    const stepDuration = THINKING_DELAY[skill] / steps.length;
+    const interval = window.setInterval(() => {
+      setThinkingStep((prev) => (prev + 1) % steps.length);
+    }, stepDuration);
+    return () => window.clearInterval(interval);
+  }, [isThinking, skill]);
 
-    const doneTimer = window.setTimeout(() => {
-      const response = buildMockResponse(pendingRequest.mode, pendingRequest.query, pendingRequest.attachments);
-      const newEntry: HistoryItem = {
-        id: Date.now(),
-        title: pendingRequest.query.length > 34 ? `${pendingRequest.query.slice(0, 31)}...` : pendingRequest.query,
-        mode: pendingRequest.mode,
-        prompt: pendingRequest.query,
-        time: "Just now",
+  const getModelLabel = (id: ModelId) => MODELS.find((m) => m.id === id)?.name ?? id;
+
+  const handleSubmit = (e?: FormEvent) => {
+    e?.preventDefault();
+    const trimmed = input.trim();
+    if (!trimmed || isThinking) return;
+
+    const userMsg: Message = {
+      id: `msg-${Date.now()}`,
+      role: "user",
+      content: trimmed,
+      skill,
+      model,
+      attachments: attachments.length > 0 ? [...attachments] : undefined,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsThinking(true);
+
+    const timeout = window.setTimeout(() => {
+      const response = buildMockResponse(skill, trimmed, attachments);
+      const assistantMsg: Message = {
+        id: `msg-${Date.now() + 1}`,
+        role: "assistant",
+        content: response.headline,
+        skill,
+        model,
+        timestamp: new Date(),
         response,
       };
-
-      setHistory((current) => [newEntry, ...current].slice(0, 6));
-      setActiveHistoryId(newEntry.id);
+      setMessages((prev) => [...prev, assistantMsg]);
       setIsThinking(false);
-      setPendingRequest(null);
-    }, 5000);
 
-    return () => {
-      window.clearInterval(stepTimer);
-      window.clearTimeout(doneTimer);
-    };
-  }, [isThinking, pendingRequest]);
-
-  const sendLabel = "Send";
-
-  const handleAttachClick = () => {
-    fileInputRef.current?.click();
+      setConversations((prev) => {
+        const convId = activeConversationId ?? `conv-${Date.now()}`;
+        const existing = prev.find((c) => c.id === convId);
+        const allMsgs = existing ? [...existing.messages, userMsg, assistantMsg] : [userMsg, assistantMsg];
+        const title = trimmed.length > 40 ? `${trimmed.slice(0, 37)}...` : trimmed;
+        const updated: HistoryItem = { id: convId, title, messages: allMsgs, createdAt: existing?.createdAt ?? new Date() };
+        setActiveConversationId(convId);
+        return [updated, ...prev.filter((c) => c.id !== convId)].slice(0, 20);
+      });
+    }, THINKING_DELAY[skill]);
   };
 
-  const handleAttachmentChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.currentTarget.files ?? []);
-    if (!files.length) return;
-
-    const mapped = files.map((file) => ({
-      name: file.name,
-      kind: inferAttachmentKind(file.name),
-      size: `${Math.max(1, Math.round(file.size / 1024))} KB`,
-    }));
-
-    setAttachments((current) => [...current, ...mapped].slice(0, 8));
-    event.currentTarget.value = "";
-  };
-
-  const removeAttachment = (name: string) => {
-    setAttachments((current) => current.filter((item) => item.name !== name));
-  };
-
-  const startThinking = (nextQuery: string) => {
-    const trimmed = nextQuery.trim();
-    if (!trimmed) {
-      toast("Please enter a question for Scholarii AI.");
-      return;
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
-
-    setPendingRequest({ query: trimmed, mode, attachments: [...attachments] });
-    setIsThinking(true);
-    setQuery("");
   };
 
-  const handleComposerSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    startThinking(query);
+  const handleSuggestedPrompt = (text: string, promptSkill: Skill) => {
+    setSkill(promptSkill);
+    setInput(text);
+    textareaRef.current?.focus();
   };
 
-  const handleHistoryOpen = (item: HistoryItem) => {
-    setQuery(item.prompt);
-    setMode(item.mode);
-    setActiveHistoryId(item.id);
-    setIsThinking(false);
-    setPendingRequest(null);
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.currentTarget.files ?? []);
+    if (!files.length) return;
+    const mapped = files.map((f) => ({ name: f.name, kind: inferAttachmentKind(f.name), size: `${Math.max(1, Math.round(f.size / 1024))} KB` }));
+    setAttachments((prev) => [...prev, ...mapped].slice(0, 8));
+    e.currentTarget.value = "";
   };
 
-  const handleExecuteActions = () => {
-    toast.success("Action plan executed in demo mode.");
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (!files.length) return;
+    const mapped = files.map((f) => ({ name: f.name, kind: inferAttachmentKind(f.name), size: `${Math.max(1, Math.round(f.size / 1024))} KB` }));
+    setAttachments((prev) => [...prev, ...mapped].slice(0, 8));
+  };
+
+  const loadConversation = (id: string) => {
+    const conv = conversations.find((c) => c.id === id);
+    if (conv) {
+      setMessages(conv.messages);
+      setActiveConversationId(id);
+      setHistoryOpen(false);
+    }
+  };
+
+  const startNewConversation = () => {
+    setMessages([]);
+    setActiveConversationId(null);
+    setInput("");
+    setAttachments([]);
+    setHistoryOpen(false);
+  };
+
+  const copyMessage = (content: string) => {
+    navigator.clipboard.writeText(content);
+    toast.success("Copied to clipboard");
+  };
+
+  const renderMessage = (msg: Message) => {
+    const isUser = msg.role === "user";
+    return (
+      <div key={msg.id} className="group px-4 py-6 first:pt-0">
+        <div className="mx-auto max-w-3xl">
+          <div className="flex gap-4">
+            <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-full", isUser ? "bg-slate-900 text-white" : "bg-gradient-to-br from-emerald-500 to-teal-600 text-white")}>
+              {isUser ? <span className="text-xs font-semibold">You</span> : <BrainCircuit className="size-4" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm font-semibold">{isUser ? "You" : "Scholarii AI"}</span>
+                {!isUser && (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                    {getModelLabel(msg.model)}
+                  </Badge>
+                )}
+              </div>
+
+              {isUser ? (
+                <div className="text-sm leading-7 whitespace-pre-wrap">{msg.content}</div>
+              ) : msg.response ? (
+                <div className="space-y-4">
+                  <p className="text-sm leading-7 text-muted-foreground">{msg.response.summary}</p>
+
+                  {msg.response.bullets.length > 0 && (
+                    <ul className="space-y-2">
+                      {msg.response.bullets.map((b) => (
+                        <li key={b} className="flex items-start gap-2 text-sm">
+                          <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-emerald-500" />
+                          <span className="leading-7">{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {msg.response.metrics && (
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {msg.response.metrics.map((m) => (
+                        <div key={m.label} className="rounded-xl border border-border bg-slate-50 p-3">
+                          <div className="text-xs text-muted-foreground">{m.label}</div>
+                          <div className="mt-1 text-lg font-bold">{m.value}</div>
+                          <div className="text-xs text-muted-foreground">{m.note}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {msg.response.chartData && (
+                    <div className="rounded-xl border border-border bg-slate-50 p-3">
+                      <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                        <BarChart3 className="size-4 text-cyan-600" />
+                        Trend
+                      </div>
+                      <div className="h-32">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={msg.response.chartData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
+                            <defs>
+                              <linearGradient id={`fill-${msg.id}`} x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.3} />
+                                <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.02} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+                            <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                            <YAxis domain={[80, 100]} tick={{ fontSize: 11 }} />
+                            <RechartsTooltip contentStyle={{ borderRadius: 10, border: "1px solid var(--border)" }} />
+                            <Area type="monotone" dataKey="value" stroke="#06b6d4" fill={`url(#fill-${msg.id})`} strokeWidth={2} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+
+                  {msg.response.reportSections && (
+                    <div className="space-y-2">
+                      {msg.response.reportSections.map((sec) => (
+                        <div key={sec.title} className="rounded-xl border border-border bg-slate-50 p-3">
+                          <div className="flex items-center gap-2 text-sm font-semibold">
+                            <BookOpen className="size-4 text-violet-600" />
+                            {sec.title}
+                          </div>
+                          <p className="mt-1.5 text-sm leading-7 text-muted-foreground">{sec.body}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {msg.response.references && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {msg.response.references.map((ref) => (
+                        <Badge key={ref} variant="outline" className="text-xs">{ref}</Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {msg.response.actions && (
+                    <div className="rounded-xl border border-border bg-slate-50 p-3">
+                      <div className="text-sm font-semibold mb-2">Action Items</div>
+                      <div className="space-y-1.5">
+                        {msg.response.actions.map((a) => (
+                          <div key={a} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm">
+                            <CheckCircle2 className="size-4 text-emerald-600" />
+                            {a}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <Button size="sm" className="bg-brand-gradient text-white border-0">Execute</Button>
+                        <Button size="sm" variant="outline">Review</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-1 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="size-7" onClick={() => copyMessage(msg.response!.headline + "\n" + msg.response!.summary)}>
+                      <Copy className="size-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="size-7" onClick={() => toast.success("Regenerating...")}>
+                      <RefreshCw className="size-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="size-7" onClick={() => toast.success("Exported")}>
+                      <Download className="size-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="size-7" onClick={() => toast.success("Link copied")}>
+                      <Share2 className="size-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="size-7" onClick={() => toast.success("Saved to School Brain")}>
+                      <Save className="size-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm leading-7">{msg.content}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="relative">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.18),transparent_35%),radial-gradient(circle_at_top_left,rgba(168,85,247,0.12),transparent_35%),linear-gradient(to_bottom,rgba(248,250,252,0.9),transparent)]" />
+    <div className="flex h-[calc(100dvh-4rem)] flex-col bg-background">
+      {/* Header */}
+      <header className="flex items-center justify-between border-b border-border px-4 py-3 lg:px-6">
+        <div className="flex items-center gap-3">
+          <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="size-9 lg:hidden">
+                <History className="size-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 p-0">
+              <SheetHeader className="border-b border-border px-4 py-4">
+                <SheetTitle className="flex items-center gap-2">
+                  <History className="size-4" />
+                  History
+                </SheetTitle>
+              </SheetHeader>
+              <ScrollArea className="h-[calc(100%-4rem)]">
+                <div className="p-3">
+                  <Button variant="outline" className="w-full justify-start gap-2 mb-3" onClick={startNewConversation}>
+                    <Plus className="size-4" />
+                    New Conversation
+                  </Button>
+                  {conversations.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => loadConversation(c.id)}
+                      className={cn(
+                        "w-full rounded-xl px-3 py-2.5 text-left text-sm transition-colors mb-1",
+                        c.id === activeConversationId
+                          ? "bg-slate-100 font-medium"
+                          : "hover:bg-slate-50 text-muted-foreground"
+                      )}
+                    >
+                      <div className="truncate">{c.title}</div>
+                      <div className="mt-0.5 text-xs text-muted-foreground">
+                        {c.createdAt.toLocaleDateString()}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </SheetContent>
+          </Sheet>
 
-      <PageHeader
-        title="Scholarii AI"
-        subtitle="Ask questions, analyze data, conduct research, and automate school operations."
-        action={
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-              <BrainCircuit className="mr-1 size-3.5" />
-              School intelligence layer
-            </Badge>
-            <Badge variant="outline">4 modes</Badge>
+          <div className="hidden lg:flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="size-8" onClick={() => setHistoryOpen(true)}>
+              <History className="size-4" />
+            </Button>
           </div>
-        }
-      />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.08fr_0.92fr] xl:h-[calc(100dvh-12.5rem)] xl:min-h-[680px] xl:items-stretch xl:overflow-hidden">
-        <div className="space-y-4 xl:flex xl:h-full xl:flex-col">
-          <Card className="border-border/60 bg-gradient-to-br from-white via-white to-slate-50 p-4 shadow-sm xl:h-full">
-            <div className="flex h-full flex-col gap-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">AI input area</p>
-                  <h2 className="mt-1 text-xl font-semibold">Ask anything about your school</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Use the school brain to answer questions, explain trends, generate reports, or prepare actions.
-                  </p>
-                </div>
-                <div className="hidden rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground md:flex md:items-center md:gap-2">
-                  <Clock3 className="size-3.5" />
-                  Thinking cycle: 5 seconds
-                </div>
-              </div>
+          <div>
+            <h1 className="text-base font-semibold flex items-center gap-2">
+              Scholarii AI
+              <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0">
+                <BrainCircuit className="mr-1 size-2.5" />
+                School Intelligence Layer
+              </Badge>
+            </h1>
+          </div>
+        </div>
 
-              <form className="flex flex-1 min-h-0 flex-col rounded-2xl border border-border bg-background p-3" onSubmit={handleComposerSubmit}>
-                <div className="mb-3">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Suggested prompts</p>
-                    <Badge variant="outline">Use as a starting point</Badge>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="size-8 hidden sm:flex">
+            <Settings className="size-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="size-8" onClick={() => setContextOpen(!contextOpen)}>
+            <PanelRightOpen className="size-4" />
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Chat Area */}
+        <div className="flex flex-1 flex-col min-w-0 min-h-0">
+          {isEmpty ? (
+            /* Empty State */
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4">
+                <div className="w-full max-w-2xl">
+                  <div className="text-center mb-6">
+                    <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25 mb-3">
+                      <BrainCircuit className="size-7" />
+                    </div>
+                    <h2 className="text-xl font-bold tracking-tight sm:text-2xl">How can I help your school today?</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Ask questions, analyze data, generate reports, and gain insights.
+                    </p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      "Which students are at risk?",
-                      "Analyze fee collection performance.",
-                      "Generate academic summary.",
-                      "Research attendance decline.",
-                    ].map((item) => (
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {SUGGESTED_PROMPTS.map((p) => (
                       <button
-                        key={item}
-                        type="button"
-                        onClick={() => {
-                          setQuery(item);
-                          composerRef.current?.focus();
-                        }}
-                        className="rounded-full border border-border bg-slate-50 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-cyan-200 hover:bg-cyan-50"
+                        key={p.text}
+                        onClick={() => handleSuggestedPrompt(p.text, p.skill)}
+                        className="group flex items-center gap-3 rounded-xl border border-border bg-white p-3 text-left text-sm transition-all hover:border-slate-300 hover:shadow-md"
                       >
-                        {item}
+                        <div className="size-8 shrink-0 rounded-lg bg-slate-100 grid place-items-center group-hover:bg-slate-200 transition-colors">
+                          <Sparkles className="size-4 text-slate-500" />
+                        </div>
+                        <div>
+                          <div className="font-medium leading-snug">{p.text}</div>
+                          <div className="text-xs text-muted-foreground">{p.skill}</div>
+                        </div>
                       </button>
                     ))}
                   </div>
                 </div>
+              </div>
+            </div>
+          ) : (
+            /* Messages */
+            <div ref={scrollRef} className="flex-1 overflow-y-auto">
+              {messages.map(renderMessage)}
 
-                <Textarea
-                  ref={composerRef}
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && !event.shiftKey) {
-                      event.preventDefault();
-                      startThinking(query);
-                    }
-                  }}
-                  placeholder='Ask anything about your school...'
-                  className="min-h-[170px] resize-none border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0"
-                  />
-
-                <div className="mt-3 flex-1 min-h-0">
-                  <div className="mb-3 flex flex-wrap gap-2 overflow-x-auto pb-1">
-                    {attachments.map((item) => {
-                      const Icon = inferAttachmentIcon(item.kind);
-                      return (
-                        <div
-                          key={item.name}
-                          className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border bg-slate-50 px-3 py-1.5 text-xs text-foreground shadow-sm"
-                        >
-                          <Icon className="size-3.5 text-muted-foreground" />
-                          <span className="font-medium">{item.name}</span>
-                          <span className="text-muted-foreground">({item.size})</span>
-                          <button
-                            type="button"
-                            onClick={() => removeAttachment(item.name)}
-                            className="ml-1 rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            aria-label={`Remove ${item.name}`}
-                          >
-                            <Trash2 className="size-3.5" />
-                          </button>
-                        </div>
-                      );
-                    })}
-                    {!attachments.length && (
-                      <div className="rounded-full border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground">
-                        No attachments added yet
+              {isThinking && (
+                <div className="px-4 py-6">
+                  <div className="mx-auto max-w-3xl flex gap-4">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+                      <Sparkles className="size-4 animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold mb-2">Scholarii AI</div>
+                      <div className="space-y-1.5">
+                        {THINKING_STEPS[skill].map((step, i) => (
+                          <div key={step} className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className={cn("size-1.5 rounded-full", i <= thinkingStep ? "bg-emerald-500" : "bg-slate-300")} />
+                            <span className={cn(i <= thinkingStep ? "text-foreground" : "")}>{step}</span>
+                          </div>
+                        ))}
                       </div>
-                    )}
-                  </div>
-
-                  <div className="mt-auto border-t border-border/60 pt-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button type="button" variant="outline" size="sm" onClick={handleAttachClick} className="h-9 rounded-full px-3">
-                        <Paperclip className="mr-2 size-4" />
-                        Attach
-                      </Button>
-
-                      <div className="flex items-center gap-2 rounded-full border border-border bg-background px-2 py-1">
-                        <span className="px-2 text-xs text-muted-foreground">Skill</span>
-                        <Select value={mode} onValueChange={(value) => setMode(value as Mode)}>
-                          <SelectTrigger className="h-8 w-[132px] rounded-full border-0 bg-transparent px-2 text-xs shadow-none">
-                            <SelectValue placeholder="Select skill" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {MODES.map((item) => (
-                              <SelectItem key={item} value={item}>
-                                {modeMeta[item].label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="size-9 rounded-full"
-                        onClick={() => toast("Voice input is a demo control in this prototype.")}
-                        aria-label="Voice input"
-                      >
-                        <Mic className="size-4" />
-                      </Button>
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-9 rounded-full px-3"
-                        onClick={() => {
-                          setQuery("");
-                          setAttachments(initialAttachments);
-                        }}
-                      >
-                        Reset
-                      </Button>
-
-                      <Button
-                        type="submit"
-                        className="ml-auto size-10 rounded-full bg-slate-900 p-0 text-white hover:bg-slate-800"
-                        disabled={isThinking}
-                        aria-label={isThinking ? "Thinking" : "Send message"}
-                      >
-                        {isThinking ? <Sparkles className="size-4 animate-pulse" /> : <ArrowUp className="size-4" />}
-                      </Button>
                     </div>
                   </div>
                 </div>
-              </form>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.doc,.docx,.txt"
-                className="hidden"
-                onChange={handleAttachmentChange}
-              />
-
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">{attachments.length} attachments</Badge>
-                <Badge variant="outline">{modeMeta[mode].label}</Badge>
-              </div>
+              )}
             </div>
-          </Card>
-        </div>
+          )}
 
-        <div className="space-y-4 xl:flex xl:h-full xl:flex-col xl:justify-stretch">
-          <Card className="border-border/60 p-4 shadow-sm xl:h-full">
-            <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Chat / response area</p>
-                <h3 className="mt-1 text-lg font-semibold">Live Scholarii AI response</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-slate-900 text-white hover:bg-slate-900">{mode}</Badge>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setHistoryOpen((current) => !current)}
-                  className="h-8 gap-2 rounded-full px-3 text-xs"
-                >
-                  <History className="size-3.5" />
-                  {historyOpen ? "Hide history" : "History"}
-                </Button>
-              </div>
-            </div>
-
-            <div className={cn("mt-4 flex flex-1 min-h-0 flex-col rounded-3xl border border-border bg-gradient-to-b from-slate-50 to-white p-4", historyOpen ? "xl:p-4" : "")}>
-              <div className={cn("grid h-full min-h-0 gap-4", historyOpen ? "xl:grid-cols-[minmax(0,1fr)_280px]" : "grid-cols-1")}>
-                <div className="flex min-h-0 flex-col rounded-2xl border border-border bg-white">
-                  <div className="border-b border-border/60 px-4 py-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground">Conversation</div>
-                        <div className="text-sm font-medium text-foreground">
-                          {isThinking && pendingRequest
-                            ? "Scholarii AI is preparing your response"
-                            : activeHistory
-                              ? activeHistory.title
-                              : "No response yet"}
-                        </div>
+          {/* Input Area */}
+          <div className="border-t border-border bg-background p-3 sm:p-4">
+            <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
+              {/* Attachments */}
+              {attachments.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-1.5">
+                  {attachments.map((a) => {
+                    const Icon = a.kind === "Image" ? ImageIcon : a.kind === "Spreadsheet" ? BarChart3 : FileText;
+                    return (
+                      <div key={a.name} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-xs">
+                        <Icon className="size-3 text-muted-foreground" />
+                        <span className="font-medium truncate max-w-[120px]">{a.name}</span>
+                        <button type="button" onClick={() => setAttachments((p) => p.filter((x) => x.name !== a.name))} className="ml-0.5 text-muted-foreground hover:text-foreground">
+                          <X className="size-3" />
+                        </button>
                       </div>
-                      <Badge variant="outline">{isThinking ? "Thinking" : "Ready"}</Badge>
-                    </div>
-                  </div>
+                    );
+                  })}
+                </div>
+              )}
 
-                  <div className="flex flex-1 min-h-0 flex-col gap-4 overflow-y-auto p-4">
-                  {!isThinking && !activeHistory && (
-                    <div className="flex min-h-[300px] items-center justify-center">
-                      <div className="max-w-md rounded-3xl border border-dashed border-border bg-slate-50/80 p-5 text-center">
-                        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-white shadow-sm">
-                          <BrainCircuit className="size-6 text-cyan-600" />
-                        </div>
-                        <div className="mt-4 text-lg font-semibold">Chat with Scholarii AI</div>
-                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                          Type a prompt on the left and send it with the button below. Responses will appear here like a chat transcript.
-                        </p>
-                      </div>
-                    </div>
-                  )}
+              {/* Textarea */}
+              <div
+                className={cn(
+                  "relative rounded-2xl border bg-white transition-colors",
+                  isDragging ? "border-emerald-400 bg-emerald-50/50" : "border-border focus-within:border-slate-400"
+                )}
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+              >
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Message Scholarii AI..."
+                  className="min-h-[52px] max-h-[200px] resize-none border-0 bg-transparent p-4 pr-12 text-sm shadow-none focus-visible:ring-0"
+                  rows={1}
+                />
+                <div className="absolute right-2 bottom-2 flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 rounded-full"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Paperclip className="size-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 rounded-full"
+                    onClick={() => toast("Voice input is a demo feature")}
+                  >
+                    <Mic className="size-4" />
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="icon"
+                    className={cn(
+                      "size-8 rounded-full transition-all",
+                      input.trim() && !isThinking
+                        ? "bg-slate-900 text-white hover:bg-slate-800"
+                        : "bg-slate-200 text-slate-400"
+                    )}
+                    disabled={!input.trim() || isThinking}
+                  >
+                    <Send className="size-4" />
+                  </Button>
+                </div>
+              </div>
 
-                  {isThinking && pendingRequest && (
-                    <>
-                      <div className="flex justify-end">
-                        <div className="max-w-[80%] rounded-3xl rounded-br-md bg-slate-900 px-4 py-3 text-sm text-white shadow-sm">
-                          <p className="text-[11px] uppercase tracking-wide text-white/70">You</p>
-                          <p className="mt-1 leading-6">{pendingRequest.query}</p>
-                          {pendingRequest.attachments.length > 0 && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {pendingRequest.attachments.map((item) => (
-                                <Badge key={item.name} variant="outline" className="border-white/20 bg-white/10 text-white">
-                                  {item.name}
-                                </Badge>
-                              ))}
-                            </div>
+              {/* Selectors Row */}
+              <div className="mt-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {/* Skill Selector */}
+                  <Popover open={skillOpen} onOpenChange={setSkillOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full px-3 text-xs font-medium">
+                        <currentSkill.icon className={cn("size-3.5", currentSkill.accent)} />
+                        {currentSkill.label}
+                        <ChevronDown className="size-3 text-muted-foreground" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" side="top" className="w-64 p-1.5">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-1.5 font-medium">Skill</div>
+                      {SKILLS.map((s) => (
+                        <button
+                          key={s.id}
+                          onClick={() => { setSkill(s.id); setSkillOpen(false); }}
+                          className={cn(
+                            "flex items-start gap-2.5 w-full rounded-lg px-2 py-2 text-left text-sm transition-colors",
+                            skill === s.id ? "bg-slate-100" : "hover:bg-slate-50"
                           )}
-                        </div>
-                      </div>
-
-                      <div className="flex justify-start">
-                        <div className="max-w-[88%] rounded-3xl rounded-bl-md border border-cyan-100 bg-cyan-50/70 px-4 py-3 text-sm text-foreground shadow-sm">
-                          <div className="flex items-center gap-3">
-                            <div className="grid size-10 place-items-center rounded-2xl bg-white shadow-sm">
-                              <Sparkles className="size-5 animate-pulse text-cyan-600" />
-                            </div>
-                            <div>
-                              <div className="font-semibold">Scholarii AI is thinking...</div>
-                              <div className="text-muted-foreground">{THINKING_STEPS[thinkingStep]}</div>
-                            </div>
+                        >
+                          <s.icon className={cn("mt-0.5 size-4 shrink-0", s.accent)} />
+                          <div>
+                            <div className="font-medium">{s.label}</div>
+                            <div className="text-xs text-muted-foreground">{s.description}</div>
                           </div>
+                        </button>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
 
-                          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                            {THINKING_STEPS.map((step, index) => (
-                              <div
-                                key={step}
+                  {/* Model Selector */}
+                  <Popover open={modelOpen} onOpenChange={setModelOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full px-3 text-xs font-medium">
+                        {currentModel.recommended && <Star className="size-3 text-amber-500 fill-amber-500" />}
+                        {currentModel.name}
+                        <ChevronDown className="size-3 text-muted-foreground" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" side="top" className="w-72 p-1.5">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-1.5 font-medium">Model</div>
+                      {(["Scholarii", "OpenAI", "Anthropic", "Google"] as ModelProvider[]).map((provider) => {
+                        const providerModels = MODELS.filter((m) => m.provider === provider);
+                        if (providerModels.length === 0) return null;
+                        return (
+                          <div key={provider}>
+                            <div className="px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{provider}</div>
+                            {providerModels.map((m) => (
+                              <button
+                                key={m.id}
+                                onClick={() => { setModel(m.id); setModelOpen(false); }}
                                 className={cn(
-                                  "rounded-2xl border p-3 text-xs transition-all",
-                                  index <= thinkingStep
-                                    ? "border-cyan-200 bg-white text-foreground shadow-sm"
-                                    : "border-border bg-white/60 text-muted-foreground"
+                                  "flex items-start gap-2 w-full rounded-lg px-2 py-2 text-left text-sm transition-colors",
+                                  model === m.id ? "bg-slate-100" : "hover:bg-slate-50"
                                 )}
                               >
-                                <div className="flex items-center gap-2">
-                                  <div className={cn("size-2 rounded-full", index <= thinkingStep ? "bg-cyan-500" : "bg-slate-300")} />
-                                  <span className="font-medium">{step}</span>
+                                <div className="mt-0.5 size-4 shrink-0 grid place-items-center">
+                                  {m.recommended && <Star className="size-3.5 text-amber-500 fill-amber-500" />}
                                 </div>
-                              </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-medium">{m.name}</span>
+                                    {m.recommended && (
+                                      <Badge className="text-[9px] px-1 py-0 h-4 bg-amber-50 text-amber-700 border-amber-200">
+                                        Recommended
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {m.description && <div className="text-xs text-muted-foreground">{m.description}</div>}
+                                </div>
+                              </button>
                             ))}
                           </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                        );
+                      })}
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
-                  {!isThinking && activeHistory && (
-                    <>
-                      <div className="flex justify-end">
-                        <div className="max-w-[80%] rounded-3xl rounded-br-md bg-slate-900 px-4 py-3 text-sm text-white shadow-sm">
-                          <p className="text-[11px] uppercase tracking-wide text-white/70">You</p>
-                          <p className="mt-1 leading-6">{activeHistory.prompt}</p>
-                        </div>
-                      </div>
+                <div className="text-[11px] text-muted-foreground hidden sm:block">
+                  Press <kbd className="rounded border border-border bg-slate-50 px-1 py-0.5 text-[10px] font-mono">Enter</kbd> to send
+                </div>
+              </div>
+            </form>
 
-                      <div className="flex justify-start">
-                        <div className="max-w-[88%] rounded-3xl rounded-bl-md border border-border bg-white px-4 py-3 text-sm text-foreground shadow-sm">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 font-semibold">
-                              <BrainCircuit className="size-4 text-cyan-600" />
-                              Scholarii AI
-                            </div>
-                            <Badge variant="outline">Prototype response</Badge>
-                          </div>
-                          <div className="mt-3 text-base font-semibold tracking-tight">{activeHistory.response.headline}</div>
-                          <p className="mt-2 leading-6 text-muted-foreground">{activeHistory.response.summary}</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.doc,.docx,.txt"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+        </div>
 
-                          {activeHistory.response.bullets.length > 0 && (
-                            <div className="mt-4 space-y-2">
-                              {activeHistory.response.bullets.map((item) => (
-                                <div key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
-                                  <span className="mt-1 size-1.5 rounded-full bg-cyan-500" />
-                                  <span>{item}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {activeHistory.response.metrics && (
-                            <div className="mt-4 grid grid-cols-2 gap-3">
-                              {activeHistory.response.metrics.map((metric) => (
-                                <div key={metric.label} className="rounded-2xl border border-border bg-slate-50 p-3">
-                                  <div className="text-xs text-muted-foreground">{metric.label}</div>
-                                  <div className="mt-1 text-lg font-semibold">{metric.value}</div>
-                                  <div className="text-xs text-muted-foreground">{metric.note}</div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {activeHistory.response.chartData && (
-                            <div className="mt-4 rounded-2xl border border-border bg-slate-50 p-3">
-                              <div className="mb-2 flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2 text-sm font-semibold">
-                                  <BarChart3 className="size-4 text-cyan-600" />
-                                  Visual summary
-                                </div>
-                                <Badge variant="outline">Mock chart</Badge>
-                              </div>
-                              <div className="h-40">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart data={activeHistory.response.chartData} margin={{ top: 10, right: 8, bottom: 0, left: -10 }}>
-                                    <defs>
-                                      <linearGradient id="aiAnalysisFill" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.35} />
-                                        <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.02} />
-                                      </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                                    <XAxis dataKey="label" stroke="var(--muted-foreground)" tickMargin={10} />
-                                    <YAxis domain={[80, 100]} stroke="var(--muted-foreground)" width={32} />
-                                    <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 12 }} />
-                                    <Area type="monotone" dataKey="value" stroke="#06b6d4" fill="url(#aiAnalysisFill)" strokeWidth={2} />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              </div>
-                            </div>
-                          )}
-
-                          {activeHistory.response.reportSections && (
-                            <div className="mt-4 space-y-3">
-                              {activeHistory.response.reportSections.map((section) => (
-                                <div key={section.title} className="rounded-2xl border border-border bg-slate-50 p-3">
-                                  <div className="flex items-center gap-2 font-semibold">
-                                    <BookOpen className="size-4 text-violet-600" />
-                                    {section.title}
-                                  </div>
-                                  <p className="mt-2 leading-6 text-muted-foreground">{section.body}</p>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {activeHistory.response.references && (
-                            <div className="mt-4 rounded-2xl border border-border bg-slate-50 p-3">
-                              <div className="text-sm font-semibold">Sources consulted</div>
-                              <div className="mt-3 flex flex-wrap gap-2">
-                                {activeHistory.response.references.map((reference) => (
-                                  <Badge key={reference} variant="outline" className="bg-white">
-                                    {reference}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {activeHistory.response.actions && (
-                            <div className="mt-4 rounded-2xl border border-border bg-slate-50 p-3">
-                              <div className="text-sm font-semibold">Actions identified</div>
-                              <div className="mt-3 space-y-2">
-                                {activeHistory.response.actions.map((action) => (
-                                  <div key={action} className="flex items-center gap-3 rounded-xl bg-white px-3 py-3 text-sm">
-                                    <CheckCircle2 className="size-4 text-emerald-600" />
-                                    <span>{action}</span>
-                                  </div>
-                                ))}
-                              </div>
-                              <div className="mt-4 flex flex-wrap gap-2">
-                                <Button onClick={handleExecuteActions} className="bg-brand-gradient text-white border-0">
-                                  Execute Actions
-                                </Button>
-                                <Button variant="outline">Review plan</Button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  </div>
+        {/* Context Sidebar */}
+        {contextOpen && (
+          <div className="hidden lg:flex w-72 shrink-0 flex-col border-l border-border bg-white overflow-hidden animate-in slide-in-from-right">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <h3 className="text-sm font-semibold">School Context</h3>
+              <Button variant="ghost" size="icon" className="size-7" onClick={() => setContextOpen(false)}>
+                <X className="size-4" />
+              </Button>
+            </div>
+            <ScrollArea className="flex-1">
+              <div className="p-4 space-y-4">
+                <div className="rounded-xl border border-border bg-slate-50 p-3">
+                  <div className="text-xs font-medium text-muted-foreground mb-2">School Health</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-emerald-600">92%</div>
+                      <div className="text-[10px] text-muted-foreground">Attendance</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-cyan-600">87%</div>
+                      <div className="text-[10px] text-muted-foreground">Collection</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-violet-600">A</div>
+                      <div className="text-[10px] text-muted-foreground">Academic</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-amber-600">3</div>
+                      <div className="text-[10px] text-muted-foreground">Alerts</div>
+                    </div>
                   </div>
                 </div>
 
-                {historyOpen && (
-                  <aside className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">AI activity history</p>
-                        <h3 className="mt-1 text-sm font-semibold">Recent interactions</h3>
-                      </div>
-                      <Badge variant="outline">{history.length} items</Badge>
+                <div>
+                  <div className="text-xs font-medium text-muted-foreground mb-2">Current Config</div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs">
+                      <span className="text-muted-foreground">Skill</span>
+                      <span className="font-medium">{currentSkill.label}</span>
                     </div>
+                    <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs">
+                      <span className="text-muted-foreground">Model</span>
+                      <span className="font-medium">{currentModel.name}</span>
+                    </div>
+                  </div>
+                </div>
 
-                    <div className="mt-4 space-y-2">
-                      {history.map((item) => {
-                        const active = item.id === activeHistoryId;
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => handleHistoryOpen(item)}
-                            className={cn(
-                              "w-full rounded-2xl border p-3 text-left transition-all",
-                              active ? "border-cyan-200 bg-cyan-50/70 shadow-sm" : "border-border bg-background hover:border-slate-300 hover:bg-slate-50"
-                            )}
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <Clock3 className="size-3.5 text-muted-foreground" />
-                                  <span className="text-sm font-semibold">{item.title}</span>
-                                </div>
-                                <p className="mt-2 line-clamp-1 text-xs text-muted-foreground">{item.prompt}</p>
-                              </div>
-                              <ArrowRight className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </aside>
-                )}
+                <div>
+                  <div className="text-xs font-medium text-muted-foreground mb-2">Recent Reports</div>
+                  <div className="space-y-1">
+                    {["Attendance Report", "Fee Collection", "Academic Summary"].map((r) => (
+                      <div key={r} className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs hover:bg-slate-50 cursor-pointer transition-colors">
+                        <FileText className="size-3.5 text-muted-foreground" />
+                        {r}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-medium text-muted-foreground mb-2">Quick Stats</div>
+                  <div className="space-y-1">
+                    {[
+                      { label: "Students", value: "1,247" },
+                      { label: "Teachers", value: "68" },
+                      { label: "Classes", value: "32" },
+                      { label: "Today's Attendance", value: "91.2%" },
+                    ].map((s) => (
+                      <div key={s.label} className="flex items-center justify-between rounded-lg px-3 py-2 text-xs">
+                        <span className="text-muted-foreground">{s.label}</span>
+                        <span className="font-semibold">{s.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          </Card>
-        </div>
+            </ScrollArea>
+          </div>
+        )}
       </div>
     </div>
   );

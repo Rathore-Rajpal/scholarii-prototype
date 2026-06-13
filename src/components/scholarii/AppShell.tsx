@@ -50,7 +50,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import scholariiIconUrl from "../../../Icons/apple-touch-icon.png?url";
 
@@ -116,24 +116,90 @@ const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   },
 ];
 
-const NAV: Record<Role, NavItem[]> = {
-  principal: [
-    { to: "/app", label: "Dashboard", icon: Home },
-    { to: "/app/schedule", label: "Operations", icon: CalendarClock },
-    { to: "/app/admissions", label: "Admissions", icon: FileText },
-    { to: "/app/students", label: "Students", icon: Users },
-    { to: "/app/teachers", label: "Teachers", icon: Briefcase },
-    { to: "/app/academics", label: "Academics", icon: BookOpen },
-    { to: "/app/fees", label: "Finance", icon: DollarSign },
-    { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
-    { to: "/app/ai", label: "Scholarii AI", icon: BrainCircuit },
-    { to: "/app/brain", label: "School Brain", icon: BrainCircuit },
-    { to: "/app/documents", label: "Documents", icon: FileText },
-    { to: "/app/facilities", label: "Facilities", icon: Building2 },
-    { to: "/app/compliance", label: "Compliance", icon: ShieldCheck },
-    { to: "/app/communication", label: "Communications", icon: MessageSquare },
-    { to: "/app/settings", label: "Settings", icon: Settings },
-  ],
+const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
+  {
+    items: [
+      { to: "/app", label: "Dashboard", icon: Home, activePaths: ["/app/admin/dashboard"] },
+      { to: "/app/admin/operations", label: "Operations", icon: Settings2 },
+    ],
+  },
+  {
+    label: "Academics & Records",
+    items: [
+      {
+        to: "/app/admissions",
+        label: "Admissions",
+        icon: ClipboardList,
+        activePaths: ["/app/admin/admissions"],
+      },
+      { to: "/app/admin/students", label: "Students", icon: Users },
+      { to: "/app/admin/staff", label: "Staff Records", icon: Briefcase },
+      { to: "/app/admin/academics", label: "Academics", icon: BookOpen },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [{ to: "/app/admin/fees", label: "Fee Collection", icon: DollarSign }],
+  },
+  {
+    label: "Insights",
+    collapsible: true,
+    items: [
+      { to: "/app/admin/analytics", label: "Analytics", icon: BarChart3 },
+      { to: "/app/admin/ai", label: "Scholarii AI", icon: Sparkles },
+      { to: "/app/admin/brain", label: "School Brain", icon: BrainCircuit },
+    ],
+  },
+  {
+    label: "Administration",
+    collapsible: true,
+    items: [
+      { to: "/app/admin/documents", label: "Documents", icon: FileText },
+      { to: "/app/admin/facilities", label: "Facilities", icon: Building2 },
+      { to: "/app/admin/compliance", label: "Compliance", icon: ShieldCheck },
+    ],
+  },
+];
+
+type PrincipalNav = (NavItem | NavGroup)[];
+
+const PRINCIPAL_NAV: PrincipalNav = [
+  { to: "/app", label: "Dashboard", icon: Home },
+  {
+    label: "Operations",
+    icon: Users,
+    items: [
+      { to: "/app/admissions", label: "Admissions", icon: FileText },
+      { to: "/app/students", label: "Students", icon: Users },
+      { to: "/app/teachers", label: "Teachers", icon: Briefcase },
+    ],
+  },
+  { to: "/app/academics", label: "Academics", icon: BookOpen },
+  { to: "/app/fees", label: "Finance", icon: DollarSign },
+  {
+    label: "Insights",
+    icon: BarChart3,
+    items: [
+      { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
+      { to: "/app/ai", label: "Scholarii AI", icon: BrainCircuit },
+      { to: "/app/brain", label: "School Brain", icon: BrainCircuit },
+    ],
+  },
+  {
+    label: "Administration",
+    icon: ShieldCheck,
+    items: [
+      { to: "/app/documents", label: "Documents", icon: FileText },
+      { to: "/app/facilities", label: "Facilities", icon: Building2 },
+      { to: "/app/compliance", label: "Compliance", icon: ShieldCheck },
+    ],
+  },
+  { to: "/app/communication", label: "Communications", icon: MessageSquare },
+  { to: "/app/settings", label: "Settings", icon: Settings },
+];
+
+const NAV: Record<Role, PrincipalNav | NavItem[]> = {
+  principal: PRINCIPAL_NAV,
   teacher: [
     { to: "/app", label: "Dashboard", icon: Home },
     { to: "/app/classes", label: "My Classes", icon: BookMarked },
@@ -215,130 +281,37 @@ export function AppShell({ children }: { children: ReactNode }) {
             {it.label}
           </div>
         )}
-      </Link>
-    );
-  };
-
-  const renderAdminNavItem = (it: NavItem, expanded: boolean) => {
-    const active = isNavItemActive(it);
-    const Icon = it.icon;
-    return (
-      <Link
-        key={it.to}
-        to={it.to}
-        onClick={() => setMobileOpen(false)}
-        className={cn(
-          "group relative mx-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
-          active
-            ? "bg-gradient-to-r from-violet-600 to-purple-600 font-medium text-white"
-            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
-          !expanded && "mx-1 justify-center px-2",
-        )}
-        title={!expanded ? it.label : ""}
-      >
-        <Icon
-          className={cn(
-            "size-4 flex-shrink-0",
-            active ? "text-white" : "text-gray-400 group-hover:text-gray-600",
-          )}
-        />
-        {expanded && <span>{it.label}</span>}
-        {!expanded && (
-          <div className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-            {it.label}
-          </div>
-        )}
-      </Link>
-    );
-  };
-
-  const renderAdminUtilityItem = (label: string, Icon: typeof Home, expanded: boolean) => (
-    <button
-      type="button"
-      className={cn(
-        "group relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900",
-        !expanded && "justify-center px-2",
-      )}
-      title={!expanded ? `${label} (coming soon)` : ""}
-    >
-      <Icon className="size-4 flex-shrink-0 text-gray-400 group-hover:text-gray-600" />
-      {expanded && (
-        <>
-          <span>{label}</span>
-          <span className="ml-auto rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-400">
-            Soon
-          </span>
-        </>
-      )}
-    </button>
-  );
-
-  const getAdminSidebarInner = (expanded: boolean) => (
-    <div className="flex h-full flex-col bg-white">
-      <div
-        className={cn(
-          "flex items-center gap-2 border-b border-gray-100 p-4",
-          !expanded && "justify-center px-2",
-        )}
-      >
-        <img
-          src={scholariiIconUrl}
-          alt="Scholarii icon"
-          className="size-8 flex-shrink-0 rounded-full"
-        />
-        {expanded && (
-          <div>
-            <div className="text-sm font-bold leading-none text-gray-900">Scholarii</div>
-            <div className="mt-1 text-xs text-gray-400">Admin Portal</div>
-          </div>
-        )}
       </div>
-
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2">
-        {ADMIN_NAV_GROUPS.map((group) => {
-          const open = !group.collapsible || adminGroupsOpen[group.label!];
+      <nav key={showParent ? "parent" : "self"} className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1 animate-in-up">
+        {items.map((it) => {
+          const active = it.to === "/app" ? path === "/app" : path.startsWith(it.to);
+          const Icon = it.icon;
           return (
-            <div key={group.label ?? "primary"}>
-              {group.label && expanded && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!group.collapsible) return;
-                    setAdminGroupsOpen((current) => ({
-                      ...current,
-                      [group.label!]: !open,
-                    }));
-                  }}
-                  className={cn(
-                    "flex w-full items-center px-3 pt-4 pb-1 text-left text-xs font-semibold uppercase tracking-wider text-gray-400",
-                    !group.collapsible && "cursor-default",
-                  )}
-                  aria-expanded={group.collapsible ? open : undefined}
-                >
-                  <span>{group.label}</span>
-                  {group.collapsible && (
-                    <ChevronDown
-                      className={cn(
-                        "ml-auto size-3.5 transition-transform duration-200",
-                        !open && "-rotate-90",
-                      )}
-                    />
-                  )}
-                </button>
+            <Link
+              key={it.to}
+              to={it.to}
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
+                active
+                  ? "bg-brand-gradient text-white shadow-glow"
+                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                !sidebarOpen && "justify-center"
               )}
-              <div
-                className={cn(
-                  "grid transition-[grid-template-rows] duration-200 ease-out",
-                  open || !expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
-                )}
-              >
-                <div className="min-h-0 overflow-hidden">
-                  <div className="space-y-1">
-                    {group.items.map((it) => renderAdminNavItem(it, expanded))}
-                  </div>
+              title={!sidebarOpen ? it.label : ""}
+            >
+              <Icon className="size-4 flex-shrink-0" />
+              {sidebarOpen && (
+                <span className="font-medium">{it.label}</span>
+              )}
+              
+              {/* Hover tooltip for collapsed state */}
+              {!sidebarOpen && (
+                <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                  {it.label}
                 </div>
-              </div>
-            </div>
+              )}
+            </Link>
           );
         })}
       </nav>
