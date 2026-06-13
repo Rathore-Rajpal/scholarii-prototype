@@ -7,7 +7,7 @@ import {
   ShieldCheck, FileText, ScrollText, Calendar, Wallet, MessageSquare, Baby,
   LogOut, Bell, Moon, Sun, Search, Menu, BookMarked, User as StudentIcon, Users as ParentIcon,
   BrainCircuit,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,11 +15,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import scholariiIconUrl from "../../../Icons/apple-touch-icon.png?url";
 
 type NavItem = { to: string; label: string; icon: typeof Home };
+type NavGroup = { label: string; icon: typeof Home; items: NavItem[] };
 
 const PARENT_NAV: NavItem[] = [
   { to: "/app", label: "Dashboard", icon: Home },
@@ -31,24 +32,45 @@ const PARENT_NAV: NavItem[] = [
   { to: "/app/events", label: "Events", icon: Calendar },
 ];
 
-const NAV: Record<Role, NavItem[]> = {
-  principal: [
-    { to: "/app", label: "Dashboard", icon: Home },
-    { to: "/app/schedule", label: "Operations", icon: CalendarClock },
-    { to: "/app/admissions", label: "Admissions", icon: FileText },
-    { to: "/app/students", label: "Students", icon: Users },
-    { to: "/app/teachers", label: "Teachers", icon: Briefcase },
-    { to: "/app/academics", label: "Academics", icon: BookOpen },
-    { to: "/app/fees", label: "Finance", icon: DollarSign },
-    { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
-    { to: "/app/ai", label: "Scholarii AI", icon: BrainCircuit },
-    { to: "/app/brain", label: "School Brain", icon: BrainCircuit },
-    { to: "/app/documents", label: "Documents", icon: FileText },
-    { to: "/app/facilities", label: "Facilities", icon: Building2 },
-    { to: "/app/compliance", label: "Compliance", icon: ShieldCheck },
-    { to: "/app/communication", label: "Communications", icon: MessageSquare },
-    { to: "/app/settings", label: "Settings", icon: Settings },
-  ],
+type PrincipalNav = (NavItem | NavGroup)[];
+
+const PRINCIPAL_NAV: PrincipalNav = [
+  { to: "/app", label: "Dashboard", icon: Home },
+  {
+    label: "Operations",
+    icon: Users,
+    items: [
+      { to: "/app/admissions", label: "Admissions", icon: FileText },
+      { to: "/app/students", label: "Students", icon: Users },
+      { to: "/app/teachers", label: "Teachers", icon: Briefcase },
+    ],
+  },
+  { to: "/app/academics", label: "Academics", icon: BookOpen },
+  { to: "/app/fees", label: "Finance", icon: DollarSign },
+  {
+    label: "Insights",
+    icon: BarChart3,
+    items: [
+      { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
+      { to: "/app/ai", label: "Scholarii AI", icon: BrainCircuit },
+      { to: "/app/brain", label: "School Brain", icon: BrainCircuit },
+    ],
+  },
+  {
+    label: "Administration",
+    icon: ShieldCheck,
+    items: [
+      { to: "/app/documents", label: "Documents", icon: FileText },
+      { to: "/app/facilities", label: "Facilities", icon: Building2 },
+      { to: "/app/compliance", label: "Compliance", icon: ShieldCheck },
+    ],
+  },
+  { to: "/app/communication", label: "Communications", icon: MessageSquare },
+  { to: "/app/settings", label: "Settings", icon: Settings },
+];
+
+const NAV: Record<Role, PrincipalNav | NavItem[]> = {
+  principal: PRINCIPAL_NAV,
   teacher: [
     { to: "/app", label: "Dashboard", icon: Home },
     { to: "/app/classes", label: "My Classes", icon: BookMarked },
@@ -88,6 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   if (!user) return null;
   const isStudent = user.role === "student";
@@ -95,6 +118,24 @@ export function AppShell({ children }: { children: ReactNode }) {
   const items = showParent ? PARENT_NAV : NAV[user.role];
   const portalLabel = showParent ? "Parent" : ROLE_LABEL[user.role];
   const initials = user.name.split(" ").map((s) => s[0]).slice(0, 2).join("");
+
+  // Auto-expand groups containing active routes
+  useEffect(() => {
+    items.forEach((item) => {
+      if ("items" in item) {
+        const hasActiveChild = item.items.some((child) =>
+          child.to === "/app" ? path === "/app" : path.startsWith(child.to)
+        );
+        if (hasActiveChild) {
+          setExpandedGroups((prev) => ({ ...prev, [item.label]: true }));
+        }
+      }
+    });
+  }, [path, items]);
+
+  const toggleGroup = (label: string) => {
+    setExpandedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
   const SidebarInner = (
     <div className="flex h-full flex-col">
@@ -112,12 +153,94 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
       <nav key={showParent ? "parent" : "self"} className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1 animate-in-up">
         {items.map((it) => {
-          const active = it.to === "/app" ? path === "/app" : path.startsWith(it.to);
-          const Icon = it.icon;
+          if ("items" in it) {
+            const group = it;
+            const isExpanded = expandedGroups[group.label] ?? false;
+            const hasActiveChild = group.items.some((child) =>
+              child.to === "/app" ? path === "/app" : path.startsWith(child.to)
+            );
+            const GroupIcon = group.icon;
+
+            return (
+              <div key={group.label}>
+                <button
+                  onClick={() => toggleGroup(group.label)}
+                  className={cn(
+                    "group relative w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
+                    hasActiveChild
+                      ? "text-sidebar-foreground font-medium"
+                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    !sidebarOpen && "justify-center"
+                  )}
+                  title={!sidebarOpen ? group.label : ""}
+                >
+                  <GroupIcon className="size-4 flex-shrink-0" />
+                  {sidebarOpen && (
+                    <>
+                      <span className="font-medium flex-1 text-left">{group.label}</span>
+                      <ChevronDown
+                        className={cn(
+                          "size-4 transition-transform duration-200",
+                          isExpanded ? "rotate-180" : ""
+                        )}
+                      />
+                    </>
+                  )}
+                  {!sidebarOpen && (
+                    <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                      {group.label}
+                    </div>
+                  )}
+                </button>
+                <div
+                  className={cn(
+                    "overflow-hidden transition-all duration-300 ease-in-out",
+                    isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+                  )}
+                >
+                  <div className={cn("pl-4 space-y-0.5", !sidebarOpen && "pl-0")}>
+                    {group.items.map((child) => {
+                      const active = child.to === "/app" ? path === "/app" : path.startsWith(child.to);
+                      const ChildIcon = child.icon;
+                      return (
+                        <Link
+                          key={child.to}
+                          to={child.to}
+                          onClick={() => setMobileOpen(false)}
+                          className={cn(
+                            "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
+                            active
+                              ? "bg-brand-gradient text-white shadow-glow"
+                              : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                            !sidebarOpen && "justify-center"
+                          )}
+                          title={!sidebarOpen ? child.label : ""}
+                        >
+                          <ChildIcon className="size-4 flex-shrink-0" />
+                          {sidebarOpen && (
+                            <span className="font-medium">{child.label}</span>
+                          )}
+                          {!sidebarOpen && (
+                            <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                              {child.label}
+                            </div>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          const it_ = it as NavItem;
+          const active = it_.to === "/app" ? path === "/app" : path.startsWith(it_.to);
+          const Icon = it_.icon;
           return (
             <Link
-              key={it.to}
-              to={it.to}
+              key={it_.to}
+              to={it_.to}
               onClick={() => setMobileOpen(false)}
               className={cn(
                 "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
@@ -126,17 +249,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                   : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 !sidebarOpen && "justify-center"
               )}
-              title={!sidebarOpen ? it.label : ""}
+              title={!sidebarOpen ? it_.label : ""}
             >
               <Icon className="size-4 flex-shrink-0" />
               {sidebarOpen && (
-                <span className="font-medium">{it.label}</span>
+                <span className="font-medium">{it_.label}</span>
               )}
-              
-              {/* Hover tooltip for collapsed state */}
               {!sidebarOpen && (
                 <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-                  {it.label}
+                  {it_.label}
                 </div>
               )}
             </Link>
