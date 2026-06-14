@@ -14,6 +14,7 @@ import {
   TrendingDown, Megaphone, Mail, Zap, X, Hash,
   Paperclip, Mic, Star, PanelRightOpen,
   Sparkles, Database, Activity, Library,
+  Clock, Target, Award, TrendingUp, Lightbulb, AlertTriangle, Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import scholariiIconUrl from "../../../Icons/apple-touch-icon.png?url";
 
@@ -126,7 +127,7 @@ const ROLE_LABEL: Record<Role, string> = {
   principal: "Principal", teacher: "Teacher", student: "Student", admin: "Admin",
 };
 
-type RightTab = "chat" | "notifications" | "actions";
+type RightTab = "chat" | "notifications" | "actions" | "overview";
 
 type ChatMessage = {
   id: string;
@@ -151,18 +152,51 @@ type QuickAction = {
   group: string;
 };
 
-const NOTIFICATIONS: NotificationItem[] = [
-  { id: "n1", title: "New Admission Request", description: "Grade 7 — Aarav Sharma application received.", time: "2 min ago", read: false, category: "school", icon: UserPlus },
-  { id: "n2", title: "Attendance Alert", description: "12 students absent in Grade 8 today.", time: "15 min ago", read: false, category: "school", icon: ClipboardCheck },
-  { id: "n3", title: "Fee Collection Reminder", description: "84 families have pending dues.", time: "1 hour ago", read: false, category: "school", icon: DollarSign },
-  { id: "n4", title: "AI Report Generated", description: "Monthly analytics report is ready.", time: "2 hours ago", read: true, category: "system", icon: BrainCircuit },
-  { id: "n5", title: "Teacher Leave Request", description: "Ms. Priya filed a leave request for Friday.", time: "3 hours ago", read: true, category: "school", icon: Briefcase },
-  { id: "n6", title: "Export Completed", description: "Student directory CSV exported successfully.", time: "5 hours ago", read: true, category: "system", icon: FileText },
-  { id: "n7", title: "Exam Schedule Updated", description: "Mid-term exam schedule published.", time: "1 day ago", read: true, category: "school", icon: CalendarClock },
-  { id: "n8", title: "Workflow Completed", description: "Parent notification batch sent.", time: "1 day ago", read: true, category: "system", icon: CheckCircle2 },
+// ─── Role-specific Notifications ───
+const PRINCIPAL_NOTIFICATIONS: NotificationItem[] = [
+  { id: "pn1", title: "New Admission Request", description: "Grade 7 — Aarav Sharma application received.", time: "2 min ago", read: false, category: "school", icon: UserPlus },
+  { id: "pn2", title: "Attendance Alert", description: "12 students absent in Grade 8 today.", time: "15 min ago", read: false, category: "school", icon: ClipboardCheck },
+  { id: "pn3", title: "Fee Collection Reminder", description: "84 families have pending dues.", time: "1 hour ago", read: false, category: "school", icon: DollarSign },
+  { id: "pn4", title: "AI Report Generated", description: "Monthly analytics report is ready.", time: "2 hours ago", read: true, category: "system", icon: BrainCircuit },
+  { id: "pn5", title: "Teacher Leave Request", description: "Ms. Priya filed a leave request for Friday.", time: "3 hours ago", read: true, category: "school", icon: Briefcase },
+  { id: "pn6", title: "Export Completed", description: "Student directory CSV exported successfully.", time: "5 hours ago", read: true, category: "system", icon: FileText },
+  { id: "pn7", title: "Exam Schedule Updated", description: "Mid-term exam schedule published.", time: "1 day ago", read: true, category: "school", icon: CalendarClock },
+  { id: "pn8", title: "Workflow Completed", description: "Parent notification batch sent.", time: "1 day ago", read: true, category: "system", icon: CheckCircle2 },
 ];
 
-const QUICK_ACTIONS: QuickAction[] = [
+const STUDENT_NOTIFICATIONS: NotificationItem[] = [
+  { id: "sn1", title: "New Assignment Added", description: "Mr. Sharma added Algebra Worksheet due tomorrow.", time: "10 min ago", read: false, category: "school", icon: ClipboardList },
+  { id: "sn2", title: "Science Project Due", description: "Your science project is due in 3 days.", time: "1 hour ago", read: false, category: "school", icon: Clock },
+  { id: "sn3", title: "Mid-Sem Results Published", description: "Your mid-semester results are now available.", time: "2 hours ago", read: false, category: "school", icon: Award },
+  { id: "sn4", title: "Math Exam Scheduled", description: "Mathematics Unit Test on June 20.", time: "3 hours ago", read: true, category: "school", icon: CalendarClock },
+  { id: "sn5", title: "Document Verified", description: "Your Aadhaar Card has been verified by admin.", time: "5 hours ago", read: true, category: "school", icon: CheckCircle2 },
+  { id: "sn6", title: "AI Study Guide Ready", description: "New AI study guide for Science Chapter 6 generated.", time: "1 day ago", read: true, category: "system", icon: Sparkles },
+];
+
+const PARENT_NOTIFICATIONS: NotificationItem[] = [
+  { id: "mn1", title: "Fee Reminder", description: "Term 2 fees due by June 30.", time: "1 hour ago", read: false, category: "school", icon: DollarSign },
+  { id: "mn2", title: "Attendance Alert", description: "Aarav was absent today (3 absences this month).", time: "3 hours ago", read: false, category: "school", icon: ClipboardCheck },
+  { id: "mn3", title: "Result Published", description: "Mid-semester results for Aarav are available.", time: "5 hours ago", read: false, category: "school", icon: Award },
+  { id: "mn4", title: "PTM Scheduled", description: "Parent-Teacher meeting on June 25.", time: "1 day ago", read: true, category: "school", icon: CalendarClock },
+  { id: "mn5", title: "Document Verified", description: "Transfer Certificate verified by school.", time: "2 days ago", read: true, category: "school", icon: CheckCircle2 },
+];
+
+const TEACHER_NOTIFICATIONS: NotificationItem[] = [
+  { id: "tn1", title: "New Assignment Submitted", description: "15 students submitted Algebra Worksheet.", time: "30 min ago", read: false, category: "school", icon: ClipboardList },
+  { id: "tn2", title: "Leave Request Approved", description: "Your leave request for Friday approved.", time: "2 hours ago", read: false, category: "system", icon: CheckCircle2 },
+  { id: "tn3", title: "Exam Results Pending", description: "Enter marks for Unit Test 1 before deadline.", time: "5 hours ago", read: true, category: "school", icon: AlertTriangle },
+  { id: "tn4", title: "PTM Scheduled", description: "Parent-Teacher meeting on June 25.", time: "1 day ago", read: true, category: "school", icon: CalendarClock },
+];
+
+const ADMIN_NOTIFICATIONS: NotificationItem[] = [
+  { id: "an1", title: "New Admission Request", description: "Grade 7 application received.", time: "5 min ago", read: false, category: "school", icon: UserPlus },
+  { id: "an2", title: "Fee Collection Report", description: "Monthly fee collection report ready.", time: "1 hour ago", read: false, category: "system", icon: DollarSign },
+  { id: "an3", title: "System Backup Complete", description: "Daily backup completed successfully.", time: "3 hours ago", read: true, category: "system", icon: CheckCircle2 },
+  { id: "an4", title: "User Activity Log", description: "3 new teacher accounts created.", time: "1 day ago", read: true, category: "system", icon: Users },
+];
+
+// ─── Role-specific Quick Actions ───
+const PRINCIPAL_ACTIONS: QuickAction[] = [
   { label: "Add Student", icon: UserPlus, group: "Students" },
   { label: "View Directory", icon: FolderOpen, group: "Students" },
   { label: "New Admission", icon: UserPlus, group: "Admissions" },
@@ -177,7 +211,75 @@ const QUICK_ACTIONS: QuickAction[] = [
   { label: "Run Analysis", icon: BarChart3, group: "AI" },
 ];
 
-const CONTEXT_PROMPTS: Record<string, string[]> = {
+const STUDENT_ACTIONS: QuickAction[] = [
+  { label: "View Timetable", icon: Calendar, group: "Academics" },
+  { label: "Open Assignments", icon: ClipboardList, group: "Academics" },
+  { label: "AI Study Assistant", icon: Sparkles, group: "AI" },
+  { label: "Study Resources", icon: Library, group: "Academics" },
+  { label: "View Results", icon: Award, group: "Academics" },
+  { label: "Upload Document", icon: Upload, group: "Documents" },
+  { label: "Message Teacher", icon: MessageCircle, group: "Communication" },
+];
+
+const PARENT_ACTIONS: QuickAction[] = [
+  { label: "Child Progress", icon: TrendingUp, group: "Overview" },
+  { label: "Attendance Report", icon: ClipboardCheck, group: "Overview" },
+  { label: "Fee Details", icon: DollarSign, group: "Finance" },
+  { label: "Message Teacher", icon: MessageCircle, group: "Communication" },
+  { label: "Documents", icon: FolderOpen, group: "Documents" },
+  { label: "AI Assistant", icon: Sparkles, group: "AI" },
+];
+
+const TEACHER_ACTIONS: QuickAction[] = [
+  { label: "My Classes", icon: BookMarked, group: "Academics" },
+  { label: "Take Attendance", icon: ClipboardCheck, group: "Academics" },
+  { label: "Create Assignment", icon: FilePlus, group: "Academics" },
+  { label: "Grade Submissions", icon: GraduationCap, group: "Academics" },
+  { label: "Message Students", icon: MessageCircle, group: "Communication" },
+  { label: "AI Assistant", icon: Sparkles, group: "AI" },
+];
+
+const ADMIN_ACTIONS: QuickAction[] = [
+  { label: "User Management", icon: Users, group: "System" },
+  { label: "Fee Management", icon: DollarSign, group: "Finance" },
+  { label: "Infrastructure", icon: Building2, group: "Facilities" },
+  { label: "Reports & Export", icon: FileText, group: "Reports" },
+  { label: "System Settings", icon: Settings, group: "System" },
+  { label: "Audit Logs", icon: ScrollText, group: "System" },
+];
+
+// ─── Role-specific AI Context Prompts ───
+const STUDENT_CONTEXT_PROMPTS: Record<string, string[]> = {
+  "/app": ["What's my schedule today?", "Check my upcoming deadlines", "How am I performing?"],
+  "/app/assignments": ["Show pending assignments", "Which assignment is due soon?", "Help me plan my homework"],
+  "/app/exams": ["When is my next exam?", "Analyze my exam results", "Create a study plan"],
+  "/app/ai": ["Explain Chapter 6 Science", "Generate flashcards for History", "Quiz me on Mathematics"],
+  "/app/performance": ["Which subject needs improvement?", "Compare my scores across exams", "Generate performance report"],
+  "/app/study-resources": ["Find resources for Mathematics", "Suggest study materials for Science", "Previous year papers for English"],
+  "/app/messages": ["Draft a message to my teacher", "Check unread messages"],
+  "/app/documents": ["Check document verification status", "Upload new document"],
+  "/app/attendance": ["Show my attendance trend", "How many days absent?"],
+};
+
+const PARENT_CONTEXT_PROMPTS: Record<string, string[]> = {
+  "/app": ["How is Aarav performing?", "Check attendance summary", "View fee status"],
+  "/app/children": ["Compare siblings' performance", "View detailed progress report"],
+  "/app/exams": ["Analyze exam results", "Compare with class average"],
+  "/app/attendance": ["Show attendance calendar", "Identify attendance patterns"],
+  "/app/fees": ["View payment history", "Check upcoming dues"],
+  "/app/messages": ["Draft message to teacher", "Check school announcements"],
+  "/app/documents": ["Verify document status", "Download report card"],
+};
+
+const TEACHER_CONTEXT_PROMPTS: Record<string, string[]> = {
+  "/app": ["Today's class schedule", "Pending grading tasks", "Student attendance overview"],
+  "/app/classes": ["Class performance summary", "Identify struggling students"],
+  "/app/attendance": ["Take attendance", "View attendance trends"],
+  "/app/assignments": ["Create new assignment", "Review submissions"],
+  "/app/gradebook": ["Enter marks", "Generate class report"],
+};
+
+const PRINCIPAL_CONTEXT_PROMPTS: Record<string, string[]> = {
   "/app/students": ["Find at-risk students", "Generate student summary", "Analyze attendance by class"],
   "/app/fees": ["Analyze collections", "Show fee defaulters", "Generate finance report"],
   "/app/analytics": ["School health overview", "Compare grade performance", "Attendance trends"],
@@ -190,12 +292,83 @@ const CONTEXT_PROMPTS: Record<string, string[]> = {
   "/app": ["School overview", "Today's highlights", "Action items"],
 };
 
-function getDefaultPrompt(path: string): string[] {
-  for (const [route, prompts] of Object.entries(CONTEXT_PROMPTS)) {
-    if (route === "/app" ? path === "/app" : path.startsWith(route)) return prompts;
-  }
-  return CONTEXT_PROMPTS["/app"];
+const ADMIN_CONTEXT_PROMPTS: Record<string, string[]> = {
+  "/app/users": ["User activity report", "New user registrations", "Role distribution"],
+  "/app/fees": ["Revenue analysis", "Collection trends", "Outstanding dues"],
+  "/app/infrastructure": ["Room utilization", "Maintenance schedule", "Resource allocation"],
+  "/app/logs": ["Recent system events", "Security audit", "Login activity"],
+  "/app": ["System health overview", "Recent activity", "Admin tasks"],
+};
+
+// ─── Student-specific sidebar data ───
+interface DeadlineItem {
+  id: string;
+  name: string;
+  dueDate: string;
+  daysRemaining: number;
 }
+
+interface ExamItem {
+  id: string;
+  name: string;
+  subject: string;
+  date: string;
+  daysRemaining: number;
+}
+
+interface AcademicSnapshot {
+  attendance: number;
+  performance: number;
+  pendingAssignments: number;
+  upcomingExams: number;
+}
+
+interface AiSuggestion {
+  id: string;
+  text: string;
+}
+
+const STUDENT_DEADLINES: DeadlineItem[] = [
+  { id: "d1", name: "Algebra Worksheet", dueDate: "Tomorrow", daysRemaining: 1 },
+  { id: "d2", name: "Science Project", dueDate: "Jun 18", daysRemaining: 3 },
+  { id: "d3", name: "English Essay", dueDate: "Jun 20", daysRemaining: 5 },
+];
+
+const STUDENT_EXAMS: ExamItem[] = [
+  { id: "e1", name: "Mathematics Unit Test", subject: "Mathematics", date: "Jun 20", daysRemaining: 5 },
+  { id: "e2", name: "Science Practical", subject: "Science", date: "Jun 23", daysRemaining: 8 },
+];
+
+const STUDENT_ACADEMIC_SNAPSHOT: AcademicSnapshot = {
+  attendance: 92,
+  performance: 84,
+  pendingAssignments: 3,
+  upcomingExams: 2,
+};
+
+const STUDENT_AI_SUGGESTIONS: AiSuggestion[] = [
+  { id: "s1", text: "Review Algebra before Unit Test on June 20." },
+  { id: "s2", text: "Complete Science Project — deadline in 3 days." },
+  { id: "s3", text: "Revise Chapter 6 Biology for upcoming practical." },
+  { id: "s4", text: "Practice previous year Mathematics papers." },
+];
+
+const PARENT_DEADLINES: DeadlineItem[] = [
+  { id: "pd1", name: "Term 2 Fee Payment", dueDate: "Jun 30", daysRemaining: 15 },
+  { id: "pd2", name: "PTM Attendance", dueDate: "Jun 25", daysRemaining: 10 },
+];
+
+const PARENT_EXAMS: ExamItem[] = [
+  { id: "pe1", name: "Mid-Semester Results", subject: "All Subjects", date: "Available", daysRemaining: 0 },
+  { id: "pe2", name: "Final Examination", subject: "All Subjects", date: "Nov 15", daysRemaining: 153 },
+];
+
+const PARENT_ACADEMIC_SNAPSHOT: AcademicSnapshot = {
+  attendance: 92,
+  performance: 82,
+  pendingAssignments: 3,
+  upcomingExams: 2,
+};
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout, theme, toggleTheme, parentMode, setParentMode } = useAuth();
@@ -208,7 +381,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Right sidebar state
   const [rightOpen, setRightOpen] = useState(false);
   const [rightTab, setRightTab] = useState<RightTab>(() => {
-    try { return (localStorage.getItem("scholarii-right-tab") as RightTab) || "chat"; } catch { return "chat"; }
+    try {
+      const saved = localStorage.getItem("scholarii-right-tab") as RightTab;
+      if (saved) return saved;
+      // Default to overview for student/parent, chat for others
+      return "chat";
+    } catch { return "chat"; }
   });
   const [rightWidth, setRightWidth] = useState<number>(() => {
     try { return parseInt(localStorage.getItem("scholarii-right-width") || "400", 10); } catch { return 400; }
@@ -217,7 +395,41 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatThinking, setChatThinking] = useState(false);
-  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+  const [notifications, setNotifications] = useState(PRINCIPAL_NOTIFICATIONS);
+
+  // ─── Role-based notifications ───
+  useEffect(() => {
+    if (user?.role === "student") {
+      setNotifications(parentMode ? PARENT_NOTIFICATIONS : STUDENT_NOTIFICATIONS);
+    } else if (user?.role === "teacher") {
+      setNotifications(TEACHER_NOTIFICATIONS);
+    } else if (user?.role === "admin") {
+      setNotifications(ADMIN_NOTIFICATIONS);
+    } else {
+      setNotifications(PRINCIPAL_NOTIFICATIONS);
+    }
+  }, [user?.role, parentMode]);
+
+  // ─── Role-based quick actions ───
+  const roleQuickActions = useMemo(() => {
+    if (user?.role === "student") return parentMode ? PARENT_ACTIONS : STUDENT_ACTIONS;
+    if (user?.role === "teacher") return TEACHER_ACTIONS;
+    if (user?.role === "admin") return ADMIN_ACTIONS;
+    return PRINCIPAL_ACTIONS;
+  }, [user?.role, parentMode]);
+
+  // ─── Role-based context prompts ───
+  const getContextPrompts = useCallback((role: string, isParentMode: boolean, routePath: string): string[] => {
+    const prompts = isParentMode ? PARENT_CONTEXT_PROMPTS
+      : role === "student" ? STUDENT_CONTEXT_PROMPTS
+      : role === "teacher" ? TEACHER_CONTEXT_PROMPTS
+      : role === "admin" ? ADMIN_CONTEXT_PROMPTS
+      : PRINCIPAL_CONTEXT_PROMPTS;
+    for (const [route, routePrompts] of Object.entries(prompts)) {
+      if (route === "/app" ? routePath === "/app" : routePath.startsWith(route)) return routePrompts;
+    }
+    return prompts["/app"] ?? ["How can I help?"];
+  }, []);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
   const resizeRef = useRef<HTMLDivElement | null>(null);
@@ -272,7 +484,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const portalLabel = showParent ? "Parent" : ROLE_LABEL[user.role];
   const initials = user.name.split(" ").map((s) => s[0]).slice(0, 2).join("");
   const unreadCount = notifications.filter((n) => !n.read).length;
-  const contextPrompts = getDefaultPrompt(path);
+  const contextPrompts = getContextPrompts(user.role, showParent, path);
 
   const pathExistsInNav = useCallback((targetPath: string, forParentMode: boolean) => {
     const navItems = forParentMode ? PARENT_NAV : STUDENT_NAV;
@@ -639,8 +851,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               <BrainCircuit className="size-4" />
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-sidebar-foreground leading-none text-sm">Utilities</div>
-              <div className="text-[11px] text-sidebar-foreground/50 mt-0.5">AI & Actions</div>
+              <div className="font-semibold text-sidebar-foreground leading-none text-sm">
+                {showParent ? "Parent Panel" : isStudent ? "Student Panel" : "Utilities"}
+              </div>
+              <div className="text-[11px] text-sidebar-foreground/50 mt-0.5">
+                {showParent ? "Family Overview" : isStudent ? "Study Hub" : "AI & Actions"}
+              </div>
             </div>
           </div>
           <button
@@ -655,6 +871,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Nav Items */}
         <nav className="p-3 space-y-1 shrink-0">
           {([
+            ...(showParent || isStudent ? [{ tab: "overview" as RightTab, label: "Overview", icon: BarChart3, badge: undefined }] : []),
             { tab: "chat" as RightTab, label: "AI Chat", icon: MessageCircle, badge: undefined },
             { tab: "notifications" as RightTab, label: "Notifications", icon: Bell, badge: unreadCount > 0 ? unreadCount : undefined },
             { tab: "actions" as RightTab, label: "Quick Actions", icon: Zap, badge: undefined },
@@ -833,11 +1050,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               {/* ─── Quick Actions Tab ─── */}
               {rightTab === "actions" && (
                 <div className="p-4 space-y-4">
-                  {Array.from(new Set(QUICK_ACTIONS.map((a) => a.group))).map((group) => (
+                  {Array.from(new Set(roleQuickActions.map((a) => a.group))).map((group) => (
                     <div key={group}>
                       <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">{group}</div>
                       <div className="space-y-1">
-                        {QUICK_ACTIONS.filter((a) => a.group === group).map((action) => {
+                        {roleQuickActions.filter((a) => a.group === group).map((action) => {
                           const Icon = action.icon;
                           return (
                             <button
@@ -854,6 +1071,91 @@ export function AppShell({ children }: { children: ReactNode }) {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* ─── Overview Tab (Student/Parent) ─── */}
+              {rightTab === "overview" && (showParent || isStudent) && (
+                <div className="p-4 space-y-5">
+                  {/* Academic Snapshot */}
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Academic Snapshot</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: "Attendance", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.attendance : STUDENT_ACADEMIC_SNAPSHOT.attendance}%`, icon: ClipboardCheck, color: "text-emerald-500" },
+                        { label: "Performance", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.performance : STUDENT_ACADEMIC_SNAPSHOT.performance}%`, icon: TrendingUp, color: "text-blue-500" },
+                        { label: "Assignments", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.pendingAssignments : STUDENT_ACADEMIC_SNAPSHOT.pendingAssignments} Pending`, icon: Clock, color: "text-amber-500" },
+                        { label: "Exams", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.upcomingExams : STUDENT_ACADEMIC_SNAPSHOT.upcomingExams} Upcoming`, icon: CalendarClock, color: "text-violet-500" },
+                      ].map((stat) => (
+                        <div key={stat.label} className="rounded-xl bg-sidebar-accent/30 p-3">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <stat.icon className={`size-3 ${stat.color}`} />
+                            <span className="text-[10px] text-sidebar-foreground/50">{stat.label}</span>
+                          </div>
+                          <p className="text-sm font-bold text-sidebar-foreground">{stat.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Upcoming Deadlines */}
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Deadlines</div>
+                    <div className="space-y-1.5">
+                      {(showParent ? PARENT_DEADLINES : STUDENT_DEADLINES).map((deadline) => (
+                        <div key={deadline.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                          <div className={`size-2 rounded-full shrink-0 ${deadline.daysRemaining <= 1 ? "bg-red-500" : deadline.daysRemaining <= 3 ? "bg-amber-500" : "bg-emerald-500"}`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-sidebar-foreground truncate">{deadline.name}</p>
+                            <p className="text-[10px] text-sidebar-foreground/40">Due {deadline.dueDate}</p>
+                          </div>
+                          <span className={`text-[10px] font-medium ${deadline.daysRemaining <= 1 ? "text-red-400" : deadline.daysRemaining <= 3 ? "text-amber-400" : "text-emerald-400"}`}>
+                            {deadline.daysRemaining === 0 ? "Today" : deadline.daysRemaining === 1 ? "Tomorrow" : `${deadline.daysRemaining}d`}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Upcoming Exams */}
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Exams</div>
+                    <div className="space-y-1.5">
+                      {(showParent ? PARENT_EXAMS : STUDENT_EXAMS).map((exam) => (
+                        <div key={exam.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                          <div className="size-8 rounded-lg bg-violet-500/10 grid place-items-center shrink-0">
+                            <GraduationCap className="size-4 text-violet-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-sidebar-foreground truncate">{exam.name}</p>
+                            <p className="text-[10px] text-sidebar-foreground/40">{exam.subject} · {exam.date}</p>
+                          </div>
+                          {exam.daysRemaining > 0 && (
+                            <span className="text-[10px] font-medium text-violet-400">{exam.daysRemaining}d</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* AI Study Suggestions */}
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">AI Suggestions</div>
+                    <div className="space-y-1.5">
+                      {(showParent ? [] : STUDENT_AI_SUGGESTIONS).map((suggestion) => (
+                        <div key={suggestion.id} className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 px-3 py-2.5">
+                          <Lightbulb className="size-3.5 text-violet-400 mt-0.5 shrink-0" />
+                          <p className="text-[11px] text-sidebar-foreground/70 leading-relaxed">{suggestion.text}</p>
+                        </div>
+                      ))}
+                      {showParent && (
+                        <div className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 px-3 py-2.5">
+                          <Lightbulb className="size-3.5 text-violet-400 mt-0.5 shrink-0" />
+                          <p className="text-[11px] text-sidebar-foreground/70 leading-relaxed">Check Aarav's mid-semester results for performance insights.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
