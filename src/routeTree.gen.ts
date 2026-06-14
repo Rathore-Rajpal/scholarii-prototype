@@ -16,11 +16,15 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppUsersRouteImport } from './routes/app.users'
 import { Route as AppTimetableRouteImport } from './routes/app.timetable'
 import { Route as AppTeachersRouteImport } from './routes/app.teachers'
+import { Route as AppSubjectsRouteImport } from './routes/app.subjects'
+import { Route as AppStudyResourcesRouteImport } from './routes/app.study-resources'
 import { Route as AppStudentsRouteImport } from './routes/app.students'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScheduleRouteImport } from './routes/app.schedule'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppPerformanceRouteImport } from './routes/app.performance'
+import { Route as AppMessagesRouteImport } from './routes/app.messages'
 import { Route as AppMeetingsRouteImport } from './routes/app.meetings'
 import { Route as AppLogsRouteImport } from './routes/app.logs'
 import { Route as AppInfrastructureRouteImport } from './routes/app.infrastructure'
@@ -89,6 +93,16 @@ const AppTeachersRoute = AppTeachersRouteImport.update({
   path: '/teachers',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSubjectsRoute = AppSubjectsRouteImport.update({
+  id: '/subjects',
+  path: '/subjects',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStudyResourcesRoute = AppStudyResourcesRouteImport.update({
+  id: '/study-resources',
+  path: '/study-resources',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppStudentsRoute = AppStudentsRouteImport.update({
   id: '/students',
   path: '/students',
@@ -112,6 +126,16 @@ const AppReportsRoute = AppReportsRouteImport.update({
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPerformanceRoute = AppPerformanceRouteImport.update({
+  id: '/performance',
+  path: '/performance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMessagesRoute = AppMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMeetingsRoute = AppMeetingsRouteImport.update({
@@ -300,11 +324,15 @@ export interface FileRoutesByFullPath {
   '/app/infrastructure': typeof AppInfrastructureRoute
   '/app/logs': typeof AppLogsRoute
   '/app/meetings': typeof AppMeetingsRoute
+  '/app/messages': typeof AppMessagesRoute
+  '/app/performance': typeof AppPerformanceRoute
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
   '/app/schedule': typeof AppScheduleRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/students': typeof AppStudentsRoute
+  '/app/study-resources': typeof AppStudyResourcesRoute
+  '/app/subjects': typeof AppSubjectsRoute
   '/app/teachers': typeof AppTeachersRoute
   '/app/timetable': typeof AppTimetableRoute
   '/app/users': typeof AppUsersRoute
@@ -345,11 +373,15 @@ export interface FileRoutesByTo {
   '/app/infrastructure': typeof AppInfrastructureRoute
   '/app/logs': typeof AppLogsRoute
   '/app/meetings': typeof AppMeetingsRoute
+  '/app/messages': typeof AppMessagesRoute
+  '/app/performance': typeof AppPerformanceRoute
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
   '/app/schedule': typeof AppScheduleRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/students': typeof AppStudentsRoute
+  '/app/study-resources': typeof AppStudyResourcesRoute
+  '/app/subjects': typeof AppSubjectsRoute
   '/app/teachers': typeof AppTeachersRoute
   '/app/timetable': typeof AppTimetableRoute
   '/app/users': typeof AppUsersRoute
@@ -392,11 +424,15 @@ export interface FileRoutesById {
   '/app/infrastructure': typeof AppInfrastructureRoute
   '/app/logs': typeof AppLogsRoute
   '/app/meetings': typeof AppMeetingsRoute
+  '/app/messages': typeof AppMessagesRoute
+  '/app/performance': typeof AppPerformanceRoute
   '/app/profile': typeof AppProfileRoute
   '/app/reports': typeof AppReportsRoute
   '/app/schedule': typeof AppScheduleRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/students': typeof AppStudentsRoute
+  '/app/study-resources': typeof AppStudyResourcesRoute
+  '/app/subjects': typeof AppSubjectsRoute
   '/app/teachers': typeof AppTeachersRoute
   '/app/timetable': typeof AppTimetableRoute
   '/app/users': typeof AppUsersRoute
@@ -440,11 +476,15 @@ export interface FileRouteTypes {
     | '/app/infrastructure'
     | '/app/logs'
     | '/app/meetings'
+    | '/app/messages'
+    | '/app/performance'
     | '/app/profile'
     | '/app/reports'
     | '/app/schedule'
     | '/app/settings'
     | '/app/students'
+    | '/app/study-resources'
+    | '/app/subjects'
     | '/app/teachers'
     | '/app/timetable'
     | '/app/users'
@@ -485,11 +525,15 @@ export interface FileRouteTypes {
     | '/app/infrastructure'
     | '/app/logs'
     | '/app/meetings'
+    | '/app/messages'
+    | '/app/performance'
     | '/app/profile'
     | '/app/reports'
     | '/app/schedule'
     | '/app/settings'
     | '/app/students'
+    | '/app/study-resources'
+    | '/app/subjects'
     | '/app/teachers'
     | '/app/timetable'
     | '/app/users'
@@ -531,11 +575,15 @@ export interface FileRouteTypes {
     | '/app/infrastructure'
     | '/app/logs'
     | '/app/meetings'
+    | '/app/messages'
+    | '/app/performance'
     | '/app/profile'
     | '/app/reports'
     | '/app/schedule'
     | '/app/settings'
     | '/app/students'
+    | '/app/study-resources'
+    | '/app/subjects'
     | '/app/teachers'
     | '/app/timetable'
     | '/app/users'
@@ -610,6 +658,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTeachersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/subjects': {
+      id: '/app/subjects'
+      path: '/subjects'
+      fullPath: '/app/subjects'
+      preLoaderRoute: typeof AppSubjectsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/study-resources': {
+      id: '/app/study-resources'
+      path: '/study-resources'
+      fullPath: '/app/study-resources'
+      preLoaderRoute: typeof AppStudyResourcesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/students': {
       id: '/app/students'
       path: '/students'
@@ -643,6 +705,20 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/app/profile'
       preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/performance': {
+      id: '/app/performance'
+      path: '/performance'
+      fullPath: '/app/performance'
+      preLoaderRoute: typeof AppPerformanceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/messages': {
+      id: '/app/messages'
+      path: '/messages'
+      fullPath: '/app/messages'
+      preLoaderRoute: typeof AppMessagesRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/meetings': {
@@ -894,11 +970,15 @@ interface AppRouteChildren {
   AppInfrastructureRoute: typeof AppInfrastructureRoute
   AppLogsRoute: typeof AppLogsRoute
   AppMeetingsRoute: typeof AppMeetingsRoute
+  AppMessagesRoute: typeof AppMessagesRoute
+  AppPerformanceRoute: typeof AppPerformanceRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReportsRoute: typeof AppReportsRoute
   AppScheduleRoute: typeof AppScheduleRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppStudentsRoute: typeof AppStudentsRoute
+  AppStudyResourcesRoute: typeof AppStudyResourcesRoute
+  AppSubjectsRoute: typeof AppSubjectsRoute
   AppTeachersRoute: typeof AppTeachersRoute
   AppTimetableRoute: typeof AppTimetableRoute
   AppUsersRoute: typeof AppUsersRoute
@@ -938,11 +1018,15 @@ const AppRouteChildren: AppRouteChildren = {
   AppInfrastructureRoute: AppInfrastructureRoute,
   AppLogsRoute: AppLogsRoute,
   AppMeetingsRoute: AppMeetingsRoute,
+  AppMessagesRoute: AppMessagesRoute,
+  AppPerformanceRoute: AppPerformanceRoute,
   AppProfileRoute: AppProfileRoute,
   AppReportsRoute: AppReportsRoute,
   AppScheduleRoute: AppScheduleRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppStudentsRoute: AppStudentsRoute,
+  AppStudyResourcesRoute: AppStudyResourcesRoute,
+  AppSubjectsRoute: AppSubjectsRoute,
   AppTeachersRoute: AppTeachersRoute,
   AppTimetableRoute: AppTimetableRoute,
   AppUsersRoute: AppUsersRoute,

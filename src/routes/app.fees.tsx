@@ -57,13 +57,23 @@ import {
 } from "lucide-react";
 import { PieChart as RePieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
 import { useAuth } from "@/lib/scholarii/auth";
+import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 import { loadData } from "@/lib/scholarii/mock";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/fees")({ component: FeesPage });
 
 function FeesPage() {
-  const { user } = useAuth();
+  const { user, parentMode } = useAuth();
+  if (user?.role === "student" && parentMode) {
+    return (
+      <PlaceholderPage
+        title="Fees"
+        subtitle="View your child's fee status, payment history, and pending dues."
+        icon={Wallet}
+      />
+    );
+  }
   if (user?.role === "student") return <StudentFeesView />;
   return <AdminFeesView />;
 }
