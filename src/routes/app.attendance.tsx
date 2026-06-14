@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Check, X, Clock, Save } from "lucide-react";
+import { Check, X, Clock, Save, ClipboardCheck } from "lucide-react";
 import { useAuth } from "@/lib/scholarii/auth";
+import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 import { loadData } from "@/lib/scholarii/mock";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -16,7 +17,16 @@ export const Route = createFileRoute("/app/attendance")({ component: AttendanceP
 type Status = "present" | "absent" | "late";
 
 function AttendancePage() {
-  const { user } = useAuth();
+  const { user, parentMode } = useAuth();
+  if (user?.role === "student" && parentMode) {
+    return (
+      <PlaceholderPage
+        title="Attendance"
+        subtitle="View your child's attendance records, daily presence, and absence history."
+        icon={ClipboardCheck}
+      />
+    );
+  }
   if (user?.role === "student") return <StudentAttendanceView />;
   return <TeacherMarkAttendance />;
 }

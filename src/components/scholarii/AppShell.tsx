@@ -13,7 +13,7 @@ import {
   UserPlus, FolderOpen, FilePlus, ClipboardPlus, GraduationCap as ExamIcon,
   TrendingDown, Megaphone, Mail, Zap, X, Hash,
   Paperclip, Mic, Star, PanelRightOpen,
-  Sparkles, Database,
+  Sparkles, Database, Activity, Library,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,24 +23,46 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import scholariiIconUrl from "../../../Icons/apple-touch-icon.png?url";
 
 type NavItem = { to: string; label: string; icon: typeof Home };
 type NavGroup = { label: string; icon: typeof Home; items: NavItem[] };
 
-const PARENT_NAV: NavItem[] = [
+type PrincipalNav = (NavItem | NavGroup)[];
+
+const STUDENT_NAV: PrincipalNav = [
   { to: "/app", label: "Dashboard", icon: Home },
-  { to: "/app/children", label: "My Children", icon: Baby },
+  { to: "/app/timetable", label: "Timetable", icon: Calendar },
+  {
+    label: "Academics",
+    icon: BookOpen,
+    items: [
+      { to: "/app/assignments", label: "Assignments", icon: ClipboardList },
+      { to: "/app/exams", label: "Exams & Results", icon: GraduationCap },
+      { to: "/app/study-resources", label: "Study Resources", icon: Library },
+    ],
+  },
+  { to: "/app/ai", label: "AI Study Assistant", icon: Sparkles },
+  { to: "/app/performance", label: "Performance", icon: Activity },
   { to: "/app/attendance", label: "Attendance", icon: ClipboardCheck },
-  { to: "/app/academics", label: "Academics", icon: BookOpen },
-  { to: "/app/fees", label: "Fee Payments", icon: Wallet },
-  { to: "/app/communication", label: "Communication", icon: MessageSquare },
-  { to: "/app/events", label: "Events", icon: Calendar },
+  { to: "/app/messages", label: "Messages", icon: MessageCircle },
+  { to: "/app/documents", label: "Documents", icon: FileText },
+  { to: "/app/profile", label: "Profile", icon: UserCircle },
 ];
 
-type PrincipalNav = (NavItem | NavGroup)[];
+const PARENT_NAV: NavItem[] = [
+  { to: "/app", label: "Dashboard", icon: Home },
+  { to: "/app/children", label: "Child Overview", icon: Baby },
+  { to: "/app/exams", label: "Performance", icon: Activity },
+  { to: "/app/attendance", label: "Attendance", icon: ClipboardCheck },
+  { to: "/app/fees", label: "Fees", icon: Wallet },
+  { to: "/app/messages", label: "Messages", icon: MessageCircle },
+  { to: "/app/documents", label: "Documents", icon: FileText },
+  { to: "/app/ai", label: "AI Assistant", icon: Sparkles },
+  { to: "/app/profile", label: "Profile", icon: UserCircle },
+];
 
 const PRINCIPAL_NAV: PrincipalNav = [
   { to: "/app", label: "Dashboard", icon: Home },
@@ -88,15 +110,7 @@ const NAV: Record<Role, PrincipalNav | NavItem[]> = {
     { to: "/app/meetings", label: "PTA Meetings", icon: CalendarClock },
     { to: "/app/profile", label: "Profile", icon: UserCircle },
   ],
-  student: [
-    { to: "/app", label: "Dashboard", icon: Home },
-    { to: "/app/timetable", label: "My Timetable", icon: Calendar },
-    { to: "/app/assignments", label: "Assignments", icon: ClipboardList },
-    { to: "/app/exams", label: "Exams & Results", icon: GraduationCap },
-    { to: "/app/attendance", label: "Attendance", icon: ClipboardCheck },
-    { to: "/app/fees", label: "Fees", icon: Wallet },
-    { to: "/app/profile", label: "Profile", icon: UserCircle },
-  ],
+  student: STUDENT_NAV,
   admin: [
     { to: "/app", label: "Dashboard", icon: Home },
     { to: "/app/users", label: "User Management", icon: Users },
@@ -259,6 +273,29 @@ export function AppShell({ children }: { children: ReactNode }) {
   const initials = user.name.split(" ").map((s) => s[0]).slice(0, 2).join("");
   const unreadCount = notifications.filter((n) => !n.read).length;
   const contextPrompts = getDefaultPrompt(path);
+
+  const pathExistsInNav = useCallback((targetPath: string, forParentMode: boolean) => {
+    const navItems = forParentMode ? PARENT_NAV : STUDENT_NAV;
+    return navItems.some((item) => {
+      if ("items" in item) {
+        return item.items.some((child) =>
+          child.to === "/app" ? targetPath === "/app" : targetPath.startsWith(child.to)
+        );
+      }
+      return item.to === "/app" ? targetPath === "/app" : targetPath.startsWith(item.to);
+    });
+  }, []);
+
+  const prevParentModeRef = useRef(parentMode);
+
+  useEffect(() => {
+    if (prevParentModeRef.current !== parentMode) {
+      prevParentModeRef.current = parentMode;
+      if (!pathExistsInNav(path, parentMode)) {
+        nav({ to: "/app" });
+      }
+    }
+  }, [parentMode, path, nav, pathExistsInNav]);
 
   // Auto-expand groups containing active routes
   useEffect(() => {

@@ -1,11 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useAuth } from "@/lib/scholarii/auth";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { PageHeader } from "@/components/scholarii/AppShell";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Wallet, ClipboardCheck, GraduationCap, Calendar } from "lucide-react";
+import { Wallet, ClipboardCheck, GraduationCap, Calendar, Baby } from "lucide-react";
+import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
 export const Route = createFileRoute("/app/children")({ component: ChildrenPage });
 
@@ -15,6 +19,32 @@ const kids = [
 ];
 
 function ChildrenPage() {
+  const { user, parentMode } = useAuth();
+  const nav = useNavigate();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+
+  const isParent = user?.role === "student" && parentMode;
+  const isStudent = user?.role === "student";
+  const isNonStudentRole = user?.role !== "student";
+
+  useEffect(() => {
+    if (isStudent && !parentMode && path !== "/app") {
+      nav({ to: "/app" });
+    }
+  }, [isStudent, parentMode, path, nav]);
+
+  if (isStudent && !parentMode) return null;
+
+  if (isNonStudentRole) {
+    return (
+      <PlaceholderPage
+        title="Child Overview"
+        subtitle="View your children's academic progress, attendance, and school activities."
+        icon={Baby}
+      />
+    );
+  }
+
   return (
     <div>
       <PageHeader title="My Children" subtitle="Profiles and progress of your enrolled children." />
