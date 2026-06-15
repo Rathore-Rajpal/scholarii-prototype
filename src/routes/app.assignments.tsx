@@ -28,6 +28,8 @@ import {
   Loader2,
   ArrowRight,
 } from "lucide-react";
+import { useAuth } from "@/lib/scholarii/auth";
+import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
 export const Route = createFileRoute("/app/assignments")({
   component: AssignmentsPage,
@@ -219,6 +221,17 @@ const FILTER_OPTIONS: { value: string; label: string }[] = [
 ];
 
 function AssignmentsPage() {
+  const { user } = useAuth();
+  if (user?.role === "teacher") {
+    return (
+      <PlaceholderPage
+        title="Assignments"
+        subtitle="Create, review, and verify assignments."
+        icon={ClipboardList}
+      />
+    );
+  }
+
   const [assignments, setAssignments] = useState<Assignment[]>(ASSIGNMENTS);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");

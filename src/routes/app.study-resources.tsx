@@ -18,6 +18,8 @@ import {
   PREVIOUS_PAPERS, SAVED_AI_GUIDES, FILE_TYPE_CONFIG,
 } from "@/lib/scholarii/study-resources-mock-data";
 import type { Resource, ResourceType, ResourceTab } from "@/lib/scholarii/study-resources-mock-data";
+import { useAuth } from "@/lib/scholarii/auth";
+import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
 export const Route = createFileRoute("/app/study-resources")({
   component: StudyResourcesPage,
@@ -34,6 +36,17 @@ const TAB_LIST: { id: ResourceTab; label: string; icon: React.ReactNode; count: 
 const FILTER_OPTIONS = ["All", "PDF", "Documents", "Links", "Videos", "Books", "Teacher", "My Resources"];
 
 function StudyResourcesPage() {
+  const { user } = useAuth();
+  if (user?.role === "teacher") {
+    return (
+      <PlaceholderPage
+        title="Study Resources"
+        subtitle="Manage books, notes, and learning resources."
+        icon={Library}
+      />
+    );
+  }
+
   const [activeTab, setActiveTab] = useState<ResourceTab>("syllabus");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");

@@ -24,6 +24,7 @@ import {
   PARENT_ATTACHABLE_RESOURCES, PARENT_MOCK_CONVERSATIONS, PARENT_AI_RESPONSES,
 } from "@/lib/scholarii/parent-ai-mock-data";
 import { useAuth } from "@/lib/scholarii/auth";
+import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
 export const Route = createFileRoute("/app/ai")({ component: AiStudyAssistant });
 
@@ -32,6 +33,16 @@ const DAILY_LIMIT = 10;
 function AiStudyAssistant() {
   const { user, parentMode } = useAuth();
   const isParent = user?.role === "student" && parentMode;
+
+  if (user?.role === "teacher") {
+    return (
+      <PlaceholderPage
+        title="AI Assistant"
+        subtitle="Your AI teaching copilot."
+        icon={Sparkles}
+      />
+    );
+  }
 
   // Use parent-specific data when in parent mode
   const AI_SKILLS_TO_USE = isParent ? PARENT_AI_SKILLS : AI_SKILLS;
