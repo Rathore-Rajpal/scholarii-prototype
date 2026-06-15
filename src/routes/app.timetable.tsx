@@ -40,6 +40,8 @@ import {
   Sun,
 } from "lucide-react";
 import { getTimetableData, type TimetableData, type Period, type EventCategory, type AcademicEvent } from "@/lib/scholarii/timetable-mock-data";
+import { useAuth } from "@/lib/scholarii/auth";
+import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
 export const Route = createFileRoute("/app/timetable")({
   component: TimetablePage,
@@ -939,6 +941,17 @@ function CalendarTab({ data }: { data: TimetableData }) {
 }
 
 export function TimetablePage() {
+  const { user } = useAuth();
+  if (user?.role === "teacher") {
+    return (
+      <PlaceholderPage
+        title="Timetable"
+        subtitle="View your teaching schedule."
+        icon={Calendar}
+      />
+    );
+  }
+
   const data = useMemo(() => getTimetableData(), []);
   const [activeTab, setActiveTab] = useState<TabId>("today");
 

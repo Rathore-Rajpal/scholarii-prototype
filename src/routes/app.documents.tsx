@@ -21,6 +21,8 @@ import {
   STATUS_CONFIG, CATEGORY_CONFIG,
 } from "@/lib/scholarii/documents-mock-data";
 import type { Document, DocumentTab } from "@/lib/scholarii/documents-mock-data";
+import { useAuth } from "@/lib/scholarii/auth";
+import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
 export const Route = createFileRoute("/app/documents")({ component: DocumentsPage });
 
@@ -42,6 +44,17 @@ function getFileIcon(fileType: string | null): typeof File {
 }
 
 function DocumentsPage() {
+  const { user } = useAuth();
+  if (user?.role === "teacher") {
+    return (
+      <PlaceholderPage
+        title="Documents"
+        subtitle="Manage your teaching documents."
+        icon={FileText}
+      />
+    );
+  }
+
   const [activeTab, setActiveTab] = useState<DocumentTab>("school");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);

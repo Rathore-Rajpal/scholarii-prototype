@@ -23,6 +23,8 @@ import {
   EXAMS, CLASS_PERFORMANCE, SUBJECTS, SUBJECT_COLORS, STATUS_CONFIG,
 } from "@/lib/scholarii/exams-mock-data";
 import type { Exam, ExamStatus, ExamTab, ClassPerformance } from "@/lib/scholarii/exams-mock-data";
+import { useAuth } from "@/lib/scholarii/auth";
+import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
 export const Route = createFileRoute("/app/exams")({ component: ExamsPage });
 
@@ -35,6 +37,17 @@ const TAB_LIST: { id: ExamTab; label: string; icon: React.ReactNode }[] = [
 ];
 
 function ExamsPage() {
+  const { user } = useAuth();
+  if (user?.role === "teacher") {
+    return (
+      <PlaceholderPage
+        title="Exams & Results"
+        subtitle="Schedule exams and publish results."
+        icon={GraduationCap}
+      />
+    );
+  }
+
   const [selectedExamId, setSelectedExamId] = useState<string>(EXAMS[0].id);
   const [examTab, setExamTab] = useState<ExamTab>("overview");
   const [reportCardOpen, setReportCardOpen] = useState(false);

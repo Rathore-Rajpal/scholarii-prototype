@@ -20,6 +20,7 @@ import {
   CalendarClock, GraduationCap, Award, BookOpen, Hash,
 } from "lucide-react";
 import { useAuth } from "@/lib/scholarii/auth";
+import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 import {
   STUDENT_PROFILE, ACADEMIC_SNAPSHOT,
   DEFAULT_NOTIFICATIONS, DEFAULT_SECURITY, DEFAULT_APPEARANCE,
@@ -161,6 +162,16 @@ function SettingToggle({ label, description, checked, onCheckedChange }: { label
 
 function ProfilePage() {
   const { user } = useAuth();
+  if (user?.role === "teacher") {
+    return (
+      <PlaceholderPage
+        title="Profile"
+        subtitle="Manage your account settings."
+        icon={UserCircle}
+      />
+    );
+  }
+
   const [activeTab, setActiveTab] = useState<ProfileTab>("personal");
   const [editOpen, setEditOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationSettings>(DEFAULT_NOTIFICATIONS);

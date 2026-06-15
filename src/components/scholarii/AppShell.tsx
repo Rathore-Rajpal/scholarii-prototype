@@ -15,6 +15,8 @@ import {
   Paperclip, Mic, Star, PanelRightOpen,
   Sparkles, Database, Activity, Library,
   Clock, Target, Award, TrendingUp, Lightbulb, AlertTriangle, Upload,
+  BookCopy, FileQuestion, BarChart, MessageCircle as PtaIcon, Bell as BellIcon,
+  Calendar as LeaveIcon, Coins, GraduationCap as GradeIcon, Send as PaperPlaneIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,17 +108,40 @@ const PRINCIPAL_NAV: PrincipalNav = [
   { to: "/app/settings", label: "Settings", icon: Settings },
 ];
 
+const TEACHER_NAV: PrincipalNav = [
+  { to: "/app", label: "Dashboard", icon: Home },
+  {
+    label: "My Class",
+    icon: Users,
+    items: [
+      { to: "/app/myclass/students", label: "Students", icon: Users },
+      { to: "/app/myclass/attendance", label: "Attendance", icon: ClipboardCheck },
+      { to: "/app/myclass/documents", label: "Documents", icon: FileText },
+      { to: "/app/myclass/exams", label: "Exams & Results", icon: GraduationCap },
+      { to: "/app/myclass/performance", label: "Performance", icon: Activity },
+      { to: "/app/myclass/notices", label: "Notices", icon: Megaphone },
+    ],
+  },
+  { to: "/app/classes", label: "My Classes", icon: BookOpen },
+  { to: "/app/timetable", label: "Timetable", icon: Calendar },
+  {
+    label: "Communication",
+    icon: MessageSquare,
+    items: [
+      { to: "/app/ptameetings", label: "PTA Meetings", icon: CalendarClock },
+      { to: "/app/announcements", label: "Announcements", icon: Megaphone },
+    ],
+  },
+  { to: "/app/documents", label: "Documents", icon: FileText },
+  { to: "/app/leaves", label: "Leaves", icon: ScrollText },
+  { to: "/app/salary", label: "Salary & Payroll", icon: Coins },
+  { to: "/app/ai", label: "AI Assistant", icon: Sparkles },
+  { to: "/app/profile", label: "Profile", icon: UserCircle },
+];
+
 const NAV: Record<Role, PrincipalNav | NavItem[]> = {
   principal: PRINCIPAL_NAV,
-  teacher: [
-    { to: "/app", label: "Dashboard", icon: Home },
-    { to: "/app/classes", label: "My Classes", icon: BookMarked },
-    { to: "/app/attendance", label: "Attendance", icon: ClipboardCheck },
-    { to: "/app/assignments", label: "Assignments", icon: ClipboardList },
-    { to: "/app/gradebook", label: "Gradebook", icon: GraduationCap },
-    { to: "/app/meetings", label: "PTA Meetings", icon: CalendarClock },
-    { to: "/app/profile", label: "Profile", icon: UserCircle },
-  ],
+  teacher: TEACHER_NAV,
   student: STUDENT_NAV,
   admin: [
     { to: "/app", label: "Dashboard", icon: Home },
@@ -375,6 +400,57 @@ const PARENT_ACADEMIC_SNAPSHOT: AcademicSnapshot = {
   pendingAssignments: 3,
   upcomingExams: 2,
 };
+
+// ─── Teacher-specific sidebar data ───
+interface TeacherClassItem {
+  id: string;
+  name: string;
+  time: string;
+  students: number;
+}
+
+interface TeacherReviewItem {
+  id: string;
+  assignment: string;
+  class: string;
+  pendingCount: number;
+}
+
+interface TeacherExamItem {
+  id: string;
+  name: string;
+  subject: string;
+  date: string;
+  daysRemaining: number;
+}
+
+interface TeacherAiSuggestion {
+  id: string;
+  text: string;
+}
+
+const TEACHER_UPCOMING_CLASSES: TeacherClassItem[] = [
+  { id: "tc1", name: "Class 10-A Mathematics", time: "11:00 AM", students: 42 },
+  { id: "tc2", name: "Class 10-B Mathematics", time: "12:00 PM", students: 40 },
+  { id: "tc3", name: "Class 9-A Mathematics", time: "2:00 PM", students: 38 },
+];
+
+const TEACHER_PENDING_REVIEWS: TeacherReviewItem[] = [
+  { id: "tr1", assignment: "Algebra Worksheet", class: "Class 10-A", pendingCount: 12 },
+  { id: "tr2", assignment: "Trigonometry Homework", class: "Class 10-B", pendingCount: 8 },
+];
+
+const TEACHER_UPCOMING_EXAMS: TeacherExamItem[] = [
+  { id: "te1", name: "Unit Test 1", subject: "Mathematics", date: "Jun 20", daysRemaining: 5 },
+  { id: "te2", name: "Mid-Semester", subject: "All Subjects", date: "Jul 15", daysRemaining: 30 },
+];
+
+const TEACHER_AI_SUGGESTIONS: TeacherAiSuggestion[] = [
+  { id: "ts1", text: "12 submissions pending for Algebra Worksheet — review before Friday." },
+  { id: "ts2", text: "Class 10-B performance dropped 8% in last assessment — consider revision." },
+  { id: "ts3", text: "Unit Test 1 results deadline is June 25 — enter marks soon." },
+  { id: "ts4", text: "PTA Meeting scheduled for June 25 — prepare progress summaries." },
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout, theme, toggleTheme, parentMode, setParentMode } = useAuth();
@@ -858,10 +934,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="min-w-0">
               <div className="font-semibold text-sidebar-foreground leading-none text-sm">
-                {showParent ? "Parent Panel" : isStudent ? "Student Panel" : "Utilities"}
+                {showParent ? "Parent Panel" : isStudent ? "Student Panel" : user?.role === "teacher" ? "Teacher Panel" : "Utilities"}
               </div>
               <div className="text-[11px] text-sidebar-foreground/50 mt-0.5">
-                {showParent ? "Family Overview" : isStudent ? "Study Hub" : "AI & Actions"}
+                {showParent ? "Family Overview" : isStudent ? "Study Hub" : user?.role === "teacher" ? "Teaching Workspace" : "AI & Actions"}
               </div>
             </div>
           </div>
@@ -877,7 +953,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Nav Items */}
         <nav className="p-3 space-y-1 shrink-0">
           {([
-            ...(showParent || isStudent ? [{ tab: "overview" as RightTab, label: "Overview", icon: BarChart3, badge: undefined }] : []),
+            ...(showParent || isStudent || user?.role === "teacher" ? [{ tab: "overview" as RightTab, label: "Overview", icon: BarChart3, badge: undefined }] : []),
             { tab: "chat" as RightTab, label: "AI Chat", icon: MessageCircle, badge: undefined },
             { tab: "notifications" as RightTab, label: "Notifications", icon: Bell, badge: unreadCount > 0 ? unreadCount : undefined },
             { tab: "actions" as RightTab, label: "Quick Actions", icon: Zap, badge: undefined },
@@ -1080,73 +1156,172 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </div>
               )}
 
-              {/* ─── Overview Tab (Student/Parent) ─── */}
-              {rightTab === "overview" && (showParent || isStudent) && (
+              {/* ─── Overview Tab (Student/Parent/Teacher) ─── */}
+              {rightTab === "overview" && (showParent || isStudent || user?.role === "teacher") && (
                 <div className="p-4 space-y-5">
-                  {/* Academic Snapshot */}
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Academic Snapshot</div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { label: "Attendance", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.attendance : STUDENT_ACADEMIC_SNAPSHOT.attendance}%`, icon: ClipboardCheck, color: "text-emerald-500" },
-                        { label: "Performance", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.performance : STUDENT_ACADEMIC_SNAPSHOT.performance}%`, icon: TrendingUp, color: "text-blue-500" },
-                        { label: "Assignments", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.pendingAssignments : STUDENT_ACADEMIC_SNAPSHOT.pendingAssignments} Pending`, icon: Clock, color: "text-amber-500" },
-                        { label: "Exams", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.upcomingExams : STUDENT_ACADEMIC_SNAPSHOT.upcomingExams} Upcoming`, icon: CalendarClock, color: "text-violet-500" },
-                      ].map((stat) => (
-                        <div key={stat.label} className="rounded-xl bg-sidebar-accent/30 p-3">
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <stat.icon className={`size-3 ${stat.color}`} />
-                            <span className="text-[10px] text-sidebar-foreground/50">{stat.label}</span>
-                          </div>
-                          <p className="text-sm font-bold text-sidebar-foreground">{stat.value}</p>
+                  {/* Teacher Overview */}
+                  {user?.role === "teacher" && (
+                    <>
+                      {/* Teaching Snapshot */}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Teaching Snapshot</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { label: "Classes Today", value: "5", icon: Users, color: "text-emerald-500" },
+                            { label: "Pending Reviews", value: "20", icon: ClipboardList, color: "text-amber-500" },
+                            { label: "Upcoming Exams", value: "2", icon: GraduationCap, color: "text-violet-500" },
+                            { label: "Avg. Attendance", value: "92%", icon: ClipboardCheck, color: "text-blue-500" },
+                          ].map((stat) => (
+                            <div key={stat.label} className="rounded-xl bg-sidebar-accent/30 p-3">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <stat.icon className={`size-3 ${stat.color}`} />
+                                <span className="text-[10px] text-sidebar-foreground/50">{stat.label}</span>
+                              </div>
+                              <p className="text-sm font-bold text-sidebar-foreground">{stat.value}</p>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
 
-                  {/* Upcoming Deadlines */}
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Deadlines</div>
-                    <div className="space-y-1.5">
-                      {(showParent ? PARENT_DEADLINES : STUDENT_DEADLINES).map((deadline) => (
-                        <div key={deadline.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
-                          <div className={`size-2 rounded-full shrink-0 ${deadline.daysRemaining <= 1 ? "bg-red-500" : deadline.daysRemaining <= 3 ? "bg-amber-500" : "bg-emerald-500"}`} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-sidebar-foreground truncate">{deadline.name}</p>
-                            <p className="text-[10px] text-sidebar-foreground/40">Due {deadline.dueDate}</p>
-                          </div>
-                          <span className={`text-[10px] font-medium ${deadline.daysRemaining <= 1 ? "text-red-400" : deadline.daysRemaining <= 3 ? "text-amber-400" : "text-emerald-400"}`}>
-                            {deadline.daysRemaining === 0 ? "Today" : deadline.daysRemaining === 1 ? "Tomorrow" : `${deadline.daysRemaining}d`}
-                          </span>
+                      {/* Upcoming Classes */}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Classes</div>
+                        <div className="space-y-1.5">
+                          {TEACHER_UPCOMING_CLASSES.map((cls) => (
+                            <div key={cls.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                              <div className="size-8 rounded-lg bg-emerald-500/10 grid place-items-center shrink-0">
+                                <Users className="size-4 text-emerald-400" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-sidebar-foreground truncate">{cls.name}</p>
+                                <p className="text-[10px] text-sidebar-foreground/40">{cls.time} · {cls.students} students</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
 
-                  {/* Upcoming Exams */}
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Exams</div>
-                    <div className="space-y-1.5">
-                      {(showParent ? PARENT_EXAMS : STUDENT_EXAMS).map((exam) => (
-                        <div key={exam.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
-                          <div className="size-8 rounded-lg bg-violet-500/10 grid place-items-center shrink-0">
-                            <GraduationCap className="size-4 text-violet-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-sidebar-foreground truncate">{exam.name}</p>
-                            <p className="text-[10px] text-sidebar-foreground/40">{exam.subject} · {exam.date}</p>
-                          </div>
-                          {exam.daysRemaining > 0 && (
-                            <span className="text-[10px] font-medium text-violet-400">{exam.daysRemaining}d</span>
-                          )}
+                      {/* Pending Assignment Reviews */}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Pending Reviews</div>
+                        <div className="space-y-1.5">
+                          {TEACHER_PENDING_REVIEWS.map((review) => (
+                            <div key={review.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                              <div className="size-8 rounded-lg bg-amber-500/10 grid place-items-center shrink-0">
+                                <ClipboardList className="size-4 text-amber-400" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-sidebar-foreground truncate">{review.assignment}</p>
+                                <p className="text-[10px] text-sidebar-foreground/40">{review.class} · {review.pendingCount} pending</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
 
-                  {/* AI Study Suggestions */}
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">AI Suggestions</div>
+                      {/* Upcoming Exams */}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Exams</div>
+                        <div className="space-y-1.5">
+                          {TEACHER_UPCOMING_EXAMS.map((exam) => (
+                            <div key={exam.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                              <div className="size-8 rounded-lg bg-violet-500/10 grid place-items-center shrink-0">
+                                <GraduationCap className="size-4 text-violet-400" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-sidebar-foreground truncate">{exam.name}</p>
+                                <p className="text-[10px] text-sidebar-foreground/40">{exam.subject} · {exam.date}</p>
+                              </div>
+                              {exam.daysRemaining > 0 && (
+                                <span className="text-[10px] font-medium text-violet-400">{exam.daysRemaining}d</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* AI Teaching Suggestions */}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">AI Suggestions</div>
+                        <div className="space-y-1.5">
+                          {TEACHER_AI_SUGGESTIONS.map((suggestion) => (
+                            <div key={suggestion.id} className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 px-3 py-2.5">
+                              <Lightbulb className="size-3.5 text-violet-400 mt-0.5 shrink-0" />
+                              <p className="text-[11px] text-sidebar-foreground/70 leading-relaxed">{suggestion.text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Student/Parent Overview */}
+                  {(showParent || isStudent) && (
+                    <>
+                      {/* Academic Snapshot */}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Academic Snapshot</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { label: "Attendance", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.attendance : STUDENT_ACADEMIC_SNAPSHOT.attendance}%`, icon: ClipboardCheck, color: "text-emerald-500" },
+                            { label: "Performance", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.performance : STUDENT_ACADEMIC_SNAPSHOT.performance}%`, icon: TrendingUp, color: "text-blue-500" },
+                            { label: "Assignments", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.pendingAssignments : STUDENT_ACADEMIC_SNAPSHOT.pendingAssignments} Pending`, icon: Clock, color: "text-amber-500" },
+                            { label: "Exams", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.upcomingExams : STUDENT_ACADEMIC_SNAPSHOT.upcomingExams} Upcoming`, icon: CalendarClock, color: "text-violet-500" },
+                          ].map((stat) => (
+                            <div key={stat.label} className="rounded-xl bg-sidebar-accent/30 p-3">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <stat.icon className={`size-3 ${stat.color}`} />
+                                <span className="text-[10px] text-sidebar-foreground/50">{stat.label}</span>
+                              </div>
+                              <p className="text-sm font-bold text-sidebar-foreground">{stat.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Upcoming Deadlines */}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Deadlines</div>
+                        <div className="space-y-1.5">
+                          {(showParent ? PARENT_DEADLINES : STUDENT_DEADLINES).map((deadline) => (
+                            <div key={deadline.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                              <div className={`size-2 rounded-full shrink-0 ${deadline.daysRemaining <= 1 ? "bg-red-500" : deadline.daysRemaining <= 3 ? "bg-amber-500" : "bg-emerald-500"}`} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-sidebar-foreground truncate">{deadline.name}</p>
+                                <p className="text-[10px] text-sidebar-foreground/40">Due {deadline.dueDate}</p>
+                              </div>
+                              <span className={`text-[10px] font-medium ${deadline.daysRemaining <= 1 ? "text-red-400" : deadline.daysRemaining <= 3 ? "text-amber-400" : "text-emerald-400"}`}>
+                                {deadline.daysRemaining === 0 ? "Today" : deadline.daysRemaining === 1 ? "Tomorrow" : `${deadline.daysRemaining}d`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Upcoming Exams */}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Exams</div>
+                        <div className="space-y-1.5">
+                          {(showParent ? PARENT_EXAMS : STUDENT_EXAMS).map((exam) => (
+                            <div key={exam.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                              <div className="size-8 rounded-lg bg-violet-500/10 grid place-items-center shrink-0">
+                                <GraduationCap className="size-4 text-violet-400" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-sidebar-foreground truncate">{exam.name}</p>
+                                <p className="text-[10px] text-sidebar-foreground/40">{exam.subject} · {exam.date}</p>
+                              </div>
+                              {exam.daysRemaining > 0 && (
+                                <span className="text-[10px] font-medium text-violet-400">{exam.daysRemaining}d</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* AI Study Suggestions */}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">AI Suggestions</div>
                     <div className="space-y-1.5">
                       {(showParent ? [] : STUDENT_AI_SUGGESTIONS).map((suggestion) => (
                         <div key={suggestion.id} className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 px-3 py-2.5">
@@ -1162,6 +1337,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                       )}
                     </div>
                   </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>

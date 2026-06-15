@@ -560,6 +560,16 @@ function AttendancePage() {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const data = useMemo(() => getAttendanceData(), []);
 
+  if (user?.role === "teacher") {
+    return (
+      <PlaceholderPage
+        title="Attendance"
+        subtitle="Mark and review student attendance."
+        icon={ClipboardCheck}
+      />
+    );
+  }
+
   if (user?.role === "student" && parentMode) {
     return <ParentAttendanceView />;
   }
