@@ -2,27 +2,49 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/scholarii/auth";
 import type { Role } from "@/lib/scholarii/types";
 import {
-  Home, Users, Briefcase, BookOpen, DollarSign, BarChart3, Settings,
-  ClipboardCheck, ClipboardList, GraduationCap, CalendarClock, UserCircle, Building2,
-  ShieldCheck, FileText, ScrollText, Calendar, Wallet, MessageSquare, Baby,
-  LogOut, Bell, Moon, Sun, Search, Menu, BookMarked, User as StudentIcon, Users as ParentIcon,
+  Home,
+  Users,
+  Briefcase,
+  BookOpen,
+  DollarSign,
+  BarChart3,
+  Settings,
+  ClipboardCheck,
+  ClipboardList,
+  GraduationCap,
+  CalendarClock,
+  UserCircle,
+  Building2,
+  ShieldCheck,
+  FileText,
+  Calendar,
+  Wallet,
+  MessageSquare,
+  Baby,
+  LogOut,
+  Bell,
+  Moon,
+  Sun,
+  Search,
+  Menu,
+  BookMarked,
+  User as StudentIcon,
+  Users as ParentIcon,
   BrainCircuit,
-  CheckCircle2,
-  ChevronLeft, ChevronRight, ChevronDown,
-  MessageCircle, Send, Plus, Check, CheckCheck,
-  UserPlus, FolderOpen, FilePlus, ClipboardPlus, GraduationCap as ExamIcon,
-  TrendingDown, Megaphone, Mail, Zap, X, Hash,
-  Paperclip, Mic, Star, PanelRightOpen,
-  Sparkles, Database, Activity, Library,
-  Clock, Target, Award, TrendingUp, Lightbulb, AlertTriangle, Upload,
-  BookCopy, FileQuestion, BarChart, MessageCircle as PtaIcon, Bell as BellIcon,
-  Calendar as LeaveIcon, Coins, GraduationCap as GradeIcon, Send as PaperPlaneIcon,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -31,7 +53,6 @@ import { cn } from "@/lib/utils";
 import scholariiIconUrl from "../../../Icons/apple-touch-icon.png?url";
 
 type NavItem = { to: string; label: string; icon: typeof Home };
-type NavGroup = { label: string; icon: typeof Home; items: NavItem[] };
 
 type PrincipalNav = (NavItem | NavGroup)[];
 
@@ -55,94 +76,87 @@ const STUDENT_NAV: PrincipalNav = [
   { to: "/app/profile", label: "Profile", icon: UserCircle },
 ];
 
-const PARENT_NAV: PrincipalNav = [
-  { to: "/app", label: "Dashboard", icon: Home },
-  { to: "/app/children", label: "Child Overview", icon: Baby },
+const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   {
-    label: "Child Progress",
-    icon: Activity,
     items: [
-      { to: "/app/performance", label: "Performance", icon: TrendingUp },
-      { to: "/app/attendance", label: "Attendance", icon: ClipboardCheck },
+      { to: "/app", label: "Dashboard", icon: Home, activePaths: ["/app/admin/dashboard"] },
+      { to: "/app/admin/operations", label: "Operations", icon: Settings2 },
     ],
   },
-  { to: "/app/fees", label: "Fees", icon: Wallet },
-  { to: "/app/updates", label: "Updates & Notices", icon: Megaphone },
-  { to: "/app/documents", label: "Documents", icon: FileText },
-  { to: "/app/ai", label: "AI Assistant", icon: Sparkles },
-  { to: "/app/profile", label: "Profile", icon: UserCircle },
-];
-
-const PRINCIPAL_NAV: PrincipalNav = [
-  { to: "/app", label: "Dashboard", icon: Home },
   {
-    label: "Operations",
-    icon: Users,
+    label: "Academics & Records",
     items: [
-      { to: "/app/admissions", label: "Admissions", icon: FileText },
-      { to: "/app/students", label: "Students", icon: Users },
-      { to: "/app/teachers", label: "Teachers", icon: Briefcase },
+      {
+        to: "/app/admissions",
+        label: "Admissions",
+        icon: ClipboardList,
+        activePaths: ["/app/admin/admissions"],
+      },
+      { to: "/app/admin/students", label: "Students", icon: Users },
+      { to: "/app/admin/staff", label: "Staff Records", icon: Briefcase },
+      { to: "/app/admin/academics", label: "Academics", icon: BookOpen },
     ],
   },
-  { to: "/app/academics", label: "Academics", icon: BookOpen },
-  { to: "/app/fees", label: "Finance", icon: DollarSign },
+  {
+    label: "Finance",
+    items: [{ to: "/app/admin/fees", label: "Fee Collection", icon: DollarSign }],
+  },
   {
     label: "Insights",
-    icon: BarChart3,
+    collapsible: true,
     items: [
-      { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
-      { to: "/app/ai", label: "Scholarii AI", icon: Sparkles },
-      { to: "/app/brain", label: "School Brain", icon: Database },
+      { to: "/app/admin/analytics", label: "Analytics", icon: BarChart3 },
+      { to: "/app/admin/ai", label: "Scholarii AI", icon: Sparkles },
+      { to: "/app/admin/brain", label: "School Brain", icon: BrainCircuit },
     ],
   },
   {
     label: "Administration",
-    icon: ShieldCheck,
+    collapsible: true,
     items: [
-      { to: "/app/documents", label: "Documents", icon: FileText },
-      { to: "/app/facilities", label: "Facilities", icon: Building2 },
-      { to: "/app/compliance", label: "Compliance", icon: ShieldCheck },
+      { to: "/app/admin/documents", label: "Documents", icon: FileText },
+      { to: "/app/admin/facilities", label: "Facilities", icon: Building2 },
+      { to: "/app/admin/compliance", label: "Compliance", icon: ShieldCheck },
     ],
   },
-  { to: "/app/communication", label: "Communications", icon: MessageSquare },
-  { to: "/app/settings", label: "Settings", icon: Settings },
 ];
 
-const TEACHER_NAV: PrincipalNav = [
-  { to: "/app", label: "Dashboard", icon: Home },
-  {
-    label: "My Class",
-    icon: Users,
-    items: [
-      { to: "/app/myclass/students", label: "Students", icon: Users },
-      { to: "/app/myclass/attendance", label: "Attendance", icon: ClipboardCheck },
-      { to: "/app/myclass/documents", label: "Documents", icon: FileText },
-      { to: "/app/myclass/exams", label: "Exams & Results", icon: GraduationCap },
-      { to: "/app/myclass/performance", label: "Performance", icon: Activity },
-      { to: "/app/myclass/notices", label: "Notices", icon: Megaphone },
-    ],
-  },
-  { to: "/app/classes", label: "My Classes", icon: BookOpen },
-  { to: "/app/timetable", label: "Timetable", icon: Calendar },
-  {
-    label: "Communication",
-    icon: MessageSquare,
-    items: [
-      { to: "/app/ptameetings", label: "PTA Meetings", icon: CalendarClock },
-      { to: "/app/announcements", label: "Announcements", icon: Megaphone },
-    ],
-  },
-  { to: "/app/documents", label: "Documents", icon: FileText },
-  { to: "/app/leaves", label: "Leaves", icon: ScrollText },
-  { to: "/app/salary", label: "Salary & Payroll", icon: Coins },
-  { to: "/app/ai", label: "AI Assistant", icon: Sparkles },
-  { to: "/app/profile", label: "Profile", icon: UserCircle },
-];
-
-const NAV: Record<Role, PrincipalNav | NavItem[]> = {
-  principal: PRINCIPAL_NAV,
-  teacher: TEACHER_NAV,
-  student: STUDENT_NAV,
+const NAV: Record<Role, NavItem[]> = {
+  principal: [
+    { to: "/app", label: "Dashboard", icon: Home },
+    { to: "/app/schedule", label: "Operations", icon: CalendarClock },
+    { to: "/app/admissions", label: "Admissions", icon: FileText },
+    { to: "/app/students", label: "Students", icon: Users },
+    { to: "/app/teachers", label: "Teachers", icon: Briefcase },
+    { to: "/app/academics", label: "Academics", icon: BookOpen },
+    { to: "/app/fees", label: "Finance", icon: DollarSign },
+    { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
+    { to: "/app/ai", label: "Scholarii AI", icon: BrainCircuit },
+    { to: "/app/brain", label: "School Brain", icon: BrainCircuit },
+    { to: "/app/documents", label: "Documents", icon: FileText },
+    { to: "/app/facilities", label: "Facilities", icon: Building2 },
+    { to: "/app/compliance", label: "Compliance", icon: ShieldCheck },
+    { to: "/app/communication", label: "Communications", icon: MessageSquare },
+    { to: "/app/settings", label: "Settings", icon: Settings },
+  ],
+  teacher: [
+    { to: "/app", label: "Dashboard", icon: Home },
+    { to: "/app/classes", label: "My Classes", icon: BookMarked },
+    { to: "/app/attendance", label: "Attendance", icon: ClipboardCheck },
+    { to: "/app/assignments", label: "Assignments", icon: ClipboardList },
+    { to: "/app/gradebook", label: "Gradebook", icon: GraduationCap },
+    { to: "/app/meetings", label: "PTA Meetings", icon: CalendarClock },
+    { to: "/app/profile", label: "Profile", icon: UserCircle },
+  ],
+  student: [
+    { to: "/app", label: "Dashboard", icon: Home },
+    { to: "/app/timetable", label: "My Timetable", icon: Calendar },
+    { to: "/app/assignments", label: "Assignments", icon: ClipboardList },
+    { to: "/app/exams", label: "Exams & Results", icon: GraduationCap },
+    { to: "/app/attendance", label: "Attendance", icon: ClipboardCheck },
+    { to: "/app/fees", label: "Fees", icon: Wallet },
+    { to: "/app/profile", label: "Profile", icon: UserCircle },
+  ],
   admin: [
     { to: "/app", label: "Dashboard", icon: Home },
     { to: "/app/users", label: "User Management", icon: Users },
@@ -155,7 +169,10 @@ const NAV: Record<Role, PrincipalNav | NavItem[]> = {
 };
 
 const ROLE_LABEL: Record<Role, string> = {
-  principal: "Principal", teacher: "Teacher", student: "Student", admin: "Admin",
+  principal: "Principal",
+  teacher: "Teacher",
+  student: "Student",
+  admin: "Admin",
 };
 
 type RightTab = "chat" | "notifications" | "actions" | "overview";
@@ -458,106 +475,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
-
-  // Right sidebar state
-  const [rightOpen, setRightOpen] = useState(false);
-  const [rightTab, setRightTab] = useState<RightTab>(() => {
-    try {
-      const saved = localStorage.getItem("scholarii-right-tab") as RightTab;
-      if (saved) return saved;
-      // Default to overview for student/parent, chat for others
-      return "chat";
-    } catch { return "chat"; }
-  });
-  const [rightWidth, setRightWidth] = useState<number>(() => {
-    try { return parseInt(localStorage.getItem("scholarii-right-width") || "400", 10); } catch { return 400; }
-  });
-  const [isResizing, setIsResizing] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState("");
-  const [chatThinking, setChatThinking] = useState(false);
-  const [notifications, setNotifications] = useState(PRINCIPAL_NOTIFICATIONS);
-
-  // ─── Role-based notifications ───
-  useEffect(() => {
-    if (user?.role === "student") {
-      setNotifications(parentMode ? PARENT_NOTIFICATIONS : STUDENT_NOTIFICATIONS);
-    } else if (user?.role === "teacher") {
-      setNotifications(TEACHER_NOTIFICATIONS);
-    } else if (user?.role === "admin") {
-      setNotifications(ADMIN_NOTIFICATIONS);
-    } else {
-      setNotifications(PRINCIPAL_NOTIFICATIONS);
-    }
-  }, [user?.role, parentMode]);
-
-  // ─── Role-based quick actions ───
-  const roleQuickActions = useMemo(() => {
-    if (user?.role === "student") return parentMode ? PARENT_ACTIONS : STUDENT_ACTIONS;
-    if (user?.role === "teacher") return TEACHER_ACTIONS;
-    if (user?.role === "admin") return ADMIN_ACTIONS;
-    return PRINCIPAL_ACTIONS;
-  }, [user?.role, parentMode]);
-
-  // ─── Role-based context prompts ───
-  const getContextPrompts = useCallback((role: string, isParentMode: boolean, routePath: string): string[] => {
-    const prompts = isParentMode ? PARENT_CONTEXT_PROMPTS
-      : role === "student" ? STUDENT_CONTEXT_PROMPTS
-      : role === "teacher" ? TEACHER_CONTEXT_PROMPTS
-      : role === "admin" ? ADMIN_CONTEXT_PROMPTS
-      : PRINCIPAL_CONTEXT_PROMPTS;
-    for (const [route, routePrompts] of Object.entries(prompts)) {
-      if (route === "/app" ? routePath === "/app" : routePath.startsWith(route)) return routePrompts;
-    }
-    return prompts["/app"] ?? ["How can I help?"];
-  }, []);
-  const chatScrollRef = useRef<HTMLDivElement | null>(null);
-  const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
-  const resizeRef = useRef<HTMLDivElement | null>(null);
-
-  const RIGHT_MIN = 320;
-  const RIGHT_MAX = 800;
-
-  // Persist tab & width
-  useEffect(() => {
-    try { localStorage.setItem("scholarii-right-tab", rightTab); } catch { /* ok */ }
-  }, [rightTab]);
-
-  useEffect(() => {
-    try { localStorage.setItem("scholarii-right-width", String(rightWidth)); } catch { /* ok */ }
-  }, [rightWidth]);
-
-  // Resize drag handlers
-  useEffect(() => {
-    if (!isResizing) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const newWidth = window.innerWidth - e.clientX;
-      const clamped = Math.min(RIGHT_MAX, Math.max(RIGHT_MIN, newWidth));
-      setRightWidth(clamped);
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isResizing]);
-
-  // Auto-scroll chat
-  useEffect(() => {
-    if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
-  }, [chatMessages, chatThinking]);
 
   if (!user) return null;
   const isStudent = user.role === "student";
@@ -565,177 +482,47 @@ export function AppShell({ children }: { children: ReactNode }) {
   const items = showParent ? PARENT_NAV : NAV[user.role];
   const portalLabel = showParent ? "Parent" : ROLE_LABEL[user.role];
   const initials = user.name.split(" ").map((s) => s[0]).slice(0, 2).join("");
-  const unreadCount = notifications.filter((n) => !n.read).length;
-  const contextPrompts = getContextPrompts(user.role, showParent, path);
 
-  const pathExistsInNav = useCallback((targetPath: string, forParentMode: boolean) => {
-    const navItems = forParentMode ? PARENT_NAV : STUDENT_NAV;
-    return navItems.some((item) => {
-      if ("items" in item) {
-        return item.items.some((child) =>
-          child.to === "/app" ? targetPath === "/app" : targetPath.startsWith(child.to)
-        );
-      }
-      return item.to === "/app" ? targetPath === "/app" : targetPath.startsWith(item.to);
-    });
-  }, []);
-
-  const prevParentModeRef = useRef(parentMode);
-
-  useEffect(() => {
-    if (prevParentModeRef.current !== parentMode) {
-      prevParentModeRef.current = parentMode;
-      if (!pathExistsInNav(path, parentMode)) {
-        nav({ to: "/app" });
-      }
-    }
-  }, [parentMode, path, nav, pathExistsInNav]);
-
-  // Auto-expand groups containing active routes
-  useEffect(() => {
-    items.forEach((item) => {
-      if ("items" in item) {
-        const hasActiveChild = item.items.some((child) =>
-          child.to === "/app" ? path === "/app" : path.startsWith(child.to)
-        );
-        if (hasActiveChild) {
-          setExpandedGroups((prev) => ({ ...prev, [item.label]: true }));
-        }
-      }
-    });
-  }, [path, items]);
-
-  const toggleGroup = (label: string) => {
-    setExpandedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+  const isNavItemActive = (it: NavItem) => {
+    const paths = [it.to, ...(it.activePaths ?? [])];
+    return paths.some((itemPath) =>
+      itemPath === "/app" ? path === "/app" : path.startsWith(itemPath),
+    );
   };
 
-  const handleChatSend = () => {
-    const trimmed = chatInput.trim();
-    if (!trimmed || chatThinking) return;
-    const userMsg: ChatMessage = { id: `rc-${Date.now()}`, role: "user", content: trimmed, timestamp: new Date() };
-    setChatMessages((prev) => [...prev, userMsg]);
-    setChatInput("");
-    setChatThinking(true);
-    setTimeout(() => {
-      const reply: ChatMessage = {
-        id: `rc-${Date.now() + 1}`,
-        role: "assistant",
-        content: `Based on your school data, here's what I found regarding "${trimmed}". The current metrics show stable performance with some areas requiring attention. Would you like me to generate a detailed report?`,
-        timestamp: new Date(),
-      };
-      setChatMessages((prev) => [...prev, reply]);
-      setChatThinking(false);
-    }, 2000);
-  };
-
-  const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
-
-  const SidebarInner = (
-    <div className="flex h-full flex-col">
-      <div className={cn(
-        "flex items-center gap-2 border-b border-sidebar-border transition-all duration-300",
-        sidebarOpen ? "h-16 px-5" : "h-16 px-3 justify-center"
-      )}>
-        <img src={scholariiIconUrl} alt="Scholarii icon" className="size-8 flex-shrink-0" />
-        {sidebarOpen && (
-          <div className="animate-in fade-in">
-            <div className="font-semibold text-sidebar-foreground leading-none">Scholarii</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5 transition-all">{portalLabel} Portal</div>
+  const renderNavItem = (it: NavItem, expanded: boolean) => {
+    const active = isNavItemActive(it);
+    const Icon = it.icon;
+    return (
+      <Link
+        key={it.to}
+        to={it.to}
+        onClick={() => setMobileOpen(false)}
+        className={cn(
+          "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+          active
+            ? "bg-violet-600 text-white shadow-sm hover:bg-violet-600"
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800",
+          !expanded && "justify-center",
+        )}
+        title={!expanded ? it.label : ""}
+      >
+        <Icon className="size-4 flex-shrink-0" />
+        {expanded && <span className="font-medium">{it.label}</span>}
+        {!expanded && (
+          <div className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+            {it.label}
           </div>
         )}
       </div>
       <nav key={showParent ? "parent" : "self"} className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1 animate-in-up">
         {items.map((it) => {
-          if ("items" in it) {
-            const group = it;
-            const isExpanded = expandedGroups[group.label] ?? false;
-            const hasActiveChild = group.items.some((child) =>
-              child.to === "/app" ? path === "/app" : path.startsWith(child.to)
-            );
-            const GroupIcon = group.icon;
-
-            return (
-              <div key={group.label}>
-                <button
-                  onClick={() => toggleGroup(group.label)}
-                  className={cn(
-                    "group relative w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
-                    hasActiveChild
-                      ? "text-sidebar-foreground font-medium"
-                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                    !sidebarOpen && "justify-center"
-                  )}
-                  title={!sidebarOpen ? group.label : ""}
-                >
-                  <GroupIcon className="size-4 flex-shrink-0" />
-                  {sidebarOpen && (
-                    <>
-                      <span className="font-medium flex-1 text-left">{group.label}</span>
-                      <ChevronDown
-                        className={cn(
-                          "size-4 transition-transform duration-200",
-                          isExpanded ? "rotate-180" : ""
-                        )}
-                      />
-                    </>
-                  )}
-                  {!sidebarOpen && (
-                    <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-                      {group.label}
-                    </div>
-                  )}
-                </button>
-                <div
-                  className={cn(
-                    "overflow-hidden transition-all duration-300 ease-in-out",
-                    isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-                  )}
-                >
-                  <div className={cn("pl-4 space-y-0.5", !sidebarOpen && "pl-0")}>
-                    {group.items.map((child) => {
-                      const active = child.to === "/app" ? path === "/app" : path.startsWith(child.to);
-                      const ChildIcon = child.icon;
-                      return (
-                        <Link
-                          key={child.to}
-                          to={child.to}
-                          onClick={() => setMobileOpen(false)}
-                          className={cn(
-                            "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
-                            active
-                              ? "bg-brand-gradient text-white shadow-glow"
-                              : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                            !sidebarOpen && "justify-center"
-                          )}
-                          title={!sidebarOpen ? child.label : ""}
-                        >
-                          <ChildIcon className="size-4 flex-shrink-0" />
-                          {sidebarOpen && (
-                            <span className="font-medium">{child.label}</span>
-                          )}
-                          {!sidebarOpen && (
-                            <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-                              {child.label}
-                            </div>
-                          )}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            );
-          }
-
-          const it_ = it as NavItem;
-          const active = it_.to === "/app" ? path === "/app" : path.startsWith(it_.to);
-          const Icon = it_.icon;
+          const active = it.to === "/app" ? path === "/app" : path.startsWith(it.to);
+          const Icon = it.icon;
           return (
             <Link
-              key={it_.to}
-              to={it_.to}
+              key={it.to}
+              to={it.to}
               onClick={() => setMobileOpen(false)}
               className={cn(
                 "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
@@ -744,32 +531,43 @@ export function AppShell({ children }: { children: ReactNode }) {
                   : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 !sidebarOpen && "justify-center"
               )}
-              title={!sidebarOpen ? it_.label : ""}
+              title={!sidebarOpen ? it.label : ""}
             >
               <Icon className="size-4 flex-shrink-0" />
               {sidebarOpen && (
-                <span className="font-medium">{it_.label}</span>
+                <span className="font-medium">{it.label}</span>
               )}
+              
+              {/* Hover tooltip for collapsed state */}
               {!sidebarOpen && (
                 <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-                  {it_.label}
+                  {it.label}
                 </div>
               )}
             </Link>
           );
         })}
       </nav>
-      <div className="p-3 border-t border-sidebar-border">
+
+      <div className="mt-auto space-y-1 border-t border-gray-100 p-2">
+        {renderAdminUtilityItem("Communications", MessageSquare, expanded)}
+        {renderAdminUtilityItem("Settings", Settings, expanded)}
         <button
-          onClick={() => { logout(); nav({ to: "/login" }); }}
+          type="button"
+          onClick={() => {
+            logout();
+            nav({ to: "/login" });
+          }}
           className={cn(
-            "group relative w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors duration-200",
-            !sidebarOpen && "justify-center"
+            "group relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700",
+            !expanded && "justify-center px-2",
           )}
-          title={!sidebarOpen ? "Log out" : ""}
+          title={!expanded ? "Log out" : ""}
         >
           <LogOut className="size-4 flex-shrink-0" />
           {sidebarOpen && "Log out"}
+          
+          {/* Hover tooltip for collapsed state */}
           {!sidebarOpen && (
             <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
               Log out
@@ -783,18 +581,28 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="h-screen bg-background flex w-full overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className={cn(
-        "hidden lg:flex flex-col shrink-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 overflow-hidden",
-        sidebarOpen ? "w-64" : "w-20"
-      )}>
-        {SidebarInner}
+      <aside
+        className={cn(
+          "hidden h-screen shrink-0 flex-col overflow-hidden border-r transition-all duration-300 lg:flex",
+          user.role === "admin" ? "border-gray-100 bg-white" : "border-sidebar-border bg-sidebar",
+          sidebarOpen ? (user.role === "admin" ? "w-[200px]" : "w-64") : "w-20",
+        )}
+      >
+        {user.role === "admin" ? getAdminSidebarInner(sidebarOpen) : getSidebarInner(sidebarOpen)}
       </aside>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 h-full w-72 bg-sidebar border-r border-sidebar-border animate-in-up overflow-hidden">
-            {SidebarInner}
+          <aside
+            className={cn(
+              "absolute left-0 top-0 h-full w-[200px] animate-in-up overflow-hidden border-r",
+              user.role === "admin"
+                ? "border-gray-100 bg-white"
+                : "border-sidebar-border bg-sidebar",
+            )}
+          >
+            {user.role === "admin" ? getAdminSidebarInner(true) : getSidebarInner(true)}
           </aside>
         </div>
       )}
@@ -811,31 +619,36 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <Menu className="size-5" />
           </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
+          
+          {/* Desktop sidebar toggle */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
             className="hidden lg:flex transition-all duration-200"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
           >
-            {sidebarOpen ? (
-              <ChevronLeft className="size-5" />
-            ) : (
-              <ChevronRight className="size-5" />
-            )}
+            {sidebarOpen ? <ChevronLeft className="size-5" /> : <ChevronRight className="size-5" />}
           </Button>
           <div className="flex-1 max-w-md hidden sm:block">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input placeholder="Search students, teachers, classes..." className="pl-9 bg-muted/40 border-0" />
+              <Input
+                placeholder="Search students, teachers, classes..."
+                className="pl-9 bg-muted/40 border-0"
+              />
             </div>
           </div>
           <div className="flex-1 sm:hidden" />
 
           {isStudent && (
             <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-border bg-muted/40 transition-all">
-              <div className={cn("flex items-center gap-1.5 text-xs font-medium transition-colors", !parentMode ? "text-foreground" : "text-muted-foreground")}>
+              <div
+                className={cn(
+                  "flex items-center gap-1.5 text-xs font-medium transition-colors",
+                  !parentMode ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
                 <StudentIcon className="size-3.5" />
                 <span className="hidden md:inline">Student</span>
               </div>
@@ -844,7 +657,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                 onCheckedChange={setParentMode}
                 aria-label="Toggle parent mode"
               />
-              <div className={cn("flex items-center gap-1.5 text-xs font-medium transition-colors", parentMode ? "text-foreground" : "text-muted-foreground")}>
+              <div
+                className={cn(
+                  "flex items-center gap-1.5 text-xs font-medium transition-colors",
+                  parentMode ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
                 <ParentIcon className="size-3.5" />
                 <span className="hidden md:inline">Parent</span>
               </div>
@@ -854,17 +672,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
             {theme === "light" ? <Moon className="size-5" /> : <Sun className="size-5" />}
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative"
-            onClick={() => setRightOpen(!rightOpen)}
-            title={rightOpen ? "Close utilities" : "Open utilities"}
-          >
-            <PanelRightOpen className={cn("size-5 transition-colors", rightOpen && "text-emerald-600")} />
-            {unreadCount > 0 && !rightOpen && (
-              <Badge className="absolute -top-1 -right-1 size-4 p-0 grid place-items-center text-[10px] bg-brand-gradient border-0">{unreadCount}</Badge>
-            )}
+          <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+            <Bell className="size-5" />
+            <Badge className="absolute -top-1 -right-1 size-4 p-0 grid place-items-center text-[10px] bg-brand-gradient border-0">3</Badge>
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -885,23 +695,47 @@ export function AppShell({ children }: { children: ReactNode }) {
               {isStudent && (
                 <>
                   <DropdownMenuItem onClick={() => setParentMode(!parentMode)}>
-                    {parentMode ? <StudentIcon className="size-4 mr-2" /> : <ParentIcon className="size-4 mr-2" />}
+                    {parentMode ? (
+                      <StudentIcon className="size-4 mr-2" />
+                    ) : (
+                      <ParentIcon className="size-4 mr-2" />
+                    )}
                     Switch to {parentMode ? "Student" : "Parent"} Mode
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
               )}
-              <DropdownMenuItem onClick={() => nav({ to: "/app/profile" })}><UserCircle className="size-4 mr-2" />Profile</DropdownMenuItem>
-              <DropdownMenuItem><Settings className="size-4 mr-2" />Settings</DropdownMenuItem>
-              <DropdownMenuItem><ShieldCheck className="size-4 mr-2" />Help & Support</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => nav({ to: "/app/profile" })}>
+                <UserCircle className="size-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="size-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <ShieldCheck className="size-4 mr-2" />
+                Help & Support
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => { logout(); nav({ to: "/login" }); }}>
-                <LogOut className="size-4 mr-2" />Logout
+              <DropdownMenuItem
+                onClick={() => {
+                  logout();
+                  nav({ to: "/login" });
+                }}
+              >
+                <LogOut className="size-4 mr-2" />
+                Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main key={showParent ? "p" : "s"} className="flex-1 overflow-y-auto p-4 lg:p-8 animate-in-up transition-all duration-300">{children}</main>
+        <main
+          key={showParent ? "p" : "s"}
+          className="flex-1 overflow-y-auto p-4 lg:p-8 animate-in-up transition-all duration-300"
+        >
+          {children}
+        </main>
       </div>
 
       {/* ─── Right Sidebar ─── */}
@@ -1348,7 +1182,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
+export function PageHeader({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: ReactNode;
+}) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
       <div>
@@ -1360,8 +1202,17 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
   );
 }
 
-export function StatCard({ icon: Icon, label, value, hint, tone = "default" }: {
-  icon: typeof Home; label: string; value: string; hint?: string;
+export function StatCard({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  tone = "default",
+}: {
+  icon: typeof Home;
+  label: string;
+  value: string;
+  hint?: string;
   tone?: "default" | "success" | "warning" | "info";
 }) {
   const tones = {
@@ -1378,7 +1229,12 @@ export function StatCard({ icon: Icon, label, value, hint, tone = "default" }: {
           <div className="text-3xl font-bold mt-2 tracking-tight">{value}</div>
           {hint && <div className="text-xs text-muted-foreground mt-1">{hint}</div>}
         </div>
-        <div className={cn("size-11 rounded-xl grid place-items-center text-white bg-gradient-to-br", tones[tone])}>
+        <div
+          className={cn(
+            "size-11 rounded-xl grid place-items-center text-white bg-gradient-to-br",
+            tones[tone],
+          )}
+        >
           <Icon className="size-5" />
         </div>
       </div>
