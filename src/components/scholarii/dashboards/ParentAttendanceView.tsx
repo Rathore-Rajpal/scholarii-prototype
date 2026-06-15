@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +18,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  ResponsiveContainer,
 } from "recharts";
 import {
   ClipboardCheck,
@@ -34,17 +34,10 @@ import {
   Target,
   Zap,
 } from "lucide-react";
-import { useAuth } from "@/lib/scholarii/auth";
-import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
-import { ParentAttendanceView } from "@/components/scholarii/dashboards/ParentAttendanceView";
 import {
   getAttendanceData,
   type AttendanceData,
 } from "@/lib/scholarii/attendance-mock-data";
-
-export const Route = createFileRoute("/app/attendance")({
-  component: AttendancePage,
-});
 
 const monthlyChartConfig = {
   percentage: {
@@ -132,10 +125,9 @@ function OverviewTab({ data }: { data: AttendanceData }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Monthly Attendance Chart */}
         <Card className="p-5">
           <h3 className="font-semibold mb-1">Monthly Attendance</h3>
-          <p className="text-sm text-muted-foreground mb-4">Attendance percentage by month</p>
+          <p className="text-sm text-muted-foreground mb-4">Child's attendance percentage by month</p>
           <ChartContainer config={monthlyChartConfig} className="h-[240px] w-full">
             <LineChart data={data.monthlyAttendance} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -154,7 +146,6 @@ function OverviewTab({ data }: { data: AttendanceData }) {
           </ChartContainer>
         </Card>
 
-        {/* Attendance Breakdown */}
         <Card className="p-5">
           <h3 className="font-semibold mb-1">Attendance Breakdown</h3>
           <p className="text-sm text-muted-foreground mb-4">Overall distribution this term</p>
@@ -187,7 +178,6 @@ function OverviewTab({ data }: { data: AttendanceData }) {
         </Card>
       </div>
 
-      {/* Recent Attendance */}
       <Card className="p-5">
         <SectionHeader title="Recent Attendance" />
         <div className="space-y-2">
@@ -229,7 +219,7 @@ function OverviewTab({ data }: { data: AttendanceData }) {
 function CalendarTab({ data }: { data: AttendanceData }) {
   const currentMonth = "June 2026";
   const daysInMonth = 30;
-  const firstDayOffset = 1; // Monday
+  const firstDayOffset = 1;
 
   const calendarDays = Array.from({ length: daysInMonth }, (_, i) => {
     const dayNum = i + 1;
@@ -267,7 +257,6 @@ function CalendarTab({ data }: { data: AttendanceData }) {
         </div>
 
         <div className="grid grid-cols-7 gap-2">
-          {/* Empty cells for offset */}
           {Array.from({ length: firstDayOffset }, (_, i) => (
             <div key={`empty-${i}`} />
           ))}
@@ -283,7 +272,6 @@ function CalendarTab({ data }: { data: AttendanceData }) {
         </div>
       </Card>
 
-      {/* Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-emerald-600">{data.presentDays}</p>
@@ -311,7 +299,7 @@ function SubjectsTab({ data }: { data: AttendanceData }) {
     <div className="space-y-6">
       <Card className="p-5">
         <h3 className="font-semibold mb-1">Subject-wise Attendance</h3>
-        <p className="text-sm text-muted-foreground mb-4">Attendance percentage by subject</p>
+        <p className="text-sm text-muted-foreground mb-4">Child's attendance percentage by subject</p>
         <ChartContainer config={subjectChartConfig} className="h-[280px] w-full">
           <BarChart data={data.subjectAttendance} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" vertical={false} />
@@ -479,7 +467,7 @@ function InsightsTab({ data }: { data: AttendanceData }) {
             </div>
             <div>
               <h3 className="font-semibold">AI Attendance Insights</h3>
-              <p className="text-xs text-muted-foreground">Personalized recommendations for your attendance</p>
+              <p className="text-xs text-muted-foreground">Personalized recommendations for your child's attendance</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -519,8 +507,8 @@ function InsightsTab({ data }: { data: AttendanceData }) {
             </div>
             <p className="text-xs text-muted-foreground">
               {data.percentage >= data.targetPercentage
-                ? "You have achieved your attendance target!"
-                : `${data.targetPercentage - data.percentage}% more to reach your target.`}
+                ? "Your child has achieved the attendance target!"
+                : `${data.targetPercentage - data.percentage}% more to reach the target.`}
             </p>
           </div>
         </Card>
@@ -555,32 +543,17 @@ function InsightsTab({ data }: { data: AttendanceData }) {
   );
 }
 
-function AttendancePage() {
-  const { user, parentMode } = useAuth();
+export function ParentAttendanceView() {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const data = useMemo(() => getAttendanceData(), []);
-
-  if (user?.role === "student" && parentMode) {
-    return <ParentAttendanceView />;
-  }
-
-  if (user?.role !== "student") {
-    return (
-      <PlaceholderPage
-        title="Attendance"
-        subtitle="Mark and manage student attendance for your classes."
-        icon={ClipboardCheck}
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">My Attendance</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Attendance</h1>
         <p className="text-muted-foreground mt-1">
-          Track your daily attendance and overall percentage throughout the academic year.
+          Monitor your child's attendance and participation throughout the academic year.
         </p>
       </div>
 

@@ -12,24 +12,41 @@ import {
   BrainCircuit, BookOpen, GraduationCap, Lightbulb, FileText,
   MessageSquare, Clock, ChevronDown, X, Loader2, PanelRightOpen,
   PanelRightClose, Trash2, Settings, Zap, Target, Menu,
+  Users, Calendar, Wallet, TrendingUp, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import {
   MOCK_CONVERSATIONS, AI_MODELS, AI_SKILLS, SUGGESTED_PROMPTS,
   QUICK_ACTIONS, ATTACHABLE_RESOURCES, AI_RESPONSES,
 } from "@/lib/scholarii/ai-mock-data";
 import type { ChatConversation, ChatMessage, AiModel, AiSkill } from "@/lib/scholarii/ai-mock-data";
+import {
+  PARENT_AI_SKILLS, PARENT_SUGGESTED_PROMPTS, PARENT_QUICK_ACTIONS,
+  PARENT_ATTACHABLE_RESOURCES, PARENT_MOCK_CONVERSATIONS, PARENT_AI_RESPONSES,
+} from "@/lib/scholarii/parent-ai-mock-data";
+import { useAuth } from "@/lib/scholarii/auth";
 
 export const Route = createFileRoute("/app/ai")({ component: AiStudyAssistant });
 
 const DAILY_LIMIT = 10;
 
 function AiStudyAssistant() {
-  const [conversations, setConversations] = useState<ChatConversation[]>(MOCK_CONVERSATIONS);
-  const [activeConvId, setActiveConvId] = useState<string | null>(MOCK_CONVERSATIONS[0]?.id ?? null);
+  const { user, parentMode } = useAuth();
+  const isParent = user?.role === "student" && parentMode;
+
+  // Use parent-specific data when in parent mode
+  const AI_SKILLS_TO_USE = isParent ? PARENT_AI_SKILLS : AI_SKILLS;
+  const SUGGESTED_PROMPTS_TO_USE = isParent ? PARENT_SUGGESTED_PROMPTS : SUGGESTED_PROMPTS;
+  const QUICK_ACTIONS_TO_USE = isParent ? PARENT_QUICK_ACTIONS : QUICK_ACTIONS;
+  const ATTACHABLE_RESOURCES_TO_USE = isParent ? PARENT_ATTACHABLE_RESOURCES : ATTACHABLE_RESOURCES;
+  const MOCK_CONVERSATIONS_TO_USE = isParent ? PARENT_MOCK_CONVERSATIONS : MOCK_CONVERSATIONS;
+  const AI_RESPONSES_TO_USE = isParent ? PARENT_AI_RESPONSES : AI_RESPONSES;
+
+  const [conversations, setConversations] = useState<ChatConversation[]>(MOCK_CONVERSATIONS_TO_USE);
+  const [activeConvId, setActiveConvId] = useState<string | null>(MOCK_CONVERSATIONS_TO_USE[0]?.id ?? null);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [selectedModel, setSelectedModel] = useState<AiModel>(AI_MODELS[1]);
-  const [selectedSkill, setSelectedSkill] = useState<AiSkill>(AI_SKILLS[0]);
+  const [selectedSkill, setSelectedSkill] = useState<AiSkill>(AI_SKILLS_TO_USE[0]);
   const [attachedResource, setAttachedResource] = useState<typeof ATTACHABLE_RESOURCES[0] | null>(null);
   const [resourcePickerOpen, setResourcePickerOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -87,20 +104,49 @@ function AiStudyAssistant() {
       let response = "";
 
       if (attachedResource) {
-        response = `I've received the resource "${attachedResource.title}" (${attachedResource.subject}). Here's my analysis:\n\n**Key Points from ${attachedResource.title}:**\n1. Core concept explanation\n2. Important formulas and definitions\n3. Application examples\n4. Exam-relevant topics\n\nWhat would you like me to help you with regarding this resource?`;
-      } else if (lower.includes("photosynthesis") || lower.includes("biology")) {
-        response = MOCK_CONVERSATIONS[0].messages[1].content;
-      } else if (lower.includes("linear") || lower.includes("algebra") || lower.includes("equation")) {
-        response = MOCK_CONVERSATIONS[1].messages[1].content;
-      } else if (lower.includes("climate") || lower.includes("essay")) {
-        response = MOCK_CONVERSATIONS[2].messages[1].content;
-      } else if (lower.includes("newton") || lower.includes("physics") || lower.includes("motion")) {
-        response = MOCK_CONVERSATIONS[3].messages[1].content;
-      } else if (lower.includes("html") || lower.includes("portfolio") || lower.includes("computer")) {
-        response = MOCK_CONVERSATIONS[4].messages[1].content;
+        if (isParent) {
+          response = `I've received the resource "${attachedResource.title}" (${attachedResource.subject}). Here's my analysis:\n\n**Key Points from ${attachedResource.title}:**\n1. Summary of the document\n2. Important highlights\n3. Action items if any\n4. Relevant context for your child\n\nWhat would you like me to help you with regarding this resource?`;
+        } else {
+          response = `I've received the resource "${attachedResource.title}" (${attachedResource.subject}). Here's my analysis:\n\n**Key Points from ${attachedResource.title}:**\n1. Core concept explanation\n2. Important formulas and definitions\n3. Application examples\n4. Exam-relevant topics\n\nWhat would you like me to help you with regarding this resource?`;
+        }
+      } else if (isParent) {
+        // Parent-specific responses
+        if (lower.includes("performance") || lower.includes("performing") || lower.includes("grades")) {
+          response = PARENT_AI_RESPONSES["performance"];
+        } else if (lower.includes("attendance") || lower.includes("present") || lower.includes("absent")) {
+          response = PARENT_AI_RESPONSES["attendance"];
+        } else if (lower.includes("fee") || lower.includes("payment") || lower.includes("dues")) {
+          response = PARENT_AI_RESPONSES["fees"];
+        } else if (lower.includes("exam") || lower.includes("test") || lower.includes("preparation")) {
+          response = PARENT_AI_RESPONSES["exams"];
+        } else if (lower.includes("event") || lower.includes("ptm") || lower.includes("fair")) {
+          response = PARENT_AI_RESPONSES["events"];
+        } else if (lower.includes("focus") || lower.includes("week") || lower.includes("priority")) {
+          response = PARENT_AI_RESPONSES["focus"];
+        } else if (lower.includes("support") || lower.includes("help") || lower.includes("home")) {
+          response = PARENT_AI_RESPONSES["support"];
+        } else if (lower.includes("notice") || lower.includes("notice") || lower.includes("school")) {
+          response = PARENT_AI_RESPONSES["notices"];
+        } else {
+          const key = Object.keys(PARENT_AI_RESPONSES).find((k) => lower.includes(k));
+          response = key ? PARENT_AI_RESPONSES[key] : PARENT_AI_RESPONSES["default"];
+        }
       } else {
-        const key = Object.keys(AI_RESPONSES).find((k) => lower.includes(k));
-        response = key ? AI_RESPONSES[key] : `I understand your question about "${msg}". Let me help you with that.\n\nHere's what I can tell you:\n\n1. **Overview**: This is an important topic in your curriculum.\n\n2. **Key Points**: \n   - Point 1: Fundamental concept\n   - Point 2: Application\n   - Point 3: Exam relevance\n\n3. **Study Tips**: Focus on understanding the core principles rather than memorizing.\n\nWould you like me to:\n- Create detailed notes?\n- Generate practice questions?\n- Create flashcards?\n- Explain a specific concept?`;
+        // Student-specific responses
+        if (lower.includes("photosynthesis") || lower.includes("biology")) {
+          response = MOCK_CONVERSATIONS[0].messages[1].content;
+        } else if (lower.includes("linear") || lower.includes("algebra") || lower.includes("equation")) {
+          response = MOCK_CONVERSATIONS[1].messages[1].content;
+        } else if (lower.includes("climate") || lower.includes("essay")) {
+          response = MOCK_CONVERSATIONS[2].messages[1].content;
+        } else if (lower.includes("newton") || lower.includes("physics") || lower.includes("motion")) {
+          response = MOCK_CONVERSATIONS[3].messages[1].content;
+        } else if (lower.includes("html") || lower.includes("portfolio") || lower.includes("computer")) {
+          response = MOCK_CONVERSATIONS[4].messages[1].content;
+        } else {
+          const key = Object.keys(AI_RESPONSES).find((k) => lower.includes(k));
+          response = key ? AI_RESPONSES[key] : `I understand your question about "${msg}". Let me help you with that.\n\nHere's what I can tell you:\n\n1. **Overview**: This is an important topic in your curriculum.\n\n2. **Key Points**: \n   - Point 1: Fundamental concept\n   - Point 2: Application\n   - Point 3: Exam relevance\n\n3. **Study Tips**: Focus on understanding the core principles rather than memorizing.\n\nWould you like me to:\n- Create detailed notes?\n- Generate practice questions?\n- Create flashcards?\n- Explain a specific concept?`;
+        }
       }
 
       const aiMsg: ChatMessage = {
@@ -149,7 +195,7 @@ function AiStudyAssistant() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-bold text-foreground hidden sm:inline">AI Study Assistant</span>
+            <span className="text-sm font-bold text-foreground hidden sm:inline">{isParent ? "AI Assistant" : "AI Study Assistant"}</span>
           </div>
         </div>
 
@@ -194,7 +240,7 @@ function AiStudyAssistant() {
             </button>
             {skillDropdownOpen && (
               <div className="absolute right-0 top-full z-50 mt-1 w-52 rounded-xl border border-border/40 bg-card p-1 shadow-xl max-h-80 overflow-y-auto">
-                {AI_SKILLS.map((s) => (
+                {AI_SKILLS_TO_USE.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => { setSelectedSkill(s); setSkillDropdownOpen(false); }}
@@ -287,7 +333,7 @@ function AiStudyAssistant() {
               </div>
             </div>
           ) : (
-            <EmptyState onSend={handleSend} />
+            <EmptyState onSend={handleSend} isParent={isParent} />
           )}
 
           {/* Composer */}
@@ -296,7 +342,7 @@ function AiStudyAssistant() {
               {/* Preset Prompts */}
               {!activeConv || activeConv.messages.length === 0 ? (
                 <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                  {QUICK_ACTIONS.map((action) => (
+                  {QUICK_ACTIONS_TO_USE.map((action) => (
                     <button
                       key={action.label}
                       onClick={() => handleSend(action.label)}
@@ -340,7 +386,7 @@ function AiStudyAssistant() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                    placeholder={quotaExhausted ? "Daily AI limit reached. Resets tomorrow." : `Ask anything about ${selectedSkill.name.toLowerCase()}...`}
+                    placeholder={quotaExhausted ? "Daily AI limit reached. Resets tomorrow." : isParent ? "Ask about your child's progress..." : `Ask anything about ${selectedSkill.name.toLowerCase()}...`}
                     disabled={quotaExhausted}
                     rows={1}
                     className="w-full resize-none rounded-xl border border-border/50 bg-muted/30 px-4 py-3 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
@@ -370,6 +416,7 @@ function AiStudyAssistant() {
               skill={selectedSkill}
               resource={attachedResource}
               conversation={activeConv}
+              isParent={isParent}
             />
           </aside>
         )}
@@ -383,7 +430,7 @@ function AiStudyAssistant() {
             <SheetDescription>Select a resource to add as context</SheetDescription>
           </SheetHeader>
           <div className="mt-4 space-y-2">
-            {ATTACHABLE_RESOURCES.map((r) => (
+            {ATTACHABLE_RESOURCES_TO_USE.map((r) => (
               <button
                 key={r.id}
                 onClick={() => { setAttachedResource(r); setResourcePickerOpen(false); }}
@@ -463,7 +510,9 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-function EmptyState({ onSend }: { onSend: (text: string) => void }) {
+function EmptyState({ onSend, isParent }: { onSend: (text: string) => void; isParent: boolean }) {
+  const prompts = isParent ? PARENT_SUGGESTED_PROMPTS : SUGGESTED_PROMPTS;
+  
   return (
     <div className="flex flex-1 items-center justify-center p-8">
       <div className="max-w-lg text-center space-y-6">
@@ -471,11 +520,11 @@ function EmptyState({ onSend }: { onSend: (text: string) => void }) {
           <BrainCircuit className="h-10 w-10 text-violet-400" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-foreground">AI Study Assistant</h2>
-          <p className="text-sm text-muted-foreground">Your personal AI tutor. Ask anything, learn faster.</p>
+          <h2 className="text-2xl font-bold text-foreground">{isParent ? "AI Assistant" : "AI Study Assistant"}</h2>
+          <p className="text-sm text-muted-foreground">{isParent ? "Your AI companion to monitor and support your child's academic journey." : "Your personal AI tutor. Ask anything, learn faster."}</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          {SUGGESTED_PROMPTS.map((prompt) => (
+          {prompts.map((prompt) => (
             <button
               key={prompt}
               onClick={() => onSend(prompt)}
@@ -490,10 +539,17 @@ function EmptyState({ onSend }: { onSend: (text: string) => void }) {
   );
 }
 
-function RightSidebar({ skill, resource, conversation }: {
-  skill: AiSkill; resource: typeof ATTACHABLE_RESOURCES[0] | null; conversation: ChatConversation | undefined;
+function RightSidebar({ skill, resource, conversation, isParent }: {
+  skill: AiSkill; resource: typeof ATTACHABLE_RESOURCES[0] | null; conversation: ChatConversation | undefined; isParent: boolean;
 }) {
-  const suggestedActions = [
+  const suggestedActions = isParent ? [
+    { label: "View Report Card", icon: <FileText className="h-3.5 w-3.5" /> },
+    { label: "Check Attendance", icon: <Calendar className="h-3.5 w-3.5" /> },
+    { label: "Fee Payment", icon: <Wallet className="h-3.5 w-3.5" /> },
+    { label: "Contact Class Teacher", icon: <MessageSquare className="h-3.5 w-3.5" /> },
+    { label: "Download Progress Report", icon: <FileText className="h-3.5 w-3.5" /> },
+    { label: "Set Fee Reminder", icon: <Clock className="h-3.5 w-3.5" /> },
+  ] : [
     { label: "Generate Notes", icon: <FileText className="h-3.5 w-3.5" /> },
     { label: "Create Quiz", icon: <Target className="h-3.5 w-3.5" /> },
     { label: "Important Questions", icon: <Lightbulb className="h-3.5 w-3.5" /> },
@@ -559,6 +615,57 @@ function RightSidebar({ skill, resource, conversation }: {
           ))}
         </div>
       </div>
+
+      {isParent && (
+        <div className="space-y-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Child Overview</p>
+          <div className="rounded-xl border border-border/40 bg-muted/30 p-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-violet-400" />
+              <span className="text-sm font-medium text-foreground">Aarav Sharma</span>
+            </div>
+            <div className="text-xs text-muted-foreground">Class 8-A · Roll 8A07</div>
+          </div>
+        </div>
+      )}
+
+      {isParent && (
+        <div className="space-y-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Quick Stats</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-xl border border-border/40 bg-muted/30 p-2">
+              <div className="flex items-center gap-1 mb-1">
+                <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                <span className="text-[10px] text-muted-foreground">Attendance</span>
+              </div>
+              <p className="text-sm font-bold text-foreground">94%</p>
+            </div>
+            <div className="rounded-xl border border-border/40 bg-muted/30 p-2">
+              <div className="flex items-center gap-1 mb-1">
+                <TrendingUp className="h-3 w-3 text-violet-400" />
+                <span className="text-[10px] text-muted-foreground">Score</span>
+              </div>
+              <p className="text-sm font-bold text-foreground">84%</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isParent && (
+        <div className="space-y-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Upcoming</p>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs">
+              <Calendar className="h-3 w-3 text-amber-400" />
+              <span className="text-muted-foreground">Unit Test: 5 days</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <Wallet className="h-3 w-3 text-blue-400" />
+              <span className="text-muted-foreground">Fee Due: 15 days</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-auto space-y-2">
         <div className="rounded-xl border border-border/40 bg-muted/30 p-3">

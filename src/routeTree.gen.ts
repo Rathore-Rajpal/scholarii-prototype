@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppUsersRouteImport } from './routes/app.users'
+import { Route as AppUpdatesRouteImport } from './routes/app.updates'
 import { Route as AppTimetableRouteImport } from './routes/app.timetable'
 import { Route as AppTeachersRouteImport } from './routes/app.teachers'
 import { Route as AppSubjectsRouteImport } from './routes/app.subjects'
@@ -46,6 +47,7 @@ import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 import { Route as AppAiRouteImport } from './routes/app.ai'
 import { Route as AppAdmissionsRouteImport } from './routes/app.admissions'
 import { Route as AppAcademicsRouteImport } from './routes/app.academics'
+import { Route as AppChildrenProgressChildIdRouteImport } from './routes/app.children.progress.$childId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -70,6 +72,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUpdatesRoute = AppUpdatesRouteImport.update({
+  id: '/updates',
+  path: '/updates',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTimetableRoute = AppTimetableRouteImport.update({
@@ -232,6 +239,12 @@ const AppAcademicsRoute = AppAcademicsRouteImport.update({
   path: '/academics',
   getParentRoute: () => AppRoute,
 } as any)
+const AppChildrenProgressChildIdRoute =
+  AppChildrenProgressChildIdRouteImport.update({
+    id: '/progress/$childId',
+    path: '/progress/$childId',
+    getParentRoute: () => AppChildrenRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -245,7 +258,7 @@ export interface FileRoutesByFullPath {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
   '/app/brain': typeof AppBrainRoute
-  '/app/children': typeof AppChildrenRoute
+  '/app/children': typeof AppChildrenRouteWithChildren
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
   '/app/compliance': typeof AppComplianceRoute
@@ -269,8 +282,10 @@ export interface FileRoutesByFullPath {
   '/app/subjects': typeof AppSubjectsRoute
   '/app/teachers': typeof AppTeachersRoute
   '/app/timetable': typeof AppTimetableRoute
+  '/app/updates': typeof AppUpdatesRoute
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
+  '/app/children/progress/$childId': typeof AppChildrenProgressChildIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -283,7 +298,7 @@ export interface FileRoutesByTo {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
   '/app/brain': typeof AppBrainRoute
-  '/app/children': typeof AppChildrenRoute
+  '/app/children': typeof AppChildrenRouteWithChildren
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
   '/app/compliance': typeof AppComplianceRoute
@@ -307,8 +322,10 @@ export interface FileRoutesByTo {
   '/app/subjects': typeof AppSubjectsRoute
   '/app/teachers': typeof AppTeachersRoute
   '/app/timetable': typeof AppTimetableRoute
+  '/app/updates': typeof AppUpdatesRoute
   '/app/users': typeof AppUsersRoute
   '/app': typeof AppIndexRoute
+  '/app/children/progress/$childId': typeof AppChildrenProgressChildIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -323,7 +340,7 @@ export interface FileRoutesById {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
   '/app/brain': typeof AppBrainRoute
-  '/app/children': typeof AppChildrenRoute
+  '/app/children': typeof AppChildrenRouteWithChildren
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
   '/app/compliance': typeof AppComplianceRoute
@@ -347,8 +364,10 @@ export interface FileRoutesById {
   '/app/subjects': typeof AppSubjectsRoute
   '/app/teachers': typeof AppTeachersRoute
   '/app/timetable': typeof AppTimetableRoute
+  '/app/updates': typeof AppUpdatesRoute
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
+  '/app/children/progress/$childId': typeof AppChildrenProgressChildIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -388,8 +407,10 @@ export interface FileRouteTypes {
     | '/app/subjects'
     | '/app/teachers'
     | '/app/timetable'
+    | '/app/updates'
     | '/app/users'
     | '/app/'
+    | '/app/children/progress/$childId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -426,8 +447,10 @@ export interface FileRouteTypes {
     | '/app/subjects'
     | '/app/teachers'
     | '/app/timetable'
+    | '/app/updates'
     | '/app/users'
     | '/app'
+    | '/app/children/progress/$childId'
   id:
     | '__root__'
     | '/'
@@ -465,8 +488,10 @@ export interface FileRouteTypes {
     | '/app/subjects'
     | '/app/teachers'
     | '/app/timetable'
+    | '/app/updates'
     | '/app/users'
     | '/app/'
+    | '/app/children/progress/$childId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -510,6 +535,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/app/users'
       preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/updates': {
+      id: '/app/updates'
+      path: '/updates'
+      fullPath: '/app/updates'
+      preLoaderRoute: typeof AppUpdatesRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/timetable': {
@@ -736,8 +768,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAcademicsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/children/progress/$childId': {
+      id: '/app/children/progress/$childId'
+      path: '/progress/$childId'
+      fullPath: '/app/children/progress/$childId'
+      preLoaderRoute: typeof AppChildrenProgressChildIdRouteImport
+      parentRoute: typeof AppChildrenRoute
+    }
   }
 }
+
+interface AppChildrenRouteChildren {
+  AppChildrenProgressChildIdRoute: typeof AppChildrenProgressChildIdRoute
+}
+
+const AppChildrenRouteChildren: AppChildrenRouteChildren = {
+  AppChildrenProgressChildIdRoute: AppChildrenProgressChildIdRoute,
+}
+
+const AppChildrenRouteWithChildren = AppChildrenRoute._addFileChildren(
+  AppChildrenRouteChildren,
+)
 
 interface AppRouteChildren {
   AppAcademicsRoute: typeof AppAcademicsRoute
@@ -748,7 +799,7 @@ interface AppRouteChildren {
   AppAssignmentsRoute: typeof AppAssignmentsRoute
   AppAttendanceRoute: typeof AppAttendanceRoute
   AppBrainRoute: typeof AppBrainRoute
-  AppChildrenRoute: typeof AppChildrenRoute
+  AppChildrenRoute: typeof AppChildrenRouteWithChildren
   AppClassesRoute: typeof AppClassesRoute
   AppCommunicationRoute: typeof AppCommunicationRoute
   AppComplianceRoute: typeof AppComplianceRoute
@@ -772,6 +823,7 @@ interface AppRouteChildren {
   AppSubjectsRoute: typeof AppSubjectsRoute
   AppTeachersRoute: typeof AppTeachersRoute
   AppTimetableRoute: typeof AppTimetableRoute
+  AppUpdatesRoute: typeof AppUpdatesRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -785,7 +837,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssignmentsRoute: AppAssignmentsRoute,
   AppAttendanceRoute: AppAttendanceRoute,
   AppBrainRoute: AppBrainRoute,
-  AppChildrenRoute: AppChildrenRoute,
+  AppChildrenRoute: AppChildrenRouteWithChildren,
   AppClassesRoute: AppClassesRoute,
   AppCommunicationRoute: AppCommunicationRoute,
   AppComplianceRoute: AppComplianceRoute,
@@ -809,6 +861,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSubjectsRoute: AppSubjectsRoute,
   AppTeachersRoute: AppTeachersRoute,
   AppTimetableRoute: AppTimetableRoute,
+  AppUpdatesRoute: AppUpdatesRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
 }

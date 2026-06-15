@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import {
   Lock, LogOut, CheckCircle2, TrendingUp, ClipboardCheck,
   CalendarClock, GraduationCap, Award, BookOpen, Hash,
 } from "lucide-react";
+import { useAuth } from "@/lib/scholarii/auth";
 import {
   STUDENT_PROFILE, ACADEMIC_SNAPSHOT,
   DEFAULT_NOTIFICATIONS, DEFAULT_SECURITY, DEFAULT_APPEARANCE,
@@ -29,11 +30,108 @@ import type {
 
 export const Route = createFileRoute("/app/profile")({ component: ProfilePage });
 
-const TAB_LIST: { id: ProfileTab; label: string; icon: React.ReactNode }[] = [
-  { id: "personal", label: "Personal Information", icon: <UserCircle className="h-4 w-4" /> },
-  { id: "academic", label: "Academic Information", icon: <GraduationCap className="h-4 w-4" /> },
-  { id: "settings", label: "Account Settings", icon: <Shield className="h-4 w-4" /> },
-];
+interface RoleProfile {
+  firstName: string;
+  fullName: string;
+  role: string;
+  id: string;
+  dateOfBirth: string;
+  gender: string;
+  mobileNumber: string;
+  email: string;
+  address: string;
+  emergencyContact: string;
+  bloodGroup: string;
+  joinDate: string;
+  department?: string;
+  designation?: string;
+  employeeId?: string;
+  className?: string;
+  section?: string;
+  rollNumber?: string;
+  admissionNumber?: string;
+  academicYear?: string;
+  board?: string;
+  schoolName?: string;
+  house?: string;
+}
+
+function getRoleProfiles(user: { name: string; role: string; email: string } | null): RoleProfile {
+  if (!user) {
+    return {
+      firstName: "User",
+      fullName: "Unknown User",
+      role: "Unknown",
+      id: "N/A",
+      dateOfBirth: "2000-01-01",
+      gender: "N/A",
+      mobileNumber: "N/A",
+      email: "N/A",
+      address: "N/A",
+      emergencyContact: "N/A",
+      bloodGroup: "N/A",
+      joinDate: "N/A",
+    };
+  }
+
+  const base: RoleProfile = {
+    firstName: user.name.split(" ")[0],
+    fullName: user.name,
+    role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
+    id: user.email.split("@")[0].toUpperCase(),
+    dateOfBirth: "1990-05-15",
+    gender: "N/A",
+    mobileNumber: "+91 98765 43210",
+    email: user.email,
+    address: "123 School Road, Bangalore, Karnataka 560001",
+    emergencyContact: "+91 98765 43211",
+    bloodGroup: "O+",
+    joinDate: "2023-06-15",
+  };
+
+  if (user.role === "student") {
+    return {
+      ...base,
+      className: "8",
+      section: "A",
+      rollNumber: "8A07",
+      admissionNumber: "ADM-2024-0142",
+      academicYear: "2026-2027",
+      board: "CBSE",
+      schoolName: "Scholarii International School",
+      house: "Green House",
+    };
+  }
+
+  if (user.role === "teacher") {
+    return {
+      ...base,
+      department: "Mathematics",
+      designation: "Senior Teacher",
+      employeeId: "EMP-2023-0042",
+    };
+  }
+
+  if (user.role === "principal") {
+    return {
+      ...base,
+      department: "Administration",
+      designation: "Principal",
+      employeeId: "EMP-2020-0001",
+    };
+  }
+
+  if (user.role === "admin") {
+    return {
+      ...base,
+      department: "Administration",
+      designation: "Admin Officer",
+      employeeId: "EMP-2022-0015",
+    };
+  }
+
+  return base;
+}
 
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
@@ -62,24 +160,48 @@ function SettingToggle({ label, description, checked, onCheckedChange }: { label
 }
 
 function ProfilePage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<ProfileTab>("personal");
   const [editOpen, setEditOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationSettings>(DEFAULT_NOTIFICATIONS);
   const [security] = useState<SecuritySettings>(DEFAULT_SECURITY);
   const [appearance, setAppearance] = useState<AppearanceSettings>(DEFAULT_APPEARANCE);
 
-  const profile = STUDENT_PROFILE;
+  const profile = useMemo(() => getRoleProfiles(user), [user]);
+  const isStudent = user?.role === "student";
+
+  const TAB_LIST: { id: ProfileTab; label: string; icon: React.ReactNode }[] = [
+    { id: "personal", label: "Personal Information", icon: <UserCircle className="h-4 w-4" /> },
+    ...(isStudent ? [{ id: "academic" as ProfileTab, label: "Academic Information", icon: <GraduationCap className="h-4 w-4" /> }] : []),
+    { id: "settings", label: "Account Settings", icon: <Shield className="h-4 w-4" /> },
+  ];
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
+  const getGradientByRole = (role: string) => {
+    switch (role) {
+      case "student": return "from-emerald-500 to-teal-600";
+      case "teacher": return "from-blue-500 to-indigo-600";
+      case "principal": return "from-violet-500 to-purple-600";
+      case "admin": return "from-amber-500 to-orange-600";
+      default: return "from-slate-500 to-slate-600";
+    }
+  };
 
   return (
     <div className="space-y-6 p-6 pb-20 md:p-8">
       <div className="space-y-1.5">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-slate-500 to-slate-600 shadow-lg shadow-slate-500/25">
+          <div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${getGradientByRole(user?.role || "student")} shadow-lg shadow-slate-500/25`}>
             <UserCircle className="h-5 w-5 text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
-            <p className="text-sm text-muted-foreground">Manage your personal information and account settings.</p>
+            <p className="text-sm text-muted-foreground">
+              {isStudent ? "View your profile and academic information." : "Manage your profile and account settings."}
+            </p>
           </div>
         </div>
       </div>
@@ -88,8 +210,8 @@ function ProfilePage() {
         <CardContent className="p-6">
           <div className="flex flex-col items-center gap-4 sm:flex-row">
             <div className="relative">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-2xl font-bold text-white shadow-lg shadow-blue-500/25">
-                {profile.firstName[0]}
+              <div className={`flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br ${getGradientByRole(user?.role || "student")} text-2xl font-bold text-white shadow-lg shadow-blue-500/25`}>
+                {getInitials(profile.fullName)}
               </div>
               <button className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border bg-background shadow-sm transition-colors hover:bg-muted">
                 <Camera className="h-3.5 w-3.5" />
@@ -99,9 +221,18 @@ function ProfilePage() {
               <h2 className="text-xl font-bold">{profile.fullName}</h2>
               <div className="mt-1 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
                 <Badge variant="secondary" className="text-xs">{profile.role}</Badge>
-                <span className="text-sm text-muted-foreground">{profile.studentId}</span>
+                <span className="text-sm text-muted-foreground">{profile.id}</span>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground">{profile.class} &middot; {profile.section}</p>
+              {isStudent && profile.className && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Class {profile.className} &middot; Section {profile.section}
+                </p>
+              )}
+              {!isStudent && profile.designation && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {profile.designation} &middot; {profile.department}
+                </p>
+              )}
             </div>
             <div className="sm:ml-auto">
               <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
@@ -169,28 +300,28 @@ function ProfilePage() {
         </div>
       )}
 
-      {activeTab === "academic" && (
+      {activeTab === "academic" && isStudent && (
         <div className="space-y-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-base">Academic Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <InfoRow icon={<Hash className="h-4 w-4" />} label="Admission Number" value={profile.admissionNumber} />
+              <InfoRow icon={<Hash className="h-4 w-4" />} label="Admission Number" value={profile.admissionNumber || "N/A"} />
               <Separator />
-              <InfoRow icon={<Hash className="h-4 w-4" />} label="Roll Number" value={profile.rollNumber} />
+              <InfoRow icon={<Hash className="h-4 w-4" />} label="Roll Number" value={profile.rollNumber || "N/A"} />
               <Separator />
-              <InfoRow icon={<BookOpen className="h-4 w-4" />} label="Class" value={profile.class} />
+              <InfoRow icon={<BookOpen className="h-4 w-4" />} label="Class" value={profile.className || "N/A"} />
               <Separator />
-              <InfoRow icon={<BookOpen className="h-4 w-4" />} label="Section" value={profile.section} />
+              <InfoRow icon={<BookOpen className="h-4 w-4" />} label="Section" value={profile.section || "N/A"} />
               <Separator />
-              <InfoRow icon={<CalendarClock className="h-4 w-4" />} label="Academic Year" value={profile.academicYear} />
+              <InfoRow icon={<CalendarClock className="h-4 w-4" />} label="Academic Year" value={profile.academicYear || "N/A"} />
               <Separator />
-              <InfoRow icon={<GraduationCap className="h-4 w-4" />} label="Board" value={profile.board} />
+              <InfoRow icon={<GraduationCap className="h-4 w-4" />} label="Board" value={profile.board || "N/A"} />
               <Separator />
-              <InfoRow icon={<GraduationCap className="h-4 w-4" />} label="School Name" value={profile.schoolName} />
+              <InfoRow icon={<GraduationCap className="h-4 w-4" />} label="School Name" value={profile.schoolName || "N/A"} />
               <Separator />
-              <InfoRow icon={<Award className="h-4 w-4" />} label="House" value={profile.house} />
+              <InfoRow icon={<Award className="h-4 w-4" />} label="House" value={profile.house || "N/A"} />
             </CardContent>
           </Card>
 

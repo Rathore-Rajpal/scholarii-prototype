@@ -53,13 +53,19 @@ const STUDENT_NAV: PrincipalNav = [
   { to: "/app/profile", label: "Profile", icon: UserCircle },
 ];
 
-const PARENT_NAV: NavItem[] = [
+const PARENT_NAV: PrincipalNav = [
   { to: "/app", label: "Dashboard", icon: Home },
   { to: "/app/children", label: "Child Overview", icon: Baby },
-  { to: "/app/exams", label: "Performance", icon: Activity },
-  { to: "/app/attendance", label: "Attendance", icon: ClipboardCheck },
+  {
+    label: "Child Progress",
+    icon: Activity,
+    items: [
+      { to: "/app/performance", label: "Performance", icon: TrendingUp },
+      { to: "/app/attendance", label: "Attendance", icon: ClipboardCheck },
+    ],
+  },
   { to: "/app/fees", label: "Fees", icon: Wallet },
-  { to: "/app/messages", label: "Messages", icon: MessageCircle },
+  { to: "/app/updates", label: "Updates & Notices", icon: Megaphone },
   { to: "/app/documents", label: "Documents", icon: FileText },
   { to: "/app/ai", label: "AI Assistant", icon: Sparkles },
   { to: "/app/profile", label: "Profile", icon: UserCircle },
