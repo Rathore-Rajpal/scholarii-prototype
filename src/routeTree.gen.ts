@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppUsersRouteImport } from './routes/app.users'
+import { Route as AppUpdatesRouteImport } from './routes/app.updates'
 import { Route as AppTimetableRouteImport } from './routes/app.timetable'
 import { Route as AppTeachersRouteImport } from './routes/app.teachers'
 import { Route as AppSubjectsRouteImport } from './routes/app.subjects'
@@ -46,17 +47,7 @@ import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 import { Route as AppAiRouteImport } from './routes/app.ai'
 import { Route as AppAdmissionsRouteImport } from './routes/app.admissions'
 import { Route as AppAcademicsRouteImport } from './routes/app.academics'
-import { Route as AppAdminStudentsRouteImport } from './routes/app.admin.students'
-import { Route as AppAdminStaffRouteImport } from './routes/app.admin.staff'
-import { Route as AppAdminOperationsRouteImport } from './routes/app.admin.operations'
-import { Route as AppAdminFeesRouteImport } from './routes/app.admin.fees'
-import { Route as AppAdminFacilitiesRouteImport } from './routes/app.admin.facilities'
-import { Route as AppAdminDocumentsRouteImport } from './routes/app.admin.documents'
-import { Route as AppAdminComplianceRouteImport } from './routes/app.admin.compliance'
-import { Route as AppAdminBrainRouteImport } from './routes/app.admin.brain'
-import { Route as AppAdminAnalyticsRouteImport } from './routes/app.admin.analytics'
-import { Route as AppAdminAiRouteImport } from './routes/app.admin.ai'
-import { Route as AppAdminAcademicsRouteImport } from './routes/app.admin.academics'
+import { Route as AppChildrenProgressChildIdRouteImport } from './routes/app.children.progress.$childId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -81,6 +72,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUpdatesRoute = AppUpdatesRouteImport.update({
+  id: '/updates',
+  path: '/updates',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTimetableRoute = AppTimetableRouteImport.update({
@@ -243,61 +239,12 @@ const AppAcademicsRoute = AppAcademicsRouteImport.update({
   path: '/academics',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAdminStudentsRoute = AppAdminStudentsRouteImport.update({
-  id: '/admin/students',
-  path: '/admin/students',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminStaffRoute = AppAdminStaffRouteImport.update({
-  id: '/admin/staff',
-  path: '/admin/staff',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminOperationsRoute = AppAdminOperationsRouteImport.update({
-  id: '/admin/operations',
-  path: '/admin/operations',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminFeesRoute = AppAdminFeesRouteImport.update({
-  id: '/admin/fees',
-  path: '/admin/fees',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminFacilitiesRoute = AppAdminFacilitiesRouteImport.update({
-  id: '/admin/facilities',
-  path: '/admin/facilities',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminDocumentsRoute = AppAdminDocumentsRouteImport.update({
-  id: '/admin/documents',
-  path: '/admin/documents',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminComplianceRoute = AppAdminComplianceRouteImport.update({
-  id: '/admin/compliance',
-  path: '/admin/compliance',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminBrainRoute = AppAdminBrainRouteImport.update({
-  id: '/admin/brain',
-  path: '/admin/brain',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminAnalyticsRoute = AppAdminAnalyticsRouteImport.update({
-  id: '/admin/analytics',
-  path: '/admin/analytics',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminAiRoute = AppAdminAiRouteImport.update({
-  id: '/admin/ai',
-  path: '/admin/ai',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminAcademicsRoute = AppAdminAcademicsRouteImport.update({
-  id: '/admin/academics',
-  path: '/admin/academics',
-  getParentRoute: () => AppRoute,
-} as any)
+const AppChildrenProgressChildIdRoute =
+  AppChildrenProgressChildIdRouteImport.update({
+    id: '/progress/$childId',
+    path: '/progress/$childId',
+    getParentRoute: () => AppChildrenRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -311,7 +258,7 @@ export interface FileRoutesByFullPath {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
   '/app/brain': typeof AppBrainRoute
-  '/app/children': typeof AppChildrenRoute
+  '/app/children': typeof AppChildrenRouteWithChildren
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
   '/app/compliance': typeof AppComplianceRoute
@@ -335,19 +282,10 @@ export interface FileRoutesByFullPath {
   '/app/subjects': typeof AppSubjectsRoute
   '/app/teachers': typeof AppTeachersRoute
   '/app/timetable': typeof AppTimetableRoute
+  '/app/updates': typeof AppUpdatesRoute
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
-  '/app/admin/academics': typeof AppAdminAcademicsRoute
-  '/app/admin/ai': typeof AppAdminAiRoute
-  '/app/admin/analytics': typeof AppAdminAnalyticsRoute
-  '/app/admin/brain': typeof AppAdminBrainRoute
-  '/app/admin/compliance': typeof AppAdminComplianceRoute
-  '/app/admin/documents': typeof AppAdminDocumentsRoute
-  '/app/admin/facilities': typeof AppAdminFacilitiesRoute
-  '/app/admin/fees': typeof AppAdminFeesRoute
-  '/app/admin/operations': typeof AppAdminOperationsRoute
-  '/app/admin/staff': typeof AppAdminStaffRoute
-  '/app/admin/students': typeof AppAdminStudentsRoute
+  '/app/children/progress/$childId': typeof AppChildrenProgressChildIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -360,7 +298,7 @@ export interface FileRoutesByTo {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
   '/app/brain': typeof AppBrainRoute
-  '/app/children': typeof AppChildrenRoute
+  '/app/children': typeof AppChildrenRouteWithChildren
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
   '/app/compliance': typeof AppComplianceRoute
@@ -384,19 +322,10 @@ export interface FileRoutesByTo {
   '/app/subjects': typeof AppSubjectsRoute
   '/app/teachers': typeof AppTeachersRoute
   '/app/timetable': typeof AppTimetableRoute
+  '/app/updates': typeof AppUpdatesRoute
   '/app/users': typeof AppUsersRoute
   '/app': typeof AppIndexRoute
-  '/app/admin/academics': typeof AppAdminAcademicsRoute
-  '/app/admin/ai': typeof AppAdminAiRoute
-  '/app/admin/analytics': typeof AppAdminAnalyticsRoute
-  '/app/admin/brain': typeof AppAdminBrainRoute
-  '/app/admin/compliance': typeof AppAdminComplianceRoute
-  '/app/admin/documents': typeof AppAdminDocumentsRoute
-  '/app/admin/facilities': typeof AppAdminFacilitiesRoute
-  '/app/admin/fees': typeof AppAdminFeesRoute
-  '/app/admin/operations': typeof AppAdminOperationsRoute
-  '/app/admin/staff': typeof AppAdminStaffRoute
-  '/app/admin/students': typeof AppAdminStudentsRoute
+  '/app/children/progress/$childId': typeof AppChildrenProgressChildIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -411,7 +340,7 @@ export interface FileRoutesById {
   '/app/assignments': typeof AppAssignmentsRoute
   '/app/attendance': typeof AppAttendanceRoute
   '/app/brain': typeof AppBrainRoute
-  '/app/children': typeof AppChildrenRoute
+  '/app/children': typeof AppChildrenRouteWithChildren
   '/app/classes': typeof AppClassesRoute
   '/app/communication': typeof AppCommunicationRoute
   '/app/compliance': typeof AppComplianceRoute
@@ -435,19 +364,10 @@ export interface FileRoutesById {
   '/app/subjects': typeof AppSubjectsRoute
   '/app/teachers': typeof AppTeachersRoute
   '/app/timetable': typeof AppTimetableRoute
+  '/app/updates': typeof AppUpdatesRoute
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
-  '/app/admin/academics': typeof AppAdminAcademicsRoute
-  '/app/admin/ai': typeof AppAdminAiRoute
-  '/app/admin/analytics': typeof AppAdminAnalyticsRoute
-  '/app/admin/brain': typeof AppAdminBrainRoute
-  '/app/admin/compliance': typeof AppAdminComplianceRoute
-  '/app/admin/documents': typeof AppAdminDocumentsRoute
-  '/app/admin/facilities': typeof AppAdminFacilitiesRoute
-  '/app/admin/fees': typeof AppAdminFeesRoute
-  '/app/admin/operations': typeof AppAdminOperationsRoute
-  '/app/admin/staff': typeof AppAdminStaffRoute
-  '/app/admin/students': typeof AppAdminStudentsRoute
+  '/app/children/progress/$childId': typeof AppChildrenProgressChildIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -487,19 +407,10 @@ export interface FileRouteTypes {
     | '/app/subjects'
     | '/app/teachers'
     | '/app/timetable'
+    | '/app/updates'
     | '/app/users'
     | '/app/'
-    | '/app/admin/academics'
-    | '/app/admin/ai'
-    | '/app/admin/analytics'
-    | '/app/admin/brain'
-    | '/app/admin/compliance'
-    | '/app/admin/documents'
-    | '/app/admin/facilities'
-    | '/app/admin/fees'
-    | '/app/admin/operations'
-    | '/app/admin/staff'
-    | '/app/admin/students'
+    | '/app/children/progress/$childId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -536,19 +447,10 @@ export interface FileRouteTypes {
     | '/app/subjects'
     | '/app/teachers'
     | '/app/timetable'
+    | '/app/updates'
     | '/app/users'
     | '/app'
-    | '/app/admin/academics'
-    | '/app/admin/ai'
-    | '/app/admin/analytics'
-    | '/app/admin/brain'
-    | '/app/admin/compliance'
-    | '/app/admin/documents'
-    | '/app/admin/facilities'
-    | '/app/admin/fees'
-    | '/app/admin/operations'
-    | '/app/admin/staff'
-    | '/app/admin/students'
+    | '/app/children/progress/$childId'
   id:
     | '__root__'
     | '/'
@@ -586,19 +488,10 @@ export interface FileRouteTypes {
     | '/app/subjects'
     | '/app/teachers'
     | '/app/timetable'
+    | '/app/updates'
     | '/app/users'
     | '/app/'
-    | '/app/admin/academics'
-    | '/app/admin/ai'
-    | '/app/admin/analytics'
-    | '/app/admin/brain'
-    | '/app/admin/compliance'
-    | '/app/admin/documents'
-    | '/app/admin/facilities'
-    | '/app/admin/fees'
-    | '/app/admin/operations'
-    | '/app/admin/staff'
-    | '/app/admin/students'
+    | '/app/children/progress/$childId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -642,6 +535,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/app/users'
       preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/updates': {
+      id: '/app/updates'
+      path: '/updates'
+      fullPath: '/app/updates'
+      preLoaderRoute: typeof AppUpdatesRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/timetable': {
@@ -868,85 +768,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAcademicsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/admin/students': {
-      id: '/app/admin/students'
-      path: '/admin/students'
-      fullPath: '/app/admin/students'
-      preLoaderRoute: typeof AppAdminStudentsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/staff': {
-      id: '/app/admin/staff'
-      path: '/admin/staff'
-      fullPath: '/app/admin/staff'
-      preLoaderRoute: typeof AppAdminStaffRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/operations': {
-      id: '/app/admin/operations'
-      path: '/admin/operations'
-      fullPath: '/app/admin/operations'
-      preLoaderRoute: typeof AppAdminOperationsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/fees': {
-      id: '/app/admin/fees'
-      path: '/admin/fees'
-      fullPath: '/app/admin/fees'
-      preLoaderRoute: typeof AppAdminFeesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/facilities': {
-      id: '/app/admin/facilities'
-      path: '/admin/facilities'
-      fullPath: '/app/admin/facilities'
-      preLoaderRoute: typeof AppAdminFacilitiesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/documents': {
-      id: '/app/admin/documents'
-      path: '/admin/documents'
-      fullPath: '/app/admin/documents'
-      preLoaderRoute: typeof AppAdminDocumentsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/compliance': {
-      id: '/app/admin/compliance'
-      path: '/admin/compliance'
-      fullPath: '/app/admin/compliance'
-      preLoaderRoute: typeof AppAdminComplianceRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/brain': {
-      id: '/app/admin/brain'
-      path: '/admin/brain'
-      fullPath: '/app/admin/brain'
-      preLoaderRoute: typeof AppAdminBrainRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/analytics': {
-      id: '/app/admin/analytics'
-      path: '/admin/analytics'
-      fullPath: '/app/admin/analytics'
-      preLoaderRoute: typeof AppAdminAnalyticsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/ai': {
-      id: '/app/admin/ai'
-      path: '/admin/ai'
-      fullPath: '/app/admin/ai'
-      preLoaderRoute: typeof AppAdminAiRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/academics': {
-      id: '/app/admin/academics'
-      path: '/admin/academics'
-      fullPath: '/app/admin/academics'
-      preLoaderRoute: typeof AppAdminAcademicsRouteImport
-      parentRoute: typeof AppRoute
+    '/app/children/progress/$childId': {
+      id: '/app/children/progress/$childId'
+      path: '/progress/$childId'
+      fullPath: '/app/children/progress/$childId'
+      preLoaderRoute: typeof AppChildrenProgressChildIdRouteImport
+      parentRoute: typeof AppChildrenRoute
     }
   }
 }
+
+interface AppChildrenRouteChildren {
+  AppChildrenProgressChildIdRoute: typeof AppChildrenProgressChildIdRoute
+}
+
+const AppChildrenRouteChildren: AppChildrenRouteChildren = {
+  AppChildrenProgressChildIdRoute: AppChildrenProgressChildIdRoute,
+}
+
+const AppChildrenRouteWithChildren = AppChildrenRoute._addFileChildren(
+  AppChildrenRouteChildren,
+)
 
 interface AppRouteChildren {
   AppAcademicsRoute: typeof AppAcademicsRoute
@@ -957,7 +799,7 @@ interface AppRouteChildren {
   AppAssignmentsRoute: typeof AppAssignmentsRoute
   AppAttendanceRoute: typeof AppAttendanceRoute
   AppBrainRoute: typeof AppBrainRoute
-  AppChildrenRoute: typeof AppChildrenRoute
+  AppChildrenRoute: typeof AppChildrenRouteWithChildren
   AppClassesRoute: typeof AppClassesRoute
   AppCommunicationRoute: typeof AppCommunicationRoute
   AppComplianceRoute: typeof AppComplianceRoute
@@ -981,19 +823,9 @@ interface AppRouteChildren {
   AppSubjectsRoute: typeof AppSubjectsRoute
   AppTeachersRoute: typeof AppTeachersRoute
   AppTimetableRoute: typeof AppTimetableRoute
+  AppUpdatesRoute: typeof AppUpdatesRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppAdminAcademicsRoute: typeof AppAdminAcademicsRoute
-  AppAdminAiRoute: typeof AppAdminAiRoute
-  AppAdminAnalyticsRoute: typeof AppAdminAnalyticsRoute
-  AppAdminBrainRoute: typeof AppAdminBrainRoute
-  AppAdminComplianceRoute: typeof AppAdminComplianceRoute
-  AppAdminDocumentsRoute: typeof AppAdminDocumentsRoute
-  AppAdminFacilitiesRoute: typeof AppAdminFacilitiesRoute
-  AppAdminFeesRoute: typeof AppAdminFeesRoute
-  AppAdminOperationsRoute: typeof AppAdminOperationsRoute
-  AppAdminStaffRoute: typeof AppAdminStaffRoute
-  AppAdminStudentsRoute: typeof AppAdminStudentsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -1005,7 +837,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssignmentsRoute: AppAssignmentsRoute,
   AppAttendanceRoute: AppAttendanceRoute,
   AppBrainRoute: AppBrainRoute,
-  AppChildrenRoute: AppChildrenRoute,
+  AppChildrenRoute: AppChildrenRouteWithChildren,
   AppClassesRoute: AppClassesRoute,
   AppCommunicationRoute: AppCommunicationRoute,
   AppComplianceRoute: AppComplianceRoute,
@@ -1029,19 +861,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppSubjectsRoute: AppSubjectsRoute,
   AppTeachersRoute: AppTeachersRoute,
   AppTimetableRoute: AppTimetableRoute,
+  AppUpdatesRoute: AppUpdatesRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
-  AppAdminAcademicsRoute: AppAdminAcademicsRoute,
-  AppAdminAiRoute: AppAdminAiRoute,
-  AppAdminAnalyticsRoute: AppAdminAnalyticsRoute,
-  AppAdminBrainRoute: AppAdminBrainRoute,
-  AppAdminComplianceRoute: AppAdminComplianceRoute,
-  AppAdminDocumentsRoute: AppAdminDocumentsRoute,
-  AppAdminFacilitiesRoute: AppAdminFacilitiesRoute,
-  AppAdminFeesRoute: AppAdminFeesRoute,
-  AppAdminOperationsRoute: AppAdminOperationsRoute,
-  AppAdminStaffRoute: AppAdminStaffRoute,
-  AppAdminStudentsRoute: AppAdminStudentsRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
