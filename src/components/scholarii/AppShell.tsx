@@ -31,11 +31,21 @@ import {
   User as StudentIcon,
   Users as ParentIcon,
   BrainCircuit,
+<<<<<<< HEAD
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   Settings2,
   Sparkles,
+=======
+  CheckCircle2,
+  ChevronLeft, ChevronRight, ChevronDown,
+  MessageCircle, Send, Plus, Check, CheckCheck,
+  UserPlus, FolderOpen, FilePlus, ClipboardPlus, GraduationCap as ExamIcon,
+  TrendingDown, Megaphone, Mail, Zap, X, Hash,
+  Paperclip, Mic, Star, PanelRightOpen,
+  Sparkles, Database,
+>>>>>>> e59b2d2 (left sidebar few icons updated)
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -183,8 +193,8 @@ const PRINCIPAL_NAV: PrincipalNav = [
     icon: BarChart3,
     items: [
       { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
-      { to: "/app/ai", label: "Scholarii AI", icon: BrainCircuit },
-      { to: "/app/brain", label: "School Brain", icon: BrainCircuit },
+      { to: "/app/ai", label: "Scholarii AI", icon: Sparkles },
+      { to: "/app/brain", label: "School Brain", icon: Database },
     ],
   },
   {
