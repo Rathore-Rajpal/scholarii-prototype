@@ -139,44 +139,19 @@ const TEACHER_NAV: PrincipalNav = [
   { to: "/app/profile", label: "Profile", icon: UserCircle },
 ];
 
-const ADMIN_NAV: PrincipalNav = [
-  { to: "/app", label: "Dashboard", icon: Home },
-  {
-    label: "Operations",
-    icon: Users,
-    items: [
-      { to: "/app/admin/students", label: "Students", icon: Users },
-      { to: "/app/admin/staff", label: "Staff", icon: Briefcase },
-      { to: "/app/admin/operations", label: "Operations", icon: ClipboardList },
-    ],
-  },
-  { to: "/app/admin/academics", label: "Academics", icon: BookOpen },
-  { to: "/app/admin/fees", label: "Finance", icon: DollarSign },
-  {
-    label: "Insights",
-    icon: BarChart3,
-    items: [
-      { to: "/app/admin/analytics", label: "Analytics", icon: BarChart3 },
-      { to: "/app/admin/ai", label: "Scholarii AI", icon: Sparkles },
-      { to: "/app/admin/brain", label: "School Brain", icon: Database },
-    ],
-  },
-  {
-    label: "Administration",
-    icon: ShieldCheck,
-    items: [
-      { to: "/app/admin/documents", label: "Documents", icon: FileText },
-      { to: "/app/admin/facilities", label: "Facilities", icon: Building2 },
-      { to: "/app/admin/compliance", label: "Compliance", icon: ShieldCheck },
-    ],
-  },
-];
-
-const NAV: Record<Role, PrincipalNav> = {
+const NAV: Record<Role, PrincipalNav | NavItem[]> = {
   principal: PRINCIPAL_NAV,
   teacher: TEACHER_NAV,
   student: STUDENT_NAV,
-  admin: ADMIN_NAV,
+  admin: [
+    { to: "/app", label: "Dashboard", icon: Home },
+    { to: "/app/users", label: "User Management", icon: Users },
+    { to: "/app/fees", label: "Fee Management", icon: DollarSign },
+    { to: "/app/infrastructure", label: "Infrastructure", icon: Building2 },
+    { to: "/app/reports", label: "Reports & Export", icon: FileText },
+    { to: "/app/settings", label: "System Settings", icon: Settings },
+    { to: "/app/logs", label: "Audit Logs", icon: ScrollText },
+  ],
 };
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -296,13 +271,12 @@ const TEACHER_ACTIONS: QuickAction[] = [
 ];
 
 const ADMIN_ACTIONS: QuickAction[] = [
-  { label: "Students", icon: Users, group: "Operations" },
-  { label: "Staff", icon: Briefcase, group: "Operations" },
-  { label: "Operations", icon: ClipboardList, group: "Operations" },
+  { label: "User Management", icon: Users, group: "System" },
   { label: "Fee Management", icon: DollarSign, group: "Finance" },
-  { label: "Documents", icon: FileText, group: "Administration" },
-  { label: "Facilities", icon: Building2, group: "Administration" },
-  { label: "Analytics", icon: BarChart3, group: "Insights" },
+  { label: "Infrastructure", icon: Building2, group: "Facilities" },
+  { label: "Reports & Export", icon: FileText, group: "Reports" },
+  { label: "System Settings", icon: Settings, group: "System" },
+  { label: "Audit Logs", icon: ScrollText, group: "System" },
 ];
 
 // ─── Role-specific AI Context Prompts ───
@@ -350,15 +324,10 @@ const PRINCIPAL_CONTEXT_PROMPTS: Record<string, string[]> = {
 };
 
 const ADMIN_CONTEXT_PROMPTS: Record<string, string[]> = {
-  "/app/admin/students": ["Student enrollment summary", "Find at-risk students", "Attendance by class"],
-  "/app/admin/staff": ["Staff directory", "Leave requests pending", "Department breakdown"],
-  "/app/admin/operations": ["Today's operations", "Pending receipts", "Government compliance tasks"],
-  "/app/admin/fees": ["Revenue analysis", "Collection trends", "Outstanding dues"],
-  "/app/admin/documents": ["Pending verifications", "Expiring documents", "Certificate requests"],
-  "/app/admin/facilities": ["Room utilization", "Maintenance schedule", "Resource allocation"],
-  "/app/admin/compliance": ["Compliance checklist", "Upcoming deadlines", "Audit readiness"],
-  "/app/admin/analytics": ["School health overview", "Compare grade performance", "Attendance trends"],
-  "/app/admin/academics": ["Grade-wise performance", "Subject analysis", "Exam results summary"],
+  "/app/users": ["User activity report", "New user registrations", "Role distribution"],
+  "/app/fees": ["Revenue analysis", "Collection trends", "Outstanding dues"],
+  "/app/infrastructure": ["Room utilization", "Maintenance schedule", "Resource allocation"],
+  "/app/logs": ["Recent system events", "Security audit", "Login activity"],
   "/app": ["System health overview", "Recent activity", "Admin tasks"],
 };
 
@@ -965,10 +934,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="min-w-0">
               <div className="font-semibold text-sidebar-foreground leading-none text-sm">
-                {showParent ? "Parent Panel" : isStudent ? "Student Panel" : user?.role === "teacher" ? "Teacher Panel" : user?.role === "admin" ? "Admin Panel" : "Utilities"}
+                {showParent ? "Parent Panel" : isStudent ? "Student Panel" : user?.role === "teacher" ? "Teacher Panel" : "Utilities"}
               </div>
               <div className="text-[11px] text-sidebar-foreground/50 mt-0.5">
-                {showParent ? "Family Overview" : isStudent ? "Study Hub" : user?.role === "teacher" ? "Teaching Workspace" : user?.role === "admin" ? "Admin Workspace" : "AI & Actions"}
+                {showParent ? "Family Overview" : isStudent ? "Study Hub" : user?.role === "teacher" ? "Teaching Workspace" : "AI & Actions"}
               </div>
             </div>
           </div>

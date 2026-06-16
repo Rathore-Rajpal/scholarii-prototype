@@ -57,17 +57,6 @@ import { Route as AppMyclassNoticesRouteImport } from './routes/app.myclass.noti
 import { Route as AppMyclassExamsRouteImport } from './routes/app.myclass.exams'
 import { Route as AppMyclassDocumentsRouteImport } from './routes/app.myclass.documents'
 import { Route as AppMyclassAttendanceRouteImport } from './routes/app.myclass.attendance'
-import { Route as AppAdminStudentsRouteImport } from './routes/app.admin.students'
-import { Route as AppAdminStaffRouteImport } from './routes/app.admin.staff'
-import { Route as AppAdminOperationsRouteImport } from './routes/app.admin.operations'
-import { Route as AppAdminFeesRouteImport } from './routes/app.admin.fees'
-import { Route as AppAdminFacilitiesRouteImport } from './routes/app.admin.facilities'
-import { Route as AppAdminDocumentsRouteImport } from './routes/app.admin.documents'
-import { Route as AppAdminComplianceRouteImport } from './routes/app.admin.compliance'
-import { Route as AppAdminBrainRouteImport } from './routes/app.admin.brain'
-import { Route as AppAdminAnalyticsRouteImport } from './routes/app.admin.analytics'
-import { Route as AppAdminAiRouteImport } from './routes/app.admin.ai'
-import { Route as AppAdminAcademicsRouteImport } from './routes/app.admin.academics'
 import { Route as AppChildrenProgressChildIdRouteImport } from './routes/app.children.progress.$childId'
 
 const LoginRoute = LoginRouteImport.update({
@@ -310,61 +299,6 @@ const AppMyclassAttendanceRoute = AppMyclassAttendanceRouteImport.update({
   path: '/myclass/attendance',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAdminStudentsRoute = AppAdminStudentsRouteImport.update({
-  id: '/admin/students',
-  path: '/admin/students',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminStaffRoute = AppAdminStaffRouteImport.update({
-  id: '/admin/staff',
-  path: '/admin/staff',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminOperationsRoute = AppAdminOperationsRouteImport.update({
-  id: '/admin/operations',
-  path: '/admin/operations',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminFeesRoute = AppAdminFeesRouteImport.update({
-  id: '/admin/fees',
-  path: '/admin/fees',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminFacilitiesRoute = AppAdminFacilitiesRouteImport.update({
-  id: '/admin/facilities',
-  path: '/admin/facilities',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminDocumentsRoute = AppAdminDocumentsRouteImport.update({
-  id: '/admin/documents',
-  path: '/admin/documents',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminComplianceRoute = AppAdminComplianceRouteImport.update({
-  id: '/admin/compliance',
-  path: '/admin/compliance',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminBrainRoute = AppAdminBrainRouteImport.update({
-  id: '/admin/brain',
-  path: '/admin/brain',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminAnalyticsRoute = AppAdminAnalyticsRouteImport.update({
-  id: '/admin/analytics',
-  path: '/admin/analytics',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminAiRoute = AppAdminAiRouteImport.update({
-  id: '/admin/ai',
-  path: '/admin/ai',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminAcademicsRoute = AppAdminAcademicsRouteImport.update({
-  id: '/admin/academics',
-  path: '/admin/academics',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppChildrenProgressChildIdRoute =
   AppChildrenProgressChildIdRouteImport.update({
     id: '/progress/$childId',
@@ -415,17 +349,6 @@ export interface FileRoutesByFullPath {
   '/app/updates': typeof AppUpdatesRoute
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
-  '/app/admin/academics': typeof AppAdminAcademicsRoute
-  '/app/admin/ai': typeof AppAdminAiRoute
-  '/app/admin/analytics': typeof AppAdminAnalyticsRoute
-  '/app/admin/brain': typeof AppAdminBrainRoute
-  '/app/admin/compliance': typeof AppAdminComplianceRoute
-  '/app/admin/documents': typeof AppAdminDocumentsRoute
-  '/app/admin/facilities': typeof AppAdminFacilitiesRoute
-  '/app/admin/fees': typeof AppAdminFeesRoute
-  '/app/admin/operations': typeof AppAdminOperationsRoute
-  '/app/admin/staff': typeof AppAdminStaffRoute
-  '/app/admin/students': typeof AppAdminStudentsRoute
   '/app/myclass/attendance': typeof AppMyclassAttendanceRoute
   '/app/myclass/documents': typeof AppMyclassDocumentsRoute
   '/app/myclass/exams': typeof AppMyclassExamsRoute
@@ -476,17 +399,6 @@ export interface FileRoutesByTo {
   '/app/updates': typeof AppUpdatesRoute
   '/app/users': typeof AppUsersRoute
   '/app': typeof AppIndexRoute
-  '/app/admin/academics': typeof AppAdminAcademicsRoute
-  '/app/admin/ai': typeof AppAdminAiRoute
-  '/app/admin/analytics': typeof AppAdminAnalyticsRoute
-  '/app/admin/brain': typeof AppAdminBrainRoute
-  '/app/admin/compliance': typeof AppAdminComplianceRoute
-  '/app/admin/documents': typeof AppAdminDocumentsRoute
-  '/app/admin/facilities': typeof AppAdminFacilitiesRoute
-  '/app/admin/fees': typeof AppAdminFeesRoute
-  '/app/admin/operations': typeof AppAdminOperationsRoute
-  '/app/admin/staff': typeof AppAdminStaffRoute
-  '/app/admin/students': typeof AppAdminStudentsRoute
   '/app/myclass/attendance': typeof AppMyclassAttendanceRoute
   '/app/myclass/documents': typeof AppMyclassDocumentsRoute
   '/app/myclass/exams': typeof AppMyclassExamsRoute
@@ -539,17 +451,6 @@ export interface FileRoutesById {
   '/app/updates': typeof AppUpdatesRoute
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
-  '/app/admin/academics': typeof AppAdminAcademicsRoute
-  '/app/admin/ai': typeof AppAdminAiRoute
-  '/app/admin/analytics': typeof AppAdminAnalyticsRoute
-  '/app/admin/brain': typeof AppAdminBrainRoute
-  '/app/admin/compliance': typeof AppAdminComplianceRoute
-  '/app/admin/documents': typeof AppAdminDocumentsRoute
-  '/app/admin/facilities': typeof AppAdminFacilitiesRoute
-  '/app/admin/fees': typeof AppAdminFeesRoute
-  '/app/admin/operations': typeof AppAdminOperationsRoute
-  '/app/admin/staff': typeof AppAdminStaffRoute
-  '/app/admin/students': typeof AppAdminStudentsRoute
   '/app/myclass/attendance': typeof AppMyclassAttendanceRoute
   '/app/myclass/documents': typeof AppMyclassDocumentsRoute
   '/app/myclass/exams': typeof AppMyclassExamsRoute
@@ -603,17 +504,6 @@ export interface FileRouteTypes {
     | '/app/updates'
     | '/app/users'
     | '/app/'
-    | '/app/admin/academics'
-    | '/app/admin/ai'
-    | '/app/admin/analytics'
-    | '/app/admin/brain'
-    | '/app/admin/compliance'
-    | '/app/admin/documents'
-    | '/app/admin/facilities'
-    | '/app/admin/fees'
-    | '/app/admin/operations'
-    | '/app/admin/staff'
-    | '/app/admin/students'
     | '/app/myclass/attendance'
     | '/app/myclass/documents'
     | '/app/myclass/exams'
@@ -664,17 +554,6 @@ export interface FileRouteTypes {
     | '/app/updates'
     | '/app/users'
     | '/app'
-    | '/app/admin/academics'
-    | '/app/admin/ai'
-    | '/app/admin/analytics'
-    | '/app/admin/brain'
-    | '/app/admin/compliance'
-    | '/app/admin/documents'
-    | '/app/admin/facilities'
-    | '/app/admin/fees'
-    | '/app/admin/operations'
-    | '/app/admin/staff'
-    | '/app/admin/students'
     | '/app/myclass/attendance'
     | '/app/myclass/documents'
     | '/app/myclass/exams'
@@ -726,17 +605,6 @@ export interface FileRouteTypes {
     | '/app/updates'
     | '/app/users'
     | '/app/'
-    | '/app/admin/academics'
-    | '/app/admin/ai'
-    | '/app/admin/analytics'
-    | '/app/admin/brain'
-    | '/app/admin/compliance'
-    | '/app/admin/documents'
-    | '/app/admin/facilities'
-    | '/app/admin/fees'
-    | '/app/admin/operations'
-    | '/app/admin/staff'
-    | '/app/admin/students'
     | '/app/myclass/attendance'
     | '/app/myclass/documents'
     | '/app/myclass/exams'
@@ -1090,83 +958,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMyclassAttendanceRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/admin/students': {
-      id: '/app/admin/students'
-      path: '/admin/students'
-      fullPath: '/app/admin/students'
-      preLoaderRoute: typeof AppAdminStudentsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/staff': {
-      id: '/app/admin/staff'
-      path: '/admin/staff'
-      fullPath: '/app/admin/staff'
-      preLoaderRoute: typeof AppAdminStaffRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/operations': {
-      id: '/app/admin/operations'
-      path: '/admin/operations'
-      fullPath: '/app/admin/operations'
-      preLoaderRoute: typeof AppAdminOperationsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/fees': {
-      id: '/app/admin/fees'
-      path: '/admin/fees'
-      fullPath: '/app/admin/fees'
-      preLoaderRoute: typeof AppAdminFeesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/facilities': {
-      id: '/app/admin/facilities'
-      path: '/admin/facilities'
-      fullPath: '/app/admin/facilities'
-      preLoaderRoute: typeof AppAdminFacilitiesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/documents': {
-      id: '/app/admin/documents'
-      path: '/admin/documents'
-      fullPath: '/app/admin/documents'
-      preLoaderRoute: typeof AppAdminDocumentsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/compliance': {
-      id: '/app/admin/compliance'
-      path: '/admin/compliance'
-      fullPath: '/app/admin/compliance'
-      preLoaderRoute: typeof AppAdminComplianceRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/brain': {
-      id: '/app/admin/brain'
-      path: '/admin/brain'
-      fullPath: '/app/admin/brain'
-      preLoaderRoute: typeof AppAdminBrainRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/analytics': {
-      id: '/app/admin/analytics'
-      path: '/admin/analytics'
-      fullPath: '/app/admin/analytics'
-      preLoaderRoute: typeof AppAdminAnalyticsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/ai': {
-      id: '/app/admin/ai'
-      path: '/admin/ai'
-      fullPath: '/app/admin/ai'
-      preLoaderRoute: typeof AppAdminAiRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin/academics': {
-      id: '/app/admin/academics'
-      path: '/admin/academics'
-      fullPath: '/app/admin/academics'
-      preLoaderRoute: typeof AppAdminAcademicsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/children/progress/$childId': {
       id: '/app/children/progress/$childId'
       path: '/progress/$childId'
@@ -1229,17 +1020,6 @@ interface AppRouteChildren {
   AppUpdatesRoute: typeof AppUpdatesRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppAdminAcademicsRoute: typeof AppAdminAcademicsRoute
-  AppAdminAiRoute: typeof AppAdminAiRoute
-  AppAdminAnalyticsRoute: typeof AppAdminAnalyticsRoute
-  AppAdminBrainRoute: typeof AppAdminBrainRoute
-  AppAdminComplianceRoute: typeof AppAdminComplianceRoute
-  AppAdminDocumentsRoute: typeof AppAdminDocumentsRoute
-  AppAdminFacilitiesRoute: typeof AppAdminFacilitiesRoute
-  AppAdminFeesRoute: typeof AppAdminFeesRoute
-  AppAdminOperationsRoute: typeof AppAdminOperationsRoute
-  AppAdminStaffRoute: typeof AppAdminStaffRoute
-  AppAdminStudentsRoute: typeof AppAdminStudentsRoute
   AppMyclassAttendanceRoute: typeof AppMyclassAttendanceRoute
   AppMyclassDocumentsRoute: typeof AppMyclassDocumentsRoute
   AppMyclassExamsRoute: typeof AppMyclassExamsRoute
@@ -1288,17 +1068,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppUpdatesRoute: AppUpdatesRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
-  AppAdminAcademicsRoute: AppAdminAcademicsRoute,
-  AppAdminAiRoute: AppAdminAiRoute,
-  AppAdminAnalyticsRoute: AppAdminAnalyticsRoute,
-  AppAdminBrainRoute: AppAdminBrainRoute,
-  AppAdminComplianceRoute: AppAdminComplianceRoute,
-  AppAdminDocumentsRoute: AppAdminDocumentsRoute,
-  AppAdminFacilitiesRoute: AppAdminFacilitiesRoute,
-  AppAdminFeesRoute: AppAdminFeesRoute,
-  AppAdminOperationsRoute: AppAdminOperationsRoute,
-  AppAdminStaffRoute: AppAdminStaffRoute,
-  AppAdminStudentsRoute: AppAdminStudentsRoute,
   AppMyclassAttendanceRoute: AppMyclassAttendanceRoute,
   AppMyclassDocumentsRoute: AppMyclassDocumentsRoute,
   AppMyclassExamsRoute: AppMyclassExamsRoute,
