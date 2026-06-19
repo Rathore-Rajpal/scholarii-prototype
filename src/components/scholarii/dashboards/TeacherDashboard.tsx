@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { PageHeader } from "@/components/scholarii/AppShell";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Calendar,
@@ -12,329 +13,327 @@ import {
   Users,
   FileText,
   ClipboardCheck,
-  Megaphone,
-  LayoutGrid,
   CheckCircle2,
-  AlertTriangle,
-  ArrowRight,
   Sparkles,
-  TrendingUp,
-  Upload,
-  Plus,
+  Zap,
+  User,
+  FileCheck,
+  FilePlus,
+  ClipboardList,
+  Edit,
+  CalendarDays,
+  PartyPopper,
+  Sun,
+  BookMarked,
+  AlertTriangle,
+  ChevronRight,
 } from "lucide-react";
-import { getTeacherDashboardData, type TeacherDashboardData } from "@/lib/scholarii/teacher-mock-data";
+import {
+  getTeacherDashboardData,
+  type TeacherDashboardData,
+} from "@/lib/scholarii/teacher-mock-data";
 import { useAuth } from "@/lib/scholarii/auth";
+import { cn } from "@/lib/utils";
 
 const TABS = [
-  { id: "schedule", label: "Today's Schedule", icon: Calendar },
-  { id: "classes", label: "My Classes", icon: Users },
-  { id: "assignments", label: "Assignments", icon: FileText },
-  { id: "exams", label: "Exam Activity", icon: GraduationCap },
-  { id: "announcements", label: "Announcements", icon: Megaphone },
-  { id: "actions", label: "Quick Actions", icon: LayoutGrid },
+  { id: "schedule", label: "Today's Schedule", icon: Clock },
+  { id: "chapters", label: "Ongoing Chapters", icon: BookOpen },
+  { id: "events", label: "Upcoming Events", icon: Calendar },
+  { id: "pending", label: "Pending Actions", icon: FileText },
+  { id: "ai", label: "AI Insights", icon: Sparkles },
+  { id: "actions", label: "Quick Actions", icon: Zap },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
 
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  tone: "success" | "warning" | "info" | "default";
-}) {
-  const toneStyles = {
-    success: "from-emerald-500/10 to-emerald-600/5 text-emerald-600",
-    warning: "from-amber-500/10 to-amber-600/5 text-amber-600",
-    info: "from-violet-500/10 to-violet-600/5 text-violet-600",
-    default: "from-slate-500/10 to-slate-600/5 text-slate-600",
-  };
-
-  const iconBg = {
-    success: "bg-emerald-500/10",
-    warning: "bg-amber-500/10",
-    info: "bg-violet-500/10",
-    default: "bg-slate-500/10",
-  };
-
+function TodayScheduleTab({ data }: { data: TeacherDashboardData }) {
   return (
-    <Card className="relative overflow-hidden p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-      <div className={`absolute inset-0 bg-gradient-to-br ${toneStyles[tone]} opacity-50`} />
-      <div className="relative flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">{label}</p>
-          <p className="text-3xl font-bold tracking-tight">{value}</p>
+    <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm">
+      <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
+        <div>
+          <h3 className="text-sm font-semibold">Today&apos;s Schedule</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Your classes for the day, in order.
+          </p>
         </div>
-        <div className={`rounded-xl p-2.5 ${iconBg[tone]}`}>
-          <Icon className="size-5" />
-        </div>
+        <Badge variant="outline" className="rounded-full px-3 py-1 text-[10px]">
+          Teaching workspace
+        </Badge>
+      </div>
+      <div className="divide-y divide-border/50">
+        {data.todaySchedule.map((item) => (
+          <div
+            key={item.id}
+            className={cn(
+              "flex items-center gap-4 px-5 py-4 transition-colors",
+              item.status === "ongoing" && "bg-sky-500/5",
+            )}
+          >
+            <div className="flex min-w-[140px] items-center gap-2">
+              <div
+                className={cn(
+                  "size-2 rounded-full",
+                  item.status === "completed"
+                    ? "bg-emerald-500"
+                    : item.status === "ongoing"
+                      ? "bg-sky-500 animate-pulse"
+                      : item.isProxy
+                        ? "bg-amber-500"
+                        : "bg-muted-foreground/30",
+                )}
+              />
+              <span className="text-sm font-medium text-muted-foreground">
+                {item.time} - {item.endTime}
+              </span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium">{item.className}</span>
+                <span className="text-xs text-muted-foreground">{item.subject}</span>
+                <span className="text-xs text-muted-foreground">Room {item.room}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {item.isProxy && (
+                <Badge
+                  variant="outline"
+                  className="border-amber-200 bg-amber-500/10 text-[10px] text-amber-700"
+                >
+                  Proxy
+                </Badge>
+              )}
+              {item.status === "completed" && (
+                <Badge
+                  variant="outline"
+                  className="border-emerald-200 bg-emerald-500/10 text-[10px] text-emerald-700"
+                >
+                  Completed
+                </Badge>
+              )}
+              {item.status === "ongoing" && (
+                <Badge
+                  variant="outline"
+                  className="border-sky-200 bg-sky-500/10 text-[10px] text-sky-700"
+                >
+                  Ongoing
+                </Badge>
+              )}
+              {item.status === "upcoming" && !item.isProxy && (
+                <Badge variant="outline" className="text-[10px]">
+                  Upcoming
+                </Badge>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </Card>
   );
 }
 
-function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
+function OngoingChaptersTab({ data }: { data: TeacherDashboardData }) {
   return (
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-      {action}
-    </div>
-  );
-}
-
-function TodayScheduleTab({ data }: { data: TeacherDashboardData }) {
-  return (
-    <div className="space-y-6">
-      <SectionHeader title="Today's Classes" />
-      <div className="space-y-3">
-        {data.todaySchedule.map((item) => (
-          <Card key={item.id} className="p-4 transition-all hover:shadow-md">
-            <div className="flex items-center gap-4">
-              <div className={`rounded-xl p-2.5 ${
-                item.status === "completed" ? "bg-emerald-500/10" :
-                item.status === "ongoing" ? "bg-violet-500/10" :
-                "bg-slate-500/10"
-              }`}>
-                <Clock className={`size-5 ${
-                  item.status === "completed" ? "text-emerald-600" :
-                  item.status === "ongoing" ? "text-violet-600" :
-                  "text-slate-600"
-                }`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold">{item.time} - {item.endTime}</p>
-                  <Badge variant="outline" className={`text-xs ${
-                    item.status === "completed" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
-                    item.status === "ongoing" ? "bg-violet-500/10 text-violet-600 border-violet-500/20" :
-                    "bg-slate-500/10 text-slate-600 border-slate-500/20"
-                  }`}>
-                    {item.status === "completed" ? "Completed" : item.status === "ongoing" ? "Ongoing" : "Upcoming"}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {item.className} · {item.subject} · Room {item.room}
-                </p>
-              </div>
-              {item.status === "ongoing" && (
-                <div className="rounded-lg bg-violet-500/10 p-2">
-                  <div className="size-2 rounded-full bg-violet-500 animate-pulse" />
-                </div>
-              )}
+    <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm">
+      <div className="border-b border-border/60 px-5 py-4">
+        <h3 className="text-sm font-semibold">Ongoing Chapters</h3>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Progress at a glance for each live class.
+        </p>
+      </div>
+      <div className="divide-y divide-border/50">
+        {data.ongoingChapters.map((chapter) => (
+          <div key={chapter.id} className="flex items-center gap-4 px-5 py-4">
+            <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-sky-500/10">
+              <BookMarked className="size-4 text-sky-700" />
             </div>
-          </Card>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">{chapter.className}</span>
+                <span className="text-xs text-muted-foreground">{chapter.subject}</span>
+              </div>
+              <div className="mt-0.5 text-xs text-muted-foreground">{chapter.chapter}</div>
+            </div>
+            <div className="flex min-w-[120px] items-center gap-2">
+              <Progress value={chapter.progress} className="h-1.5 flex-1" />
+              <span className="text-xs font-medium">{chapter.progress}%</span>
+            </div>
+          </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
-function MyClassesTab({ data }: { data: TeacherDashboardData }) {
+function UpcomingEventsTab({ data }: { data: TeacherDashboardData }) {
+  const iconMap = { exam: GraduationCap, pta: Users, event: PartyPopper, holiday: Sun };
+  const colorMap = {
+    exam: "bg-sky-500/10 text-sky-700",
+    pta: "bg-violet-500/10 text-violet-700",
+    event: "bg-emerald-500/10 text-emerald-700",
+    holiday: "bg-amber-500/10 text-amber-700",
+  };
+
   return (
-    <div className="space-y-6">
-      <SectionHeader title="My Classes" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {data.myClasses.map((cls) => (
-          <Card key={cls.id} className="p-5 transition-all hover:shadow-md">
-            <div className="flex items-start justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold">{cls.name}</h3>
-                  {cls.isClassTeacher && (
-                    <Badge variant="outline" className="text-xs bg-violet-500/10 text-violet-600 border-violet-500/20">
-                      Class Teacher
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">{cls.subject}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold">{cls.students}</p>
-                <p className="text-xs text-muted-foreground">Students</p>
-              </div>
-            </div>
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Attendance</span>
-                <span className="font-medium">{cls.attendance}%</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-500"
-                  style={{ width: `${cls.attendance}%` }}
-                />
-              </div>
-            </div>
-            <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-              <GraduationCap className="size-3.5" />
-              <span>{cls.upcomingExam}</span>
-            </div>
-          </Card>
-        ))}
+    <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm">
+      <div className="border-b border-border/60 px-5 py-4">
+        <h3 className="text-sm font-semibold">Upcoming Events</h3>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Events that matter to your class and teaching day.
+        </p>
       </div>
-    </div>
-  );
-}
-
-function AssignmentsTab({ data }: { data: TeacherDashboardData }) {
-  return (
-    <div className="space-y-6">
-      <SectionHeader title="Assignments" />
-      <div className="space-y-3">
-        {data.assignments.map((assignment) => (
-          <Card key={assignment.id} className="p-4 transition-all hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-violet-500/10 p-2">
-                  <FileText className="size-4 text-violet-600" />
-                </div>
-                <div>
-                  <p className="font-medium">{assignment.title}</p>
-                  <p className="text-xs text-muted-foreground">{assignment.subject}</p>
-                </div>
+      <div className="divide-y divide-border/50">
+        {data.upcomingEvents.map((event) => {
+          const Icon = iconMap[event.type];
+          return (
+            <div key={event.id} className="flex items-center gap-4 px-5 py-4">
+              <div
+                className={cn(
+                  "grid size-9 shrink-0 place-items-center rounded-xl",
+                  colorMap[event.type],
+                )}
+              >
+                <Icon className="size-4" />
               </div>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="text-center">
-                  <p className="font-bold text-amber-600">{assignment.pending}</p>
-                  <p className="text-[10px] text-muted-foreground">Pending</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-bold text-blue-600">{assignment.submitted}</p>
-                  <p className="text-[10px] text-muted-foreground">Submitted</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-bold text-emerald-600">{assignment.verified}</p>
-                  <p className="text-[10px] text-muted-foreground">Verified</p>
-                </div>
+              <div className="min-w-0 flex-1">
+                <span className="text-sm font-medium">{event.title}</span>
               </div>
+              <span className="text-xs text-muted-foreground">{event.date}</span>
             </div>
-          </Card>
-        ))}
+          );
+        })}
       </div>
-    </div>
+    </Card>
   );
 }
 
-function ExamActivityTab({ data }: { data: TeacherDashboardData }) {
-  return (
-    <div className="space-y-6">
-      <SectionHeader title="Exam Activity" />
-      <div className="space-y-3">
-        {data.examActivities.map((exam) => (
-          <Card key={exam.id} className="p-4 transition-all hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`rounded-lg p-2 ${
-                  exam.daysLeft <= 3 ? "bg-amber-500/10" :
-                  exam.daysLeft <= 7 ? "bg-violet-500/10" :
-                  "bg-emerald-500/10"
-                }`}>
-                  <GraduationCap className={`size-4 ${
-                    exam.daysLeft <= 3 ? "text-amber-600" :
-                    exam.daysLeft <= 7 ? "text-violet-600" :
-                    "text-emerald-600"
-                  }`} />
-                </div>
-                <div>
-                  <p className="font-medium">{exam.name}</p>
-                  <p className="text-xs text-muted-foreground">{exam.subject}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <Badge variant="outline" className={`text-xs ${
-                  exam.daysLeft <= 3 ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
-                  exam.daysLeft <= 7 ? "bg-violet-500/10 text-violet-600 border-violet-500/20" :
-                  "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                }`}>
-                  {exam.daysLeft} Days Left
-                </Badge>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
+function PendingActionsTab({ data }: { data: TeacherDashboardData }) {
+  const iconMap = {
+    documents: FileCheck,
+    assignments: FileText,
+    marks: Edit,
+    attendance: ClipboardCheck,
+    reports: ClipboardList,
+  };
+  const colorMap = {
+    documents: "bg-amber-500/10 text-amber-700",
+    assignments: "bg-violet-500/10 text-violet-700",
+    marks: "bg-sky-500/10 text-sky-700",
+    attendance: "bg-emerald-500/10 text-emerald-700",
+    reports: "bg-rose-500/10 text-rose-700",
+  };
 
-function AnnouncementsTab({ data }: { data: TeacherDashboardData }) {
   return (
-    <div className="space-y-6">
-      <SectionHeader title="Announcements" />
-      <div className="space-y-3">
-        {data.announcements.map((notice) => (
-          <Card key={notice.id} className="p-4 transition-all hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`rounded-lg p-2 ${
-                  notice.type === "school" ? "bg-violet-500/10" :
-                  notice.type === "pta" ? "bg-blue-500/10" :
-                  "bg-amber-500/10"
-                }`}>
-                  <Megaphone className={`size-4 ${
-                    notice.type === "school" ? "text-violet-600" :
-                    notice.type === "pta" ? "text-blue-600" :
-                    "text-amber-600"
-                  }`} />
-                </div>
-                <div>
-                  <p className="font-medium">{notice.title}</p>
-                  <p className="text-xs text-muted-foreground">{notice.date}</p>
-                </div>
+    <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm">
+      <div className="border-b border-border/60 px-5 py-4">
+        <h3 className="text-sm font-semibold">Pending Actions</h3>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          A clean queue of the work waiting on you.
+        </p>
+      </div>
+      <div className="divide-y divide-border/50">
+        {data.pendingActions.map((action) => {
+          const Icon = iconMap[action.type];
+          return (
+            <div key={action.id} className="flex items-center gap-4 px-5 py-4">
+              <div
+                className={cn(
+                  "grid size-9 shrink-0 place-items-center rounded-xl",
+                  colorMap[action.type],
+                )}
+              >
+                <Icon className="size-4" />
               </div>
-              <Badge variant="outline" className={`text-xs ${
-                notice.priority === "urgent" ? "bg-red-500/10 text-red-600 border-red-500/20" :
-                notice.priority === "important" ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
-                "bg-slate-500/10 text-slate-600 border-slate-500/20"
-              }`}>
-                {notice.priority === "urgent" ? "Urgent" :
-                 notice.priority === "important" ? "Important" : "Normal"}
+              <div className="min-w-0 flex-1">
+                <span className="text-sm font-medium">{action.title}</span>
+              </div>
+              <Badge variant="outline" className="rounded-full text-[10px]">
+                {action.count} Pending
               </Badge>
             </div>
-          </Card>
-        ))}
+          );
+        })}
       </div>
-    </div>
+    </Card>
+  );
+}
+
+function AiInsightsTab({ data }: { data: TeacherDashboardData }) {
+  const typeConfig = {
+    warning: { icon: AlertTriangle, color: "border-amber-200 bg-amber-500/10 text-amber-700" },
+    info: { icon: Sparkles, color: "border-sky-200 bg-sky-500/10 text-sky-700" },
+    success: { icon: CheckCircle2, color: "border-emerald-200 bg-emerald-500/10 text-emerald-700" },
+  };
+
+  return (
+    <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm">
+      <div className="border-b border-border/60 px-5 py-4">
+        <h3 className="text-sm font-semibold">AI Insights</h3>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Focused insights for class teaching and follow-up.
+        </p>
+      </div>
+      <div className="grid gap-3 p-5 sm:grid-cols-2">
+        {data.aiInsights.map((insight) => {
+          const config = typeConfig[insight.type];
+          const Icon = config.icon;
+          return (
+            <div
+              key={insight.id}
+              className={cn("flex items-start gap-3 rounded-xl border p-3", config.color)}
+            >
+              <Icon className="mt-0.5 size-4 shrink-0" />
+              <p className="text-xs leading-relaxed text-muted-foreground">{insight.text}</p>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
   );
 }
 
 function QuickActionsTab() {
   const nav = useNavigate();
   const actions = [
-    { label: "Mark Attendance", icon: ClipboardCheck, action: () => nav({ to: "/app/attendance" as never }) },
-    { label: "Open My Classes", icon: Users, action: () => nav({ to: "/app/classes" as never }) },
-    { label: "Create Assignment", icon: Plus, action: () => {} },
-    { label: "Create Exam", icon: GraduationCap, action: () => {} },
+    {
+      label: "Mark Attendance",
+      icon: ClipboardCheck,
+      action: () => nav({ to: "/app/attendance" as never }),
+    },
+    { label: "Enter Marks", icon: Edit, action: () => {} },
+    { label: "Verify Documents", icon: FileCheck, action: () => {} },
+    { label: "Create Assignment", icon: FilePlus, action: () => {} },
     { label: "Generate Question Paper", icon: FileText, action: () => {} },
-    { label: "Upload Resource", icon: Upload, action: () => {} },
+    { label: "Create Daily Report", icon: ClipboardList, action: () => {} },
+    { label: "Open My Class", icon: Users, action: () => nav({ to: "/app/classes" as never }) },
     { label: "Open AI Assistant", icon: Sparkles, action: () => nav({ to: "/app/ai" as never }) },
   ];
 
   return (
-    <div className="space-y-6">
-      <SectionHeader title="Quick Actions" />
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm">
+      <div className="border-b border-border/60 px-5 py-4">
+        <h3 className="text-sm font-semibold">Quick Actions</h3>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Everything you use most often, kept within reach.
+        </p>
+      </div>
+      <div className="grid gap-3 p-5 sm:grid-cols-2 xl:grid-cols-4">
         {actions.map((a) => {
           const Icon = a.icon;
           return (
             <button
               key={a.label}
               onClick={a.action}
-              className="flex flex-col items-center gap-3 p-5 rounded-2xl border border-border/60 bg-card hover:bg-accent/50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+              className="flex items-center gap-3 rounded-xl border border-border/60 bg-background px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm hover:border-border"
             >
-              <div className="rounded-xl bg-violet-500/10 p-3">
-                <Icon className="size-5 text-violet-600" />
+              <div className="grid size-9 place-items-center rounded-xl bg-muted/60">
+                <Icon className="size-4 text-muted-foreground" />
               </div>
-              <span className="text-sm font-medium text-center">{a.label}</span>
+              <span className="text-xs font-medium">{a.label}</span>
             </button>
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -345,107 +344,151 @@ export function TeacherDashboard() {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
-    return "Good Evening";
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
   };
 
-  const teacherName = user?.name?.split(" ")[1] ?? "Mr. Sharma";
-  const today = new Date();
-  const dateStr = today.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const teacherName = user?.name?.split(" ")[0] ?? "Mr. Kumar";
+  const heroStats = [
+    { label: "Today's Classes", value: data.totalClasses, icon: Calendar },
+    { label: "My Class Attendance", value: `${data.myClassAttendance}%`, icon: Users },
+    { label: "Pending Verifications", value: data.pendingDocVerifications, icon: FileCheck },
+    { label: "Proxy Classes", value: data.proxyClasses, icon: User },
+    { label: "Upcoming Events", value: data.upcomingEvents.length, icon: CalendarDays },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-            {getGreeting()}, {teacherName} 👋
-          </h1>
-          <p className="text-muted-foreground mt-1">Here's your teaching overview for today.</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium">{dateStr}</p>
-            <p className="text-xs text-muted-foreground">
-              Mathematics Department · 4 Classes
+      <PageHeader
+        title="Teacher Dashboard"
+        subtitle="A focused workspace for your class, schedule, and day-to-day teaching flow."
+      />
+
+      <Card className="rounded-2xl border border-border/60 shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-border/60 px-5 py-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-muted-foreground">
+              {getGreeting()}, {teacherName}
+            </div>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">
+              Your teaching workspace for today
+            </h2>
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+              Track your class schedule, manage follow-ups, and keep attendance and student actions
+              in one calm dashboard.
             </p>
           </div>
-          <Avatar className="size-10 border-2 border-background shadow-md">
-            <AvatarFallback className="bg-violet-500/10 text-violet-600 font-semibold text-sm">
-              {user?.name?.charAt(0) ?? "T"}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-      </div>
-
-      {/* Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          icon={Calendar}
-          label="Today's Classes"
-          value={`${data.totalClasses} Classes`}
-          tone="info"
-        />
-        <MetricCard
-          icon={FileText}
-          label="Pending Reviews"
-          value={`${data.pendingReviews} Submissions`}
-          tone="warning"
-        />
-        <MetricCard
-          icon={GraduationCap}
-          label="Upcoming Exams"
-          value={`${data.upcomingExams} Exams`}
-          tone="info"
-        />
-        <MetricCard
-          icon={ClipboardCheck}
-          label="Attendance Pending"
-          value={`${data.attendancePending} Class Left`}
-          tone="default"
-        />
-      </div>
-
-      {/* Tab Bar */}
-      <div className="sticky top-0 z-30 -mx-1 px-1 pt-1 pb-3">
-        <div className="relative">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-xl rounded-2xl" />
-          <div className="relative flex gap-1 overflow-x-auto scrollbar-none rounded-2xl border border-border/60 bg-card p-1.5 shadow-sm">
-            {TABS.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? "bg-violet-500/10 text-violet-600 shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  <Icon className="size-4 shrink-0" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3">
+            <Avatar className="size-10 border border-background shadow-sm">
+              <AvatarFallback className="bg-sky-500/10 text-sky-700 font-medium">
+                {user?.name?.charAt(0) ?? "T"}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="text-sm font-semibold text-foreground">{teacherName}</div>
+              <div className="text-xs text-muted-foreground">{user?.email}</div>
+            </div>
           </div>
         </div>
+
+        <div className="grid gap-3 px-5 py-5 sm:grid-cols-2 xl:grid-cols-5">
+          {heroStats.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.label}
+                className="rounded-2xl border border-border/60 bg-background p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="grid size-9 place-items-center rounded-xl bg-sky-500/10">
+                    <Icon className="size-4 text-sky-700" />
+                  </div>
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </div>
+                <div className="mt-4 text-2xl font-semibold tracking-tight">{item.value}</div>
+                <div className="mt-1 text-xs text-muted-foreground">{item.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="grid size-10 place-items-center rounded-xl bg-emerald-500/10">
+              <ClipboardCheck className="size-4 text-emerald-700" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Class Attendance</div>
+              <div className="text-lg font-semibold">{data.myClassAttendance}%</div>
+            </div>
+          </div>
+          <div className="mt-4 text-xs text-muted-foreground">
+            Your class is performing above the target band this week.
+          </div>
+        </Card>
+        <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="grid size-10 place-items-center rounded-xl bg-amber-500/10">
+              <FileCheck className="size-4 text-amber-700" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Pending Verifications</div>
+              <div className="text-lg font-semibold">{data.pendingDocVerifications}</div>
+            </div>
+          </div>
+          <div className="mt-4 text-xs text-muted-foreground">
+            Documents that still need attention from your class workflow.
+          </div>
+        </Card>
+        <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="grid size-10 place-items-center rounded-xl bg-sky-500/10">
+              <Zap className="size-4 text-sky-700" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Proxy Classes</div>
+              <div className="text-lg font-semibold">{data.proxyClasses}</div>
+            </div>
+          </div>
+          <div className="mt-4 text-xs text-muted-foreground">
+            Classes requiring coverage or quick substitution.
+          </div>
+        </Card>
       </div>
 
-      {/* Tab Content */}
-      <div className="min-h-[400px]">
+      <div className="sticky top-16 z-10 rounded-2xl border border-border/60 bg-background/80 p-2 shadow-sm backdrop-blur-xl">
+        <div className="flex gap-1 overflow-x-auto">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition-all",
+                  active
+                    ? "bg-foreground text-background shadow-sm"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <Icon className="size-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="min-h-[300px]">
         {activeTab === "schedule" && <TodayScheduleTab data={data} />}
-        {activeTab === "classes" && <MyClassesTab data={data} />}
-        {activeTab === "assignments" && <AssignmentsTab data={data} />}
-        {activeTab === "exams" && <ExamActivityTab data={data} />}
-        {activeTab === "announcements" && <AnnouncementsTab data={data} />}
+        {activeTab === "chapters" && <OngoingChaptersTab data={data} />}
+        {activeTab === "events" && <UpcomingEventsTab data={data} />}
+        {activeTab === "pending" && <PendingActionsTab data={data} />}
+        {activeTab === "ai" && <AiInsightsTab data={data} />}
         {activeTab === "actions" && <QuickActionsTab />}
       </div>
     </div>

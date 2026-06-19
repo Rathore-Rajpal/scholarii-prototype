@@ -116,7 +116,6 @@ const TEACHER_NAV: PrincipalNav = [
     items: [
       { to: "/app/myclass/students", label: "Students", icon: Users },
       { to: "/app/myclass/attendance", label: "Attendance", icon: ClipboardCheck },
-      { to: "/app/myclass/documents", label: "Documents", icon: FileText },
       { to: "/app/myclass/exams", label: "Exams & Results", icon: GraduationCap },
       { to: "/app/myclass/performance", label: "Performance", icon: Activity },
       { to: "/app/myclass/notices", label: "Notices", icon: Megaphone },

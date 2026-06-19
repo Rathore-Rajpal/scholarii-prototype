@@ -1,15 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { RoleGuard, PlaceholderPage } from "@/components/scholarii/RoleGuard";
-import { FileText } from "lucide-react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/myclass/documents")({
-  component: () => (
-    <RoleGuard allowedRoles={["teacher"]}>
-      <PlaceholderPage
-        title="Documents"
-        subtitle="Manage student documents, track pending verifications, and view verified documents."
-        icon={FileText}
-      />
-    </RoleGuard>
-  ),
+  beforeLoad: () => {
+    throw redirect({ to: "/app/documents" });
+  },
+  component: () => null,
 });

@@ -1,474 +1,471 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { RoleGuard } from "@/components/scholarii/RoleGuard";
+import { TeacherPageLayout, TabButton, KpiCard } from "@/components/scholarii/TeacherPageLayout";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle,
-} from "@/components/ui/sheet";
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  FileText, Upload, Download, CheckCircle2, Clock, Search,
-  ChevronRight, Eye, MoreVertical, Trash2, Edit3, Sparkles,
-  FolderOpen, File, Image, FileSpreadsheet, Lock, GraduationCap,
+  Users, FileText, Clock, BookOpen, FolderOpen, Upload, Search,
+  Download, Eye, CheckCircle2, XCircle, AlertTriangle, Sparkles,
+  ChevronRight, PenLine, Trash2, Copy, Lock, Shield, Send,
 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
 import {
-  SCHOOL_DOCUMENTS, PRIVATE_DOCUMENTS,
-  STATUS_CONFIG, CATEGORY_CONFIG,
-} from "@/lib/scholarii/documents-mock-data";
-import type { Document, DocumentTab } from "@/lib/scholarii/documents-mock-data";
-import { useAuth } from "@/lib/scholarii/auth";
-import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
+  STUDENT_DOCS,
+  CLASS_DOCUMENTS,
+  QUESTION_PAPERS,
+  SCHOOL_DOCUMENTS_LIST,
+  PERSONAL_DOCUMENTS,
+  DOCUMENT_AI_INSIGHTS,
+  type StudentDocEntry,
+} from "@/lib/scholarii/teacher-documents-mock-data";
 
-export const Route = createFileRoute("/app/documents")({ component: DocumentsPage });
+export const Route = createFileRoute("/app/documents")({
+  component: () => (
+    <RoleGuard allowedRoles={["teacher"]}>
+      <DocumentsPage />
+    </RoleGuard>
+  ),
+});
 
-const TAB_LIST: { id: DocumentTab; label: string; icon: React.ReactNode }[] = [
-  { id: "school", label: "School Documents", icon: <GraduationCap className="h-4 w-4" /> },
-  { id: "private", label: "My Documents", icon: <Lock className="h-4 w-4" /> },
+type TabId = "students" | "class" | "question-papers" | "school" | "my-docs";
+type SideTab = "required" | "additional" | "history";
+
+const TABS: { id: TabId; label: string; icon: typeof Users }[] = [
+  { id: "students", label: "Students", icon: Users },
+  { id: "class", label: "Class Documents", icon: FolderOpen },
+  { id: "question-papers", label: "Question Papers", icon: FileText },
+  { id: "school", label: "School Documents", icon: BookOpen },
+  { id: "my-docs", label: "My Documents", icon: Shield },
 ];
 
-const FILE_TYPE_ICONS: Record<string, typeof File> = {
-  "application/pdf": FileText,
-  "image/jpeg": Image,
-  "image/png": Image,
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": FileSpreadsheet,
+const SIDE_TABS: { id: SideTab; label: string }[] = [
+  { id: "required", label: "Required Docs" },
+  { id: "additional", label: "Additional Docs" },
+  { id: "history", label: "History" },
+];
+
+const statusStyles: Record<string, { color: string; bg: string; icon: typeof CheckCircle2 }> = {
+  verified: { color: "text-emerald-600", bg: "bg-emerald-500/10", icon: CheckCircle2 },
+  pending: { color: "text-amber-600", bg: "bg-amber-500/10", icon: Clock },
+  missing: { color: "text-red-600", bg: "bg-red-500/10", icon: XCircle },
 };
 
-function getFileIcon(fileType: string | null): typeof File {
-  if (!fileType) return File;
-  return FILE_TYPE_ICONS[fileType] ?? File;
-}
+const examTypeColors: Record<string, string> = {
+  "Unit Test": "bg-purple-500/10 text-purple-600",
+  "Mid Term": "bg-purple-500/10 text-purple-600",
+  "Final Exam": "bg-red-500/10 text-red-600",
+  "Practice": "bg-emerald-500/10 text-emerald-600",
+  "Previous Year": "bg-amber-500/10 text-amber-600",
+};
 
 function DocumentsPage() {
-  const { user } = useAuth();
-  if (user?.role === "teacher") {
-    return (
-      <PlaceholderPage
-        title="Documents"
-        subtitle="Manage your teaching documents."
-        icon={FileText}
-      />
-    );
-  }
+  const [activeTab, setActiveTab] = useState<TabId>("students");
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [sortBy, setSortBy] = useState("roll");
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [sideTab, setSideTab] = useState<SideTab>("required");
+  const [sideWidth, setSideWidth] = useState(35);
+  const [classSearch, setClassSearch] = useState("");
+  const [qpSearch, setQpSearch] = useState("");
+  const [qpFilterType, setQpFilterType] = useState("all");
+  const [schoolSearch, setSchoolSearch] = useState("");
+  const [mySearch, setMySearch] = useState("");
 
-  const [activeTab, setActiveTab] = useState<DocumentTab>("school");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [uploadOpen, setUploadOpen] = useState(false);
-
-  const documents = activeTab === "school" ? SCHOOL_DOCUMENTS : PRIVATE_DOCUMENTS;
-
-  const filteredDocs = useMemo(() => {
-    let docs = documents;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      docs = docs.filter(
-        (d) => d.name.toLowerCase().includes(q) || d.category.toLowerCase().includes(q) || d.status.toLowerCase().includes(q)
-      );
+  const filteredStudents = useMemo(() => {
+    let result = [...STUDENT_DOCS];
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((s) => s.name.toLowerCase().includes(q) || String(s.roll).includes(q));
     }
-    return docs;
-  }, [documents, searchQuery]);
+    if (filterStatus === "pending") result = result.filter((s) => s.pendingCount > 0);
+    else if (filterStatus === "verified") result = result.filter((s) => s.verificationPct === 100);
+    else if (filterStatus === "missing") result = result.filter((s) => s.requiredDocs.some((d) => d.status === "missing"));
+    if (sortBy === "name") result.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortBy === "verification") result.sort((a, b) => b.verificationPct - a.verificationPct);
+    else if (sortBy === "pending") result.sort((a, b) => b.pendingCount - a.pendingCount);
+    else result.sort((a, b) => a.roll - b.roll);
+    return result;
+  }, [search, filterStatus, sortBy]);
 
-  const schoolStats = useMemo(() => {
-    const total = SCHOOL_DOCUMENTS.length;
-    const uploaded = SCHOOL_DOCUMENTS.filter((d) => d.status === "uploaded" || d.status === "verified").length;
-    const verified = SCHOOL_DOCUMENTS.filter((d) => d.status === "verified").length;
-    const pending = SCHOOL_DOCUMENTS.filter((d) => d.status === "uploaded" || d.status === "requested").length;
-    return { total, uploaded, verified, pending };
-  }, []);
+  const selectedStudent = useMemo(() => {
+    if (!selectedStudentId) return null;
+    return STUDENT_DOCS.find((s) => s.id === selectedStudentId) || null;
+  }, [selectedStudentId]);
+
+  const filteredClassDocs = useMemo(() => {
+    if (!classSearch) return CLASS_DOCUMENTS;
+    const q = classSearch.toLowerCase();
+    return CLASS_DOCUMENTS.filter((d) => d.name.toLowerCase().includes(q) || d.type.toLowerCase().includes(q));
+  }, [classSearch]);
+
+  const filteredQP = useMemo(() => {
+    let result = [...QUESTION_PAPERS];
+    if (qpSearch) {
+      const q = qpSearch.toLowerCase();
+      result = result.filter((p) => p.name.toLowerCase().includes(q) || p.subject.toLowerCase().includes(q));
+    }
+    if (qpFilterType !== "all") result = result.filter((p) => p.examType === qpFilterType);
+    return result;
+  }, [qpSearch, qpFilterType]);
+
+  const filteredSchoolDocs = useMemo(() => {
+    if (!schoolSearch) return SCHOOL_DOCUMENTS_LIST;
+    const q = schoolSearch.toLowerCase();
+    return SCHOOL_DOCUMENTS_LIST.filter((d) => d.name.toLowerCase().includes(q) || d.category.toLowerCase().includes(q));
+  }, [schoolSearch]);
+
+  const filteredPersonalDocs = useMemo(() => {
+    if (!mySearch) return PERSONAL_DOCUMENTS;
+    const q = mySearch.toLowerCase();
+    return PERSONAL_DOCUMENTS.filter((d) => d.name.toLowerCase().includes(q) || d.category.toLowerCase().includes(q));
+  }, [mySearch]);
+
+  const totalStudentDocs = STUDENT_DOCS.reduce((sum, s) => sum + s.requiredDocs.length + s.additionalDocs.length, 0);
+  const pendingVerifications = STUDENT_DOCS.reduce((sum, s) => sum + s.pendingCount, 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25">
-            <FileText className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Documents</h1>
-            <p className="text-sm text-muted-foreground">Manage school documents and your personal records.</p>
-          </div>
-        </div>
-      </div>
+    <TeacherPageLayout
+      title="Documents"
+      subtitle="Manage student, class, academic and personal documents."
+      kpiCards={
+        <>
+          <KpiCard label="Student Documents" value={totalStudentDocs} icon={Users} color="text-purple-600 bg-purple-500/10" />
+          <KpiCard label="Pending Verifications" value={pendingVerifications} icon={Clock} color="text-amber-600 bg-amber-500/10" />
+          <KpiCard label="Class Documents" value={CLASS_DOCUMENTS.length} icon={FolderOpen} color="text-purple-600 bg-purple-500/10" />
+          <KpiCard label="Question Papers" value={QUESTION_PAPERS.length} icon={FileText} color="text-emerald-600 bg-emerald-500/10" />
+          <KpiCard label="My Documents" value={PERSONAL_DOCUMENTS.length} icon={Shield} color="text-purple-600 bg-purple-500/10" />
+        </>
+      }
+      tabs={
+        <>
+          {TABS.map((tab) => (
+            <TabButton key={tab.id} active={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} icon={tab.icon} label={tab.label} />
+          ))}
+        </>
+      }
+    >
 
-      {/* Metric Cards - always visible above tabs */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {[
-          { label: "Required Documents", value: schoolStats.total, icon: FolderOpen, color: "from-slate-500 to-slate-600", shadow: "shadow-slate-500/20" },
-          { label: "Uploaded", value: schoolStats.uploaded, icon: Upload, color: "from-blue-500 to-blue-600", shadow: "shadow-blue-500/20" },
-          { label: "Verified", value: schoolStats.verified, icon: CheckCircle2, color: "from-emerald-500 to-emerald-600", shadow: "shadow-emerald-500/20" },
-          { label: "Pending Verification", value: schoolStats.pending, icon: Clock, color: "from-amber-500 to-orange-600", shadow: "shadow-amber-500/20" },
-        ].map((stat) => (
-          <Card key={stat.label} className="relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+        {/* ===================== STUDENTS TAB ===================== */}
+        {activeTab === "students" && (
+          <div className="flex gap-4" style={{ minHeight: "500px" }}>
+            {/* Left: Student Grid */}
+            <div className={cn("flex-1 space-y-3 transition-all", selectedStudentId ? "" : "")}>
+              {/* Controls */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative flex-1 min-w-[180px]">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                  <Input placeholder="Search students..." className="pl-8 h-8 text-xs" value={search} onChange={(e) => setSearch(e.target.value)} />
                 </div>
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${stat.color} shadow-lg ${stat.shadow}`}>
-                  <stat.icon className="h-5 w-5 text-white" />
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-28 h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="verified">Verified</SelectItem>
+                    <SelectItem value="missing">Missing</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-32 h-8 text-xs"><SelectValue placeholder="Sort" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="roll">Roll Number</SelectItem>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="verification">Verification %</SelectItem>
+                    <SelectItem value="pending">Pending Count</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Student Cards Grid */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {filteredStudents.map((student) => (
+                  <button key={student.id} onClick={() => { setSelectedStudentId(student.id === selectedStudentId ? null : student.id); setSideTab("required"); }} className={cn(
+                    "flex items-center gap-2.5 p-2.5 rounded-xl border transition-all text-left",
+                    selectedStudentId === student.id
+                      ? "border-purple-500 bg-purple-500/5 shadow-sm"
+                      : "border-border/60 hover:border-border hover:bg-muted/30",
+                  )}>
+                    <Avatar className="size-8 shrink-0">
+                      <AvatarFallback className={cn("text-[10px] font-medium text-white",
+                        student.verificationPct === 100 ? "bg-emerald-500" :
+                        student.verificationPct >= 80 ? "bg-amber-500" : "bg-red-500"
+                      )}>{student.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium truncate">{student.name}</div>
+                      <div className="text-[10px] text-muted-foreground">Roll #{student.roll}</div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className={cn("text-sm font-bold",
+                        student.verificationPct === 100 ? "text-emerald-600" :
+                        student.verificationPct >= 80 ? "text-amber-600" : "text-red-600"
+                      )}>{student.verificationPct}%</div>
+                      {student.pendingCount > 0 && (
+                        <div className="text-[9px] text-amber-600">{student.pendingCount} pending</div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Student Document Sidebar */}
+            {selectedStudent && (
+              <div className="border border-border/60 rounded-xl bg-card flex flex-col" style={{ width: `${sideWidth}%`, minWidth: "30%", maxWidth: "50%" }}>
+                {/* Sidebar Header */}
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60 shrink-0">
+                  <Avatar className="size-8 shrink-0">
+                    <AvatarFallback className={cn("text-[10px] font-medium text-white",
+                      selectedStudent.verificationPct === 100 ? "bg-emerald-500" :
+                      selectedStudent.verificationPct >= 80 ? "bg-amber-500" : "bg-red-500"
+                    )}>{selectedStudent.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold truncate">{selectedStudent.name}</div>
+                    <div className="text-[10px] text-muted-foreground">Roll #{selectedStudent.roll} · {selectedStudent.className} · {selectedStudent.verificationPct}% verified</div>
+                  </div>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground" onClick={() => setSelectedStudentId(null)}>
+                    <span className="text-sm leading-none">&times;</span>
+                  </Button>
+                </div>
+
+                {/* Sidebar Tabs */}
+                <div className="flex gap-1 px-3 pt-2 pb-1 border-b border-border/60 shrink-0">
+                  {SIDE_TABS.map((tab) => (
+                    <button key={tab.id} onClick={() => setSideTab(tab.id)} className={cn(
+                      "px-2.5 py-1 rounded-md text-[10px] font-medium transition-all",
+                      sideTab === tab.id ? "bg-purple-500/10 text-purple-600" : "text-muted-foreground hover:bg-muted",
+                    )}>{tab.label}</button>
+                  ))}
+                  <div className="ml-auto">
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-purple-600">
+                      <Send className="size-3 mr-1" />Re-upload
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Sidebar Content */}
+                <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
+                  {sideTab === "required" && selectedStudent.requiredDocs.map((doc) => {
+                    const cfg = statusStyles[doc.status];
+                    const StatusIcon = cfg.icon;
+                    return (
+                      <div key={doc.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
+                        <div className={cn("size-7 rounded-lg grid place-items-center shrink-0", cfg.bg)}>
+                          <FileText className={cn("size-3.5", cfg.color)} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium">{doc.name}</div>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <span>{doc.uploadedDate || "Not uploaded"}</span>
+                            {doc.verifiedBy && <span>· {doc.verifiedBy}</span>}
+                          </div>
+                        </div>
+                        <Badge variant="outline" className={cn("text-[9px] border-0", cfg.bg, cfg.color)}>
+                          <StatusIcon className="size-2.5 mr-0.5" />{doc.status}
+                        </Badge>
+                        <div className="flex items-center gap-0.5 shrink-0">
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Eye className="size-3" /></Button>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Download className="size-3" /></Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {sideTab === "additional" && (
+                    selectedStudent.additionalDocs.length === 0 ? (
+                      <div className="text-center py-6 text-muted-foreground">
+                        <FolderOpen className="size-6 mx-auto mb-1.5 opacity-40" />
+                        <p className="text-[10px]">No additional documents.</p>
+                      </div>
+                    ) : selectedStudent.additionalDocs.map((doc) => {
+                      const cfg = statusStyles[doc.status];
+                      const StatusIcon = cfg.icon;
+                      return (
+                        <div key={doc.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
+                          <div className={cn("size-7 rounded-lg grid place-items-center shrink-0", cfg.bg)}>
+                            <FileText className={cn("size-3.5", cfg.color)} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-medium">{doc.name}</div>
+                            <div className="text-[10px] text-muted-foreground">{doc.uploadedDate}</div>
+                          </div>
+                          <Badge variant="outline" className={cn("text-[9px] border-0", cfg.bg, cfg.color)}>
+                            <StatusIcon className="size-2.5 mr-0.5" />{doc.status}
+                          </Badge>
+                          <div className="flex items-center gap-0.5 shrink-0">
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Eye className="size-3" /></Button>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Download className="size-3" /></Button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+
+                  {sideTab === "history" && (
+                    <div className="space-y-0">
+                      {selectedStudent.verificationHistory.map((entry, i) => (
+                        <div key={i} className="flex items-start gap-2.5 py-2">
+                          <div className="size-5 rounded-full bg-purple-500/10 grid place-items-center shrink-0 mt-0.5">
+                            <CheckCircle2 className="size-2.5 text-purple-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[10px] text-muted-foreground">{entry.date}</div>
+                            <div className="text-xs">{entry.action}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Sticky Tab Bar */}
-      <div className="sticky top-0 z-30 -mx-6 bg-background/80 px-6 backdrop-blur-xl md:-mx-8 md:px-8">
-        <div className="flex gap-1 border-b">
-          {TAB_LIST.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => { setActiveTab(tab.id); setSearchQuery(""); }}
-              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                {tab.id === "school" ? schoolStats.total : PRIVATE_DOCUMENTS.length}
-              </Badge>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Search + Actions - below tabs, above content */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={activeTab === "school" ? "Search school documents..." : "Search private documents..."}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Button variant="outline" size="sm" onClick={() => setUploadOpen(true)}>
-          <Upload className="mr-1.5 h-4 w-4" />
-          Upload
-        </Button>
-      </div>
-
-      {/* Tab Content */}
-      <div className="min-h-[400px]">
-        {activeTab === "school" && (
-          <div className="space-y-3">
-            {filteredDocs.length === 0 ? (
-              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50">
-                    <FileText className="h-7 w-7 text-muted-foreground/50" />
-                  </div>
-                  <p className="mt-4 text-sm font-medium text-muted-foreground">No documents found</p>
-                  <p className="text-xs text-muted-foreground/70">Try adjusting your search</p>
-                </CardContent>
-              </Card>
-            ) : (
-              filteredDocs.map((doc) => {
-                const statusCfg = STATUS_CONFIG[doc.status];
-                const catCfg = CATEGORY_CONFIG[doc.category];
-                const FileIcon = getFileIcon(doc.fileType);
-                return (
-                  <Card
-                    key={doc.id}
-                    className="group cursor-pointer border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/5"
-                    onClick={() => { setSelectedDoc(doc); setDetailOpen(true); }}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted/50">
-                          <FileIcon className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="truncate text-sm font-semibold">{doc.name}</h3>
-                            <Badge variant="outline" className={`shrink-0 border ${statusCfg.border} ${statusCfg.bg} ${statusCfg.color}`}>
-                              <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${statusCfg.dot}`} />
-                              {statusCfg.label}
-                            </Badge>
-                          </div>
-                          <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                            <span className={`rounded-md px-1.5 py-0.5 ${catCfg.bg} ${catCfg.color}`}>{catCfg.label}</span>
-                            {doc.uploadDate && <span>Uploaded {new Date(doc.uploadDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>}
-                            {doc.verifiedBy && <span>Verified by {doc.verifiedBy}</span>}
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-500" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
             )}
           </div>
         )}
 
-        {activeTab === "private" && (
-          <div className="space-y-4">
-            <Card className="border-emerald-500/20 bg-emerald-500/5">
-              <CardContent className="flex items-start gap-3 p-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10">
-                  <Lock className="h-5 w-5 text-emerald-500" />
+        {/* ===================== CLASS DOCUMENTS TAB ===================== */}
+        {activeTab === "class" && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1 min-w-[180px]">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input placeholder="Search class documents..." className="pl-8 h-8 text-xs" value={classSearch} onChange={(e) => setClassSearch(e.target.value)} />
+              </div>
+              <Button size="sm" className="h-8 text-xs bg-brand-gradient text-white border-0"><Upload className="size-3 mr-1" />Upload</Button>
+            </div>
+            <div className="space-y-1.5">
+              {filteredClassDocs.map((doc) => (
+                <div key={doc.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
+                  <div className="size-7 rounded-lg bg-purple-500/10 grid place-items-center shrink-0">
+                    <FileText className="size-3.5 text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium">{doc.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{doc.uploadedBy} · {doc.uploadedDate} · {doc.size}</div>
+                  </div>
+                  <Badge variant="outline" className="text-[9px] border-0 bg-purple-500/10 text-purple-600 capitalize">{doc.type}</Badge>
+                  <div className="flex items-center gap-0.5">
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Eye className="size-3" /></Button>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Download className="size-3" /></Button>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><PenLine className="size-3" /></Button>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-emerald-500">Private Documents</p>
-                  <p className="text-xs text-muted-foreground">
-                    These documents are private and <strong>not shared</strong> with school, teachers, principal, or administration. Only you can see them.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredDocs.length === 0 ? (
-                <Card className="col-span-full border-border/50 bg-card/50 backdrop-blur-sm">
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50">
-                      <FileText className="h-7 w-7 text-muted-foreground/50" />
-                    </div>
-                    <p className="mt-4 text-sm font-medium text-muted-foreground">No documents found</p>
-                    <p className="text-xs text-muted-foreground/70">Upload your first private document</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                filteredDocs.map((doc) => {
-                  const catCfg = CATEGORY_CONFIG[doc.category];
-                  const FileIcon = getFileIcon(doc.fileType);
-                  return (
-                    <Card
-                      key={doc.id}
-                      className="group relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/5"
-                    >
-                      <CardContent className="p-5">
-                        <div className="flex items-start justify-between">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
-                            <FileIcon className="h-6 w-6 text-muted-foreground" />
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => { setSelectedDoc(doc); setDetailOpen(true); }}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Download className="mr-2 h-4 w-4" />
-                                Download
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Edit3 className="mr-2 h-4 w-4" />
-                                Rename
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                Open with AI
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-500">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                        <div className="mt-3 space-y-1.5">
-                          <h3 className="text-sm font-semibold leading-tight">{doc.name}</h3>
-                          <p className="line-clamp-2 text-xs text-muted-foreground">{doc.description}</p>
-                        </div>
-                        <div className="mt-3 flex items-center gap-2">
-                          <Badge variant="outline" className={`text-xs ${catCfg.bg} ${catCfg.color} border-0`}>{catCfg.label}</Badge>
-                          {doc.fileSize && <span className="text-xs text-muted-foreground">{doc.fileSize}</span>}
-                        </div>
-                        {doc.uploadDate && (
-                          <p className="mt-2 text-xs text-muted-foreground/70">
-                            Uploaded {new Date(doc.uploadDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                          </p>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="mt-3 w-full text-xs text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                          Open with AI
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })
-              )}
+              ))}
             </div>
           </div>
         )}
-      </div>
 
-      {/* Document Detail Sheet */}
-      <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
-        <SheetContent className="w-full sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle>Document Details</SheetTitle>
-            <SheetDescription>View and manage document information</SheetDescription>
-          </SheetHeader>
-          {selectedDoc && (
-            <div className="mt-6 space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-muted/50">
-                  {(() => { const Icon = getFileIcon(selectedDoc.fileType); return <Icon className="h-7 w-7 text-muted-foreground" />; })()}
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-lg font-bold">{selectedDoc.name}</h3>
-                  <p className="text-sm text-muted-foreground">{selectedDoc.description}</p>
-                </div>
+        {/* ===================== QUESTION PAPERS TAB ===================== */}
+        {activeTab === "question-papers" && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1 min-w-[180px]">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input placeholder="Search question papers..." className="pl-8 h-8 text-xs" value={qpSearch} onChange={(e) => setQpSearch(e.target.value)} />
               </div>
-
-              <Card className="border-border/50 bg-muted/30">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">Status</span>
-                    {(() => {
-                      const cfg = STATUS_CONFIG[selectedDoc.status];
-                      return (
-                        <Badge variant="outline" className={`border ${cfg.border} ${cfg.bg} ${cfg.color}`}>
-                          <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                          {cfg.label}
-                        </Badge>
-                      );
-                    })()}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Category</span>
-                  {(() => {
-                    const cfg = CATEGORY_CONFIG[selectedDoc.category];
-                    return <Badge variant="outline" className={`text-xs ${cfg.bg} ${cfg.color} border-0`}>{cfg.label}</Badge>;
-                  })()}
-                </div>
-                <Separator />
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">File Name</span>
-                  <span className="font-medium">{selectedDoc.fileName}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">File Size</span>
-                  <span className="font-medium">{selectedDoc.fileSize}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Upload Date</span>
-                  <span className="font-medium">
-                    {selectedDoc.uploadDate
-                      ? new Date(selectedDoc.uploadDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
-                      : "—"}
-                  </span>
-                </div>
-                <Separator />
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Verification Date</span>
-                  <span className="font-medium">
-                    {selectedDoc.verificationDate
-                      ? new Date(selectedDoc.verificationDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
-                      : "—"}
-                  </span>
-                </div>
-                <Separator />
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Verified By</span>
-                  <span className="font-medium">{selectedDoc.verifiedBy ?? "—"}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Visibility</span>
-                  <span className="flex items-center gap-1.5 font-medium">
-                    {selectedDoc.isPrivate ? (
-                      <>
-                        <Lock className="h-3.5 w-3.5 text-emerald-500" />
-                        <span className="text-emerald-500">Private — Only you</span>
-                      </>
-                    ) : (
-                      <>
-                        <GraduationCap className="h-3.5 w-3.5 text-blue-500" />
-                        <span className="text-blue-500">Shared with school</span>
-                      </>
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2 pt-2">
-                <Button className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700">
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Document
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Replace Document
-                </Button>
-                {selectedDoc.isPrivate && (
-                  <Button variant="ghost" className="w-full text-blue-500 hover:bg-blue-500/10 hover:text-blue-600">
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Open with AI
-                  </Button>
-                )}
-              </div>
+              <Select value={qpFilterType} onValueChange={setQpFilterType}>
+                <SelectTrigger className="w-28 h-8 text-xs"><SelectValue placeholder="Type" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="Unit Test">Unit Test</SelectItem>
+                  <SelectItem value="Mid Term">Mid Term</SelectItem>
+                  <SelectItem value="Final Exam">Final Exam</SelectItem>
+                  <SelectItem value="Practice">Practice</SelectItem>
+                  <SelectItem value="Previous Year">Previous Year</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button size="sm" className="h-8 text-xs bg-brand-gradient text-white border-0"><Upload className="size-3 mr-1" />Upload</Button>
             </div>
-          )}
-        </SheetContent>
-      </Sheet>
-
-      {/* Upload Sheet */}
-      <Sheet open={uploadOpen} onOpenChange={setUploadOpen}>
-        <SheetContent className="w-full sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle>Upload Document</SheetTitle>
-            <SheetDescription>Upload a new document to your collection</SheetDescription>
-          </SheetHeader>
-          <div className="mt-6 space-y-4">
-            <Card className="border-2 border-dashed border-muted-foreground/20 bg-muted/20">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50">
-                  <Upload className="h-7 w-7 text-muted-foreground/50" />
+            <div className="space-y-1.5">
+              {filteredQP.map((paper) => (
+                <div key={paper.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
+                  <div className="size-7 rounded-lg bg-emerald-500/10 grid place-items-center shrink-0">
+                    <FileText className="size-3.5 text-emerald-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium">{paper.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{paper.subject} · {paper.className} · {paper.createdDate}</div>
+                  </div>
+                  <Badge variant="outline" className={cn("text-[9px] border-0", examTypeColors[paper.examType])}>{paper.examType}</Badge>
+                  <div className="flex items-center gap-0.5">
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Eye className="size-3" /></Button>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Download className="size-3" /></Button>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Copy className="size-3" /></Button>
+                  </div>
                 </div>
-                <p className="mt-4 text-sm font-medium text-muted-foreground">
-                  Drag & drop or <span className="text-blue-500 cursor-pointer">browse files</span>
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground/70">
-                  PDF, JPG, PNG, DOCX up to 10MB
-                </p>
-              </CardContent>
-            </Card>
-            <Button className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700">
-              <Upload className="mr-2 h-4 w-4" />
-              Upload Document
-            </Button>
+              ))}
+            </div>
           </div>
-        </SheetContent>
-      </Sheet>
-    </div>
+        )}
+
+        {/* ===================== SCHOOL DOCUMENTS TAB ===================== */}
+        {activeTab === "school" && (
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+              <Input placeholder="Search school documents..." className="pl-8 h-8 text-xs" value={schoolSearch} onChange={(e) => setSchoolSearch(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              {filteredSchoolDocs.map((doc) => (
+                <div key={doc.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
+                  <div className="size-7 rounded-lg bg-purple-500/10 grid place-items-center shrink-0">
+                    <BookOpen className="size-3.5 text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium">{doc.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{doc.category} · {doc.uploadedDate} · {doc.size}</div>
+                  </div>
+                  <Badge variant="outline" className="text-[9px] border-0 bg-purple-500/10 text-purple-600">{doc.category}</Badge>
+                  <div className="flex items-center gap-0.5">
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Eye className="size-3" /></Button>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Download className="size-3" /></Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ===================== MY DOCUMENTS TAB ===================== */}
+        {activeTab === "my-docs" && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1 min-w-[180px]">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input placeholder="Search personal documents..." className="pl-8 h-8 text-xs" value={mySearch} onChange={(e) => setMySearch(e.target.value)} />
+              </div>
+              <Button size="sm" className="h-8 text-xs bg-brand-gradient text-white border-0"><Upload className="size-3 mr-1" />Upload</Button>
+            </div>
+            <div className="space-y-1.5">
+              {filteredPersonalDocs.map((doc) => (
+                <div key={doc.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
+                  <div className="size-7 rounded-lg bg-purple-500/10 grid place-items-center shrink-0">
+                    {doc.confidential ? <Lock className="size-3.5 text-purple-600" /> : <FileText className="size-3.5 text-purple-600" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium">{doc.name}</span>
+                      {doc.confidential && <Badge className="text-[8px] bg-red-500/10 text-red-600 border-0 h-4 px-1">Private</Badge>}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">{doc.category} · {doc.uploadedDate} · {doc.size}</div>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Eye className="size-3" /></Button>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Download className="size-3" /></Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+    </TeacherPageLayout>
   );
 }
