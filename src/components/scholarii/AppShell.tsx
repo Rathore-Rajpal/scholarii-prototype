@@ -113,6 +113,7 @@ const PRINCIPAL_NAV: PrincipalNav = [
     ],
   },
   { to: "/app/settings", label: "Settings", icon: Settings },
+  { to: "/app/profile", label: "Profile", icon: UserCircle },
 ];
 
 const TEACHER_NAV: PrincipalNav = [
@@ -176,6 +177,15 @@ const ADMIN_NAV: PrincipalNav = [
       { to: "/app/admin/compliance", label: "Compliance", icon: ShieldCheck },
     ],
   },
+  {
+    label: "Communications",
+    icon: MessageSquare,
+    items: [
+      { to: "/app/messages", label: "Messages", icon: MessageCircle },
+      { to: "/app/communication", label: "Communication Center", icon: Megaphone },
+    ],
+  },
+  { to: "/app/profile", label: "Profile", icon: UserCircle },
 ];
 
 const NAV: Record<Role, PrincipalNav> = {

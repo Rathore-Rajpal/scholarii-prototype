@@ -36,8 +36,10 @@ function MessagesPage() {
   const { user } = useAuth();
   const isTeacher = user?.role === "teacher";
   const isPrincipal = user?.role === "principal";
-  const FILTER_OPTIONS = isPrincipal ? PRINCIPAL_FILTER_OPTIONS : isTeacher ? TEACHER_FILTER_OPTIONS : STUDENT_FILTER_OPTIONS;
-  const [conversations, setConversations] = useState<Conversation[]>(isPrincipal ? PRINCIPAL_CONVERSATIONS : isTeacher ? TEACHER_CONVERSATIONS : CONVERSATIONS);
+  const isAdmin = user?.role === "admin";
+  const isSchoolStaff = isPrincipal || isAdmin;
+  const FILTER_OPTIONS = isSchoolStaff ? PRINCIPAL_FILTER_OPTIONS : isTeacher ? TEACHER_FILTER_OPTIONS : STUDENT_FILTER_OPTIONS;
+  const [conversations, setConversations] = useState<Conversation[]>(isSchoolStaff ? PRINCIPAL_CONVERSATIONS : isTeacher ? TEACHER_CONVERSATIONS : CONVERSATIONS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
@@ -98,8 +100,8 @@ function MessagesPage() {
     const newMsg: Message = {
       id: `m${Date.now()}`,
       senderId: "me",
-      senderName: isPrincipal ? "Principal Mehta" : isTeacher ? "Mr. Kumar" : "Rahul Kumar",
-      senderAvatar: isPrincipal ? "\ud83d\udc68\u200d\ud83c\udfeb" : isTeacher ? "\ud83d\udc68\u200d\ud83c\udfeb" : "\ud83d\udc64",
+      senderName: isPrincipal ? "Principal Mehta" : isAdmin ? "Admin Sharma" : isTeacher ? "Mr. Kumar" : "Rahul Kumar",
+      senderAvatar: isPrincipal ? "\ud83d\udc68\u200d\ud83c\udfeb" : isAdmin ? "\ud83d\udc68\u200d\ud83c\udfeb" : isTeacher ? "\ud83d\udc68\u200d\ud83c\udfeb" : "\ud83d\udc64",
       content: input.trim(),
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       type: "text",

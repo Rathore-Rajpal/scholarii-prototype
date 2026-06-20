@@ -13,12 +13,13 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   UserCircle, Edit3, Camera, Calendar, Phone, Mail, MapPin,
   Droplets, Shield, Key, Bell, Sun, Moon, Monitor,
   Lock, LogOut, CheckCircle2, TrendingUp, ClipboardCheck,
   CalendarClock, GraduationCap, Award, BookOpen, Hash,
-  Briefcase, Users,
+  Briefcase, Users, School, Building2,
 } from "lucide-react";
 import { useAuth } from "@/lib/scholarii/auth";
 import {
@@ -32,6 +33,11 @@ import {
   TEACHER_PROFILE, DEFAULT_TEACHER_NOTIFICATIONS, DEFAULT_TEACHER_SECURITY, DEFAULT_TEACHER_APPEARANCE,
 } from "@/lib/scholarii/teacher-profile-mock-data";
 import type { TeacherProfileTab } from "@/lib/scholarii/teacher-profile-mock-data";
+import {
+  PRINCIPAL_PROFILE, PRINCIPAL_SCHOOL_STATS,
+  DEFAULT_PRINCIPAL_NOTIFICATIONS, DEFAULT_PRINCIPAL_SECURITY, DEFAULT_PRINCIPAL_APPEARANCE,
+} from "@/lib/scholarii/principal-profile-mock-data";
+import type { PrincipalProfileTab } from "@/lib/scholarii/principal-profile-mock-data";
 
 export const Route = createFileRoute("/app/profile")({ component: ProfilePage });
 
@@ -505,9 +511,370 @@ function TeacherProfilePage() {
   );
 }
 
+function PrincipalProfilePage() {
+  const [activeTab, setActiveTab] = useState<PrincipalProfileTab>("personal");
+  const [editOpen, setEditOpen] = useState(false);
+  const [notifications, setNotifications] = useState(DEFAULT_PRINCIPAL_NOTIFICATIONS);
+
+  const profile = PRINCIPAL_PROFILE;
+  const schoolStats = PRINCIPAL_SCHOOL_STATS;
+
+  const TAB_LIST: { id: PrincipalProfileTab; label: string; icon: React.ReactNode }[] = [
+    { id: "personal", label: "Personal Information", icon: <UserCircle className="h-4 w-4" /> },
+    { id: "professional", label: "Professional Information", icon: <Briefcase className="h-4 w-4" /> },
+    { id: "school", label: "School Overview", icon: <School className="h-4 w-4" /> },
+    { id: "settings", label: "Account Settings", icon: <Shield className="h-4 w-4" /> },
+  ];
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-8">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/10">
+          <UserCircle className="h-5 w-5 text-violet-500" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
+          <p className="text-sm text-muted-foreground">Manage your profile and account settings.</p>
+        </div>
+      </div>
+
+      {/* Profile Header Card */}
+      <Card className="p-6 mb-8">
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
+          <div className="relative">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-violet-500/10 text-2xl font-bold text-violet-600">
+              {getInitials(profile.fullName)}
+            </div>
+            <button className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border bg-background shadow-sm transition-colors hover:bg-muted">
+              <Camera className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl font-bold">{profile.fullName}</h2>
+            <div className="mt-1 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+              <Badge variant="secondary" className="text-xs">{profile.designation}</Badge>
+              <span className="text-sm text-muted-foreground">{profile.employeeId}</span>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {profile.department} &middot; {profile.yearsOfExperience} years experience
+            </p>
+          </div>
+          <div className="sm:ml-auto">
+            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+              <Edit3 className="mr-1.5 h-4 w-4" />
+              Edit Profile
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as PrincipalProfileTab)}>
+        <Card className="p-4 mb-8">
+          <TabsList className="h-11">
+            {TAB_LIST.map((tab) => (
+              <TabsTrigger key={tab.id} value={tab.id} className="text-sm gap-2 px-5">
+                {tab.icon}
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Card>
+
+        {/* ═══ PERSONAL ═══ */}
+        {activeTab === "personal" && (
+          <div>
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold mb-4">Personal Details</h3>
+              <div className="space-y-3">
+                <InfoRow icon={<UserCircle className="h-4 w-4" />} label="Full Name" value={profile.fullName} />
+                <Separator />
+                <InfoRow icon={<Calendar className="h-4 w-4" />} label="Date of Birth" value={new Date(profile.dateOfBirth).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })} />
+                <Separator />
+                <InfoRow icon={<UserCircle className="h-4 w-4" />} label="Gender" value={profile.gender} />
+                <Separator />
+                <InfoRow icon={<Phone className="h-4 w-4" />} label="Mobile Number" value={profile.phone} />
+                <Separator />
+                <InfoRow icon={<Mail className="h-4 w-4" />} label="Email Address" value={profile.email} />
+                <Separator />
+                <InfoRow icon={<MapPin className="h-4 w-4" />} label="Address" value={profile.address} />
+                <Separator />
+                <InfoRow icon={<Phone className="h-4 w-4" />} label="Emergency Contact" value={profile.emergencyContact} />
+                <Separator />
+                <InfoRow icon={<Droplets className="h-4 w-4" />} label="Blood Group" value={profile.bloodGroup} />
+              </div>
+            </Card>
+            <div className="flex gap-3 mt-4">
+              <Button variant="outline" className="flex-1 h-9 text-xs gap-1.5" onClick={() => setEditOpen(true)}>
+                <Edit3 className="h-3.5 w-3.5" /> Edit Profile
+              </Button>
+              <Button variant="outline" className="flex-1 h-9 text-xs gap-1.5">
+                <Camera className="h-3.5 w-3.5" /> Change Photo
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ PROFESSIONAL ═══ */}
+        {activeTab === "professional" && (
+          <Card className="p-5">
+            <h3 className="text-sm font-semibold mb-4">Professional Details</h3>
+            <div className="space-y-3">
+              <InfoRow icon={<Hash className="h-4 w-4" />} label="Employee ID" value={profile.employeeId} />
+              <Separator />
+              <InfoRow icon={<Briefcase className="h-4 w-4" />} label="Designation" value={profile.designation} />
+              <Separator />
+              <InfoRow icon={<BookOpen className="h-4 w-4" />} label="Department" value={profile.department} />
+              <Separator />
+              <InfoRow icon={<GraduationCap className="h-4 w-4" />} label="Qualification" value={profile.qualification} />
+              <Separator />
+              <InfoRow icon={<TrendingUp className="h-4 w-4" />} label="Years of Experience" value={`${profile.yearsOfExperience} years`} />
+              <Separator />
+              <InfoRow icon={<Calendar className="h-4 w-4" />} label="Joining Date" value={new Date(profile.joiningDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })} />
+              <Separator />
+              <InfoRow icon={<School className="h-4 w-4" />} label="Previous School" value={profile.previousSchool} />
+              <Separator />
+              <InfoRow icon={<Users className="h-4 w-4" />} label="Reports To" value={profile.reportsTo} />
+            </div>
+            <div className="mt-5">
+              <p className="text-xs font-semibold mb-2">Key Responsibilities</p>
+              <div className="space-y-1.5">
+                {profile.responsibilities.map((r) => (
+                  <div key={r} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+                    {r}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-5">
+              <p className="text-xs font-semibold mb-2">Direct Reports</p>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.directReports.map((r) => (
+                  <Badge key={r} variant="secondary" className="text-[10px]">{r}</Badge>
+                ))}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* ═══ SCHOOL OVERVIEW ═══ */}
+        {activeTab === "school" && (
+          <div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+              {[
+                { label: "Total Students", value: schoolStats.totalStudents.toLocaleString(), icon: GraduationCap, tone: "bg-emerald-500/10 text-emerald-500" },
+                { label: "Total Staff", value: String(schoolStats.totalStaff), icon: Users, tone: "bg-sky-500/10 text-sky-500" },
+                { label: "Teachers", value: String(schoolStats.totalTeachers), icon: Briefcase, tone: "bg-violet-500/10 text-violet-500" },
+                { label: "Classes", value: String(schoolStats.classesCount), icon: BookOpen, tone: "bg-amber-500/10 text-amber-500" },
+                { label: "Attendance Rate", value: `${schoolStats.attendanceRate}%`, icon: ClipboardCheck, tone: "bg-emerald-500/10 text-emerald-500" },
+                { label: "Academic Score", value: `${schoolStats.academicScore}%`, icon: TrendingUp, tone: "bg-sky-500/10 text-sky-500" },
+                { label: "Compliance Score", value: `${schoolStats.complianceScore}%`, icon: Shield, tone: "bg-violet-500/10 text-violet-500" },
+                { label: "Parent Engagement", value: `${schoolStats.parentEngagement}%`, icon: Users, tone: "bg-amber-500/10 text-amber-500" },
+              ].map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <Card key={stat.label} className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`size-10 rounded-xl grid place-items-center shrink-0 ${stat.tone}`}>
+                        <Icon className="size-5" />
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-muted-foreground">{stat.label}</p>
+                        <div className="text-lg font-semibold">{stat.value}</div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold mb-3">School at a Glance</h3>
+              <p className="text-xs text-muted-foreground leading-5">
+                Scholarii Modern School serves {schoolStats.totalStudents.toLocaleString()} students across {schoolStats.sectionsCount} sections
+                with a dedicated staff of {schoolStats.totalStaff} members. The school maintains a {schoolStats.attendanceRate}% attendance rate
+                and a {schoolStats.complianceScore}% compliance score, reflecting strong operational health.
+              </p>
+            </Card>
+          </div>
+        )}
+
+        {/* ═══ SETTINGS ═══ */}
+        {activeTab === "settings" && (
+          <div className="space-y-4">
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                <Key className="h-4 w-4 text-amber-500" />
+                Security
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium">Change Password</p>
+                    <p className="text-xs text-muted-foreground">Last changed {new Date(DEFAULT_PRINCIPAL_SECURITY.lastPasswordChange).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                    <Key className="h-3.5 w-3.5" /> Change
+                  </Button>
+                </div>
+                <Separator />
+                <SettingToggle
+                  label="Two-Factor Authentication"
+                  description="Add an extra layer of security"
+                  checked={DEFAULT_PRINCIPAL_SECURITY.twoFactorEnabled}
+                  onCheckedChange={() => {}}
+                />
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium">Session Management</p>
+                    <p className="text-xs text-muted-foreground">{DEFAULT_PRINCIPAL_SECURITY.activeSessions} active session{DEFAULT_PRINCIPAL_SECURITY.activeSessions !== 1 ? "s" : ""}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5 text-red-500 hover:bg-red-500/10 hover:text-red-600">
+                    <LogOut className="h-3.5 w-3.5" /> Sign Out All
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                <Bell className="h-4 w-4 text-blue-500" />
+                Notification Preferences
+              </h3>
+              <div className="space-y-3">
+                <SettingToggle label="Email Notifications" description="Receive updates via email" checked={notifications.emailNotifications} onCheckedChange={(v) => setNotifications((p) => ({ ...p, emailNotifications: v }))} />
+                <Separator />
+                <SettingToggle label="Push Notifications" description="Get notified on your device" checked={notifications.pushNotifications} onCheckedChange={(v) => setNotifications((p) => ({ ...p, pushNotifications: v }))} />
+                <Separator />
+                <SettingToggle label="Staff Alerts" description="Notifications about staff updates" checked={notifications.staffAlerts} onCheckedChange={(v) => setNotifications((p) => ({ ...p, staffAlerts: v }))} />
+                <Separator />
+                <SettingToggle label="Compliance Alerts" description="Compliance and inspection reminders" checked={notifications.complianceAlerts} onCheckedChange={(v) => setNotifications((p) => ({ ...p, complianceAlerts: v }))} />
+                <Separator />
+                <SettingToggle label="Parent Messages" description="Get notified for parent messages" checked={notifications.parentMessages} onCheckedChange={(v) => setNotifications((p) => ({ ...p, parentMessages: v }))} />
+                <Separator />
+                <SettingToggle label="Exam Notifications" description="Exam schedule and result updates" checked={notifications.examNotifications} onCheckedChange={(v) => setNotifications((p) => ({ ...p, examNotifications: v }))} />
+                <Separator />
+                <SettingToggle label="Fee Notifications" description="Fee collection and default alerts" checked={notifications.feeNotifications} onCheckedChange={(v) => setNotifications((p) => ({ ...p, feeNotifications: v }))} />
+              </div>
+            </Card>
+
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                <Sun className="h-4 w-4 text-violet-500" />
+                Appearance
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium">Theme Preference</p>
+                    <p className="text-xs text-muted-foreground">Choose your preferred theme</p>
+                  </div>
+                  <Select defaultValue="light">
+                    <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light"><span className="flex items-center gap-2"><Sun className="h-3.5 w-3.5" /> Light</span></SelectItem>
+                      <SelectItem value="dark"><span className="flex items-center gap-2"><Moon className="h-3.5 w-3.5" /> Dark</span></SelectItem>
+                      <SelectItem value="system"><span className="flex items-center gap-2"><Monitor className="h-3.5 w-3.5" /> System</span></SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium">Language Preference</p>
+                    <p className="text-xs text-muted-foreground">Select your preferred language</p>
+                  </div>
+                  <Select defaultValue="English">
+                    <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="English">English</SelectItem>
+                      <SelectItem value="Hindi">Hindi</SelectItem>
+                      <SelectItem value="Kannada">Kannada</SelectItem>
+                      <SelectItem value="Tamil">Tamil</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
+      </Tabs>
+
+      {/* Edit Profile Sheet */}
+      <Sheet open={editOpen} onOpenChange={setEditOpen}>
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Edit Profile</SheetTitle>
+            <SheetDescription>Update your personal information</SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 space-y-4">
+            <div className="space-y-2">
+              <Label>Full Name</Label>
+              <Input defaultValue={profile.fullName} />
+            </div>
+            <div className="space-y-2">
+              <Label>Email Address</Label>
+              <Input defaultValue={profile.email} type="email" />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone Number</Label>
+              <Input defaultValue={profile.phone} />
+            </div>
+            <div className="space-y-2">
+              <Label>Gender</Label>
+              <Select defaultValue={profile.gender.toLowerCase()}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Date of Birth</Label>
+              <Input type="date" defaultValue={profile.dateOfBirth} />
+            </div>
+            <div className="space-y-2">
+              <Label>Address</Label>
+              <Input defaultValue={profile.address} />
+            </div>
+            <div className="space-y-2">
+              <Label>Emergency Contact</Label>
+              <Input defaultValue={profile.emergencyContact} />
+            </div>
+            <div className="space-y-2">
+              <Label>Blood Group</Label>
+              <Select defaultValue={profile.bloodGroup}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((g) => (
+                    <SelectItem key={g} value={g}>{g}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button className="w-full bg-violet-600 hover:bg-violet-700">Save Changes</Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
 function ProfilePage() {
   const { user } = useAuth();
   const isTeacher = user?.role === "teacher";
+  const isPrincipal = user?.role === "principal";
+
+  if (isPrincipal) {
+    return <PrincipalProfilePage />;
+  }
 
   if (isTeacher) {
     return <TeacherProfilePage />;
