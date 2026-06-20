@@ -118,7 +118,6 @@ const TEACHER_NAV: PrincipalNav = [
       { to: "/app/myclass/attendance", label: "Attendance", icon: ClipboardCheck },
       { to: "/app/myclass/exams", label: "Exams & Results", icon: GraduationCap },
       { to: "/app/myclass/performance", label: "Performance", icon: Activity },
-      { to: "/app/myclass/notices", label: "Notices", icon: Megaphone },
     ],
   },
   { to: "/app/classes", label: "My Classes", icon: BookOpen },
@@ -127,6 +126,7 @@ const TEACHER_NAV: PrincipalNav = [
     label: "Communication",
     icon: MessageSquare,
     items: [
+      { to: "/app/messages", label: "Messages", icon: MessageCircle },
       { to: "/app/ptameetings", label: "PTA Meetings", icon: CalendarClock },
       { to: "/app/announcements", label: "Announcements", icon: Megaphone },
     ],
@@ -329,7 +329,7 @@ const PARENT_CONTEXT_PROMPTS: Record<string, string[]> = {
 
 const TEACHER_CONTEXT_PROMPTS: Record<string, string[]> = {
   "/app": ["Today's class schedule", "Pending grading tasks", "Student attendance overview"],
-  "/app/classes": ["Class performance summary", "Identify struggling students"],
+  "/app/myclass/students": ["Class performance summary", "Identify struggling students"],
   "/app/attendance": ["Take attendance", "View attendance trends"],
   "/app/assignments": ["Create new assignment", "Review submissions"],
   "/app/gradebook": ["Enter marks", "Generate class report"],

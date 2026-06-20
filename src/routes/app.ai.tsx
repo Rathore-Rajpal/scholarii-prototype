@@ -24,7 +24,6 @@ import {
   PARENT_ATTACHABLE_RESOURCES, PARENT_MOCK_CONVERSATIONS, PARENT_AI_RESPONSES,
 } from "@/lib/scholarii/parent-ai-mock-data";
 import { useAuth } from "@/lib/scholarii/auth";
-import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
 export const Route = createFileRoute("/app/ai")({ component: AiStudyAssistant });
 
@@ -33,16 +32,14 @@ const DAILY_LIMIT = 10;
 function AiStudyAssistant() {
   const { user, parentMode } = useAuth();
   const isParent = user?.role === "student" && parentMode;
-
-  if (user?.role === "teacher") {
-    return (
-      <PlaceholderPage
-        title="AI Assistant"
-        subtitle="Your AI teaching copilot."
-        icon={Sparkles}
-      />
-    );
-  }
+  const isTeacher = user?.role === "teacher";
+  const assistantTitle =
+    isTeacher ? "AI Teaching Assistant" : isParent ? "AI Assistant" : "AI Study Assistant";
+  const assistantDescription = isTeacher
+    ? "Your teaching copilot for lesson planning, feedback, and follow-up."
+    : isParent
+      ? "Your AI companion to monitor and support your child's academic journey."
+      : "Your personal AI tutor. Ask anything, learn faster.";
 
   // Use parent-specific data when in parent mode
   const AI_SKILLS_TO_USE = isParent ? PARENT_AI_SKILLS : AI_SKILLS;
@@ -206,7 +203,7 @@ function AiStudyAssistant() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-bold text-foreground hidden sm:inline">{isParent ? "AI Assistant" : "AI Study Assistant"}</span>
+            <span className="text-sm font-bold text-foreground hidden sm:inline">{assistantTitle}</span>
           </div>
         </div>
 
@@ -344,7 +341,12 @@ function AiStudyAssistant() {
               </div>
             </div>
           ) : (
-            <EmptyState onSend={handleSend} isParent={isParent} />
+            <EmptyState
+              onSend={handleSend}
+              isParent={isParent}
+              title={assistantTitle}
+              description={assistantDescription}
+            />
           )}
 
           {/* Composer */}
@@ -521,7 +523,17 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-function EmptyState({ onSend, isParent }: { onSend: (text: string) => void; isParent: boolean }) {
+function EmptyState({
+  onSend,
+  isParent,
+  title,
+  description,
+}: {
+  onSend: (text: string) => void;
+  isParent: boolean;
+  title: string;
+  description: string;
+}) {
   const prompts = isParent ? PARENT_SUGGESTED_PROMPTS : SUGGESTED_PROMPTS;
   
   return (
@@ -531,8 +543,8 @@ function EmptyState({ onSend, isParent }: { onSend: (text: string) => void; isPa
           <BrainCircuit className="h-10 w-10 text-violet-400" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-foreground">{isParent ? "AI Assistant" : "AI Study Assistant"}</h2>
-          <p className="text-sm text-muted-foreground">{isParent ? "Your AI companion to monitor and support your child's academic journey." : "Your personal AI tutor. Ask anything, learn faster."}</p>
+          <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
           {prompts.map((prompt) => (

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { RoleGuard } from "@/components/scholarii/RoleGuard";
-import { TeacherPageLayout, TabButton, KpiCard } from "@/components/scholarii/TeacherPageLayout";
+import { PageHeader } from "@/components/scholarii/AppShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -245,57 +245,91 @@ function PerformancePage() {
   }, [isResizing]);
 
   return (
-    <TeacherPageLayout
-      title="Class Performance"
-      subtitle="Monitor and improve academic performance of 8-A students."
-      kpiCards={
-        <>
-          <KpiCard
-            label="Class Average"
-            value={`${avgScore}%`}
-            icon={BarChart3}
-            color="text-sky-600 bg-sky-500/10"
-          />
-          <KpiCard
-            label="Top Performers"
-            value={`${topCount} Students`}
-            icon={Trophy}
-            color="text-emerald-600 bg-emerald-500/10"
-          />
-          <KpiCard
-            label="At-Risk Students"
-            value={`${atRiskCount} Students`}
-            icon={AlertTriangle}
-            color="text-red-600 bg-red-500/10"
-          />
-          <KpiCard
-            label="Performance Trend"
-            value={trend}
-            icon={TrendingUp}
-            color="text-violet-600 bg-violet-500/10"
-          />
-          <KpiCard
-            label="Upcoming Exams"
-            value={`${upcomingExams} Exams`}
-            icon={Calendar}
-            color="text-amber-600 bg-amber-500/10"
-          />
-        </>
-      }
-      tabs={
-        <>
+    <div>
+      <PageHeader
+        title="Class Performance"
+        subtitle="Monitor and improve academic performance of 8-A students."
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-sky-500/10 grid place-items-center">
+              <BarChart3 className="size-5 text-sky-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Class Average</div>
+              <div className="text-xl font-semibold">{avgScore}%</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-emerald-500/10 grid place-items-center">
+              <Trophy className="size-5 text-emerald-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Top Performers</div>
+              <div className="text-xl font-semibold">{topCount} Students</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5 border-2 border-red-200/70 dark:border-red-900/40">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-red-500/10 grid place-items-center">
+              <AlertTriangle className="size-5 text-red-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">At-Risk Students</div>
+              <div className="text-xl font-semibold">{atRiskCount} Students</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center">
+              <TrendingUp className="size-5 text-violet-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Performance Trend</div>
+              <div className="text-xl font-semibold">{trend}</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-amber-500/10 grid place-items-center">
+              <Calendar className="size-5 text-amber-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Upcoming Exams</div>
+              <div className="text-xl font-semibold">{upcomingExams} Exams</div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <Card className="p-4 mb-6">
+        <div className="flex gap-1">
           {TABS.map((tab) => (
-            <TabButton
+            <button
               key={tab.id}
-              active={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
-              icon={tab.icon}
-              label={tab.label}
-            />
+              className={cn(
+                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
+                activeTab === tab.id
+                  ? "bg-violet-500/10 text-violet-600 shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <tab.icon className="size-4" />
+              {tab.label}
+            </button>
           ))}
-        </>
-      }
-    >
+        </div>
+      </Card>
+
+      <div className="space-y-4 pb-4">
       {/* ═══════════════ TAB 1: OVERVIEW ═══════════════ */}
       {activeTab === "overview" && (
         <div className="space-y-4">
@@ -1279,7 +1313,8 @@ function PerformancePage() {
           )}
         </SheetContent>
       </Sheet>
-    </TeacherPageLayout>
+      </div>
+    </div>
   );
 }
 

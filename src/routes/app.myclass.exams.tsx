@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { RoleGuard } from "@/components/scholarii/RoleGuard";
-import { TeacherPageLayout, TabButton, KpiCard } from "@/components/scholarii/TeacherPageLayout";
+import { PageHeader } from "@/components/scholarii/AppShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -424,92 +424,131 @@ function ExamsPage() {
   };
 
   return (
-    <TeacherPageLayout
-      title="Exams & Results"
-      subtitle="Class-focused exam workspace with role-based visibility — class teacher or subject teacher."
-      toolbar={
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium">Class Scope</p>
-            <p className="text-[10px] text-muted-foreground">
-              {selectedScope.role === "class-teacher"
-                ? "Full exam and result data for all subjects."
-                : `Subject-only view: ${selectedScope.teachingSubjects?.join(", ")}.`}
-            </p>
-          </div>
-          <Select value={selectedScopeId} onValueChange={handleScopeChange}>
-            <SelectTrigger className="h-9 w-52">
-              <SelectValue placeholder="Select class" />
-            </SelectTrigger>
-            <SelectContent>
-              {TEACHER_EXAM_SCOPES.map((scope) => (
-                <SelectItem key={scope.id} value={scope.id}>
-                  {getScopeLabel(scope)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Badge
-            variant="outline"
-            className={cn(
-              "rounded-full px-3 py-1 text-[10px]",
-              selectedScope.role === "class-teacher"
-                ? "border-violet-200 bg-violet-500/10 text-violet-700"
-                : "border-sky-200 bg-sky-500/10 text-sky-700",
-            )}
-          >
-            {selectedScope.role === "class-teacher" ? "Class Teacher" : "Subject Teacher"}
-          </Badge>
+    <div>
+      <PageHeader
+        title="Exams & Results"
+        subtitle="Class-focused exam workspace with role-based visibility — class teacher or subject teacher."
+        action={
+          <Button size="sm" className="bg-brand-gradient text-white border-0">
+            <FileText className="size-4 mr-1" />
+            Create Exam
+          </Button>
+        }
+      />
+
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 mb-6">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium">Class Scope</p>
+          <p className="text-[10px] text-muted-foreground">
+            {selectedScope.role === "class-teacher"
+              ? "Full exam and result data for all subjects."
+              : `Subject-only view: ${selectedScope.teachingSubjects?.join(", ")}.`}
+          </p>
         </div>
-      }
-      kpiCards={
-        <>
-          <KpiCard
-            label="Upcoming Exams"
-            value={upcomingCount}
-            icon={Calendar}
-            color="text-violet-600 bg-violet-500/10"
-          />
-          <KpiCard
-            label="Completed Exams"
-            value={completedCount}
-            icon={CheckCircle2}
-            color="text-emerald-600 bg-emerald-500/10"
-          />
-          <KpiCard
-            label="Average Class Score"
-            value={`${avgScore}%`}
-            icon={TrendingUp}
-            color="text-sky-600 bg-sky-500/10"
-          />
-          <KpiCard
-            label="Top Performers"
-            value={topCount}
-            icon={Trophy}
-            color="text-amber-600 bg-amber-500/10"
-          />
-          <KpiCard
-            label="Students At Risk"
-            value={atRiskCount}
-            icon={AlertTriangle}
-            color="text-red-600 bg-red-500/10"
-          />
-        </>
-      }
-      tabs={
-        <>
+        <Select value={selectedScopeId} onValueChange={handleScopeChange}>
+          <SelectTrigger className="h-9 w-52">
+            <SelectValue placeholder="Select class" />
+          </SelectTrigger>
+          <SelectContent>
+            {TEACHER_EXAM_SCOPES.map((scope) => (
+              <SelectItem key={scope.id} value={scope.id}>
+                {getScopeLabel(scope)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Badge
+          variant="outline"
+          className={cn(
+            "rounded-full px-3 py-1 text-[10px]",
+            selectedScope.role === "class-teacher"
+              ? "border-violet-200 bg-violet-500/10 text-violet-700"
+              : "border-sky-200 bg-sky-500/10 text-sky-700",
+          )}
+        >
+          {selectedScope.role === "class-teacher" ? "Class Teacher" : "Subject Teacher"}
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center">
+              <Calendar className="size-5 text-violet-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Upcoming Exams</div>
+              <div className="text-xl font-semibold">{upcomingCount}</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-emerald-500/10 grid place-items-center">
+              <CheckCircle2 className="size-5 text-emerald-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Completed Exams</div>
+              <div className="text-xl font-semibold">{completedCount}</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-sky-500/10 grid place-items-center">
+              <TrendingUp className="size-5 text-sky-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Average Class Score</div>
+              <div className="text-xl font-semibold">{avgScore}%</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-amber-500/10 grid place-items-center">
+              <Trophy className="size-5 text-amber-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Top Performers</div>
+              <div className="text-xl font-semibold">{topCount}</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5 border-2 border-red-200/70 dark:border-red-900/40">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-red-500/10 grid place-items-center">
+              <AlertTriangle className="size-5 text-red-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Students At Risk</div>
+              <div className="text-xl font-semibold">{atRiskCount}</div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <Card className="p-4 mb-6">
+        <div className="flex gap-1">
           {TABS.map((tab) => (
-            <TabButton
+            <button
               key={tab.id}
-              active={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
-              icon={tab.icon}
-              label={tab.label}
-            />
+              className={cn(
+                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
+                activeTab === tab.id
+                  ? "bg-violet-500/10 text-violet-600 shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <tab.icon className="size-4" />
+              {tab.label}
+            </button>
           ))}
-        </>
-      }
-    >
+        </div>
+      </Card>
+
+      <div className="space-y-4 pb-4">
       {activeTab === "timeline" && (
         <div className="space-y-4">
           <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
@@ -1694,7 +1733,8 @@ function ExamsPage() {
           )}
         </SheetContent>
       </Sheet>
-    </TeacherPageLayout>
+      </div>
+    </div>
   );
 }
 

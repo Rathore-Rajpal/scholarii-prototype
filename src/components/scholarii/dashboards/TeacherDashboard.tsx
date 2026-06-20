@@ -297,14 +297,14 @@ function QuickActionsTab() {
     {
       label: "Mark Attendance",
       icon: ClipboardCheck,
-      action: () => nav({ to: "/app/attendance" as never }),
+      action: () => nav({ to: "/app/myclass/attendance" as never }),
     },
     { label: "Enter Marks", icon: Edit, action: () => {} },
     { label: "Verify Documents", icon: FileCheck, action: () => {} },
     { label: "Create Assignment", icon: FilePlus, action: () => {} },
     { label: "Generate Question Paper", icon: FileText, action: () => {} },
     { label: "Create Daily Report", icon: ClipboardList, action: () => {} },
-    { label: "Open My Class", icon: Users, action: () => nav({ to: "/app/classes" as never }) },
+    { label: "Open My Class", icon: Users, action: () => nav({ to: "/app/myclass/students" as never }) },
     { label: "Open AI Assistant", icon: Sparkles, action: () => nav({ to: "/app/ai" as never }) },
   ];
 

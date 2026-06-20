@@ -18,9 +18,9 @@ import {
   Droplets, Shield, Key, Bell, Sun, Moon, Monitor,
   Lock, LogOut, CheckCircle2, TrendingUp, ClipboardCheck,
   CalendarClock, GraduationCap, Award, BookOpen, Hash,
+  Briefcase, Users,
 } from "lucide-react";
 import { useAuth } from "@/lib/scholarii/auth";
-import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 import {
   STUDENT_PROFILE, ACADEMIC_SNAPSHOT,
   DEFAULT_NOTIFICATIONS, DEFAULT_SECURITY, DEFAULT_APPEARANCE,
@@ -28,6 +28,10 @@ import {
 import type {
   ProfileTab, NotificationSettings, SecuritySettings, AppearanceSettings,
 } from "@/lib/scholarii/profile-mock-data";
+import {
+  TEACHER_PROFILE, DEFAULT_TEACHER_NOTIFICATIONS, DEFAULT_TEACHER_SECURITY, DEFAULT_TEACHER_APPEARANCE,
+} from "@/lib/scholarii/teacher-profile-mock-data";
+import type { TeacherProfileTab } from "@/lib/scholarii/teacher-profile-mock-data";
 
 export const Route = createFileRoute("/app/profile")({ component: ProfilePage });
 
@@ -160,16 +164,353 @@ function SettingToggle({ label, description, checked, onCheckedChange }: { label
   );
 }
 
+function TeacherProfilePage() {
+  const [activeTab, setActiveTab] = useState<TeacherProfileTab>("personal");
+  const [editOpen, setEditOpen] = useState(false);
+  const [notifications, setNotifications] = useState(DEFAULT_TEACHER_NOTIFICATIONS);
+  const [appearance, setAppearance] = useState(DEFAULT_TEACHER_APPEARANCE);
+
+  const profile = TEACHER_PROFILE;
+
+  const TAB_LIST: { id: TeacherProfileTab; label: string; icon: React.ReactNode }[] = [
+    { id: "personal", label: "Personal Information", icon: <UserCircle className="h-4 w-4" /> },
+    { id: "professional", label: "Professional Information", icon: <Briefcase className="h-4 w-4" /> },
+    { id: "settings", label: "Account Settings", icon: <Shield className="h-4 w-4" /> },
+  ];
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
+  return (
+    <div className="space-y-6 p-6 pb-20 md:p-8">
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-slate-500/25">
+            <UserCircle className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage your profile and account settings.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center gap-4 sm:flex-row">
+            <div className="relative">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-2xl font-bold text-white shadow-lg shadow-blue-500/25">
+                {getInitials(profile.fullName)}
+              </div>
+              <button className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border bg-background shadow-sm transition-colors hover:bg-muted">
+                <Camera className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="text-center sm:text-left">
+              <h2 className="text-xl font-bold">{profile.fullName}</h2>
+              <div className="mt-1 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                <Badge variant="secondary" className="text-xs">{profile.designation}</Badge>
+                <span className="text-sm text-muted-foreground">{profile.employeeId}</span>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {profile.department} &middot; {profile.subjects.join(", ")}
+              </p>
+              {profile.isClassTeacher && (
+                <Badge variant="outline" className="mt-2 border-blue-200 bg-blue-500/10 text-xs text-blue-700">
+                  Class Teacher - {profile.classTeacherOf}
+                </Badge>
+              )}
+            </div>
+            <div className="sm:ml-auto">
+              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                <Edit3 className="mr-1.5 h-4 w-4" />
+                Edit Profile
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="sticky top-0 z-30 -mx-6 bg-background/80 px-6 backdrop-blur-xl md:-mx-8 md:px-8">
+        <div className="flex gap-1 border-b">
+          {TAB_LIST.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeTab === "personal" && (
+        <div className="space-y-6">
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-base">Personal Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InfoRow icon={<UserCircle className="h-4 w-4" />} label="Full Name" value={profile.fullName} />
+              <Separator />
+              <InfoRow icon={<Mail className="h-4 w-4" />} label="Email Address" value={profile.email} />
+              <Separator />
+              <InfoRow icon={<Phone className="h-4 w-4" />} label="Phone Number" value={profile.phone} />
+              <Separator />
+              <InfoRow icon={<UserCircle className="h-4 w-4" />} label="Gender" value={profile.gender} />
+              <Separator />
+              <InfoRow icon={<Calendar className="h-4 w-4" />} label="Date of Birth" value={new Date(profile.dateOfBirth).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })} />
+              <Separator />
+              <InfoRow icon={<MapPin className="h-4 w-4" />} label="Address" value={profile.address} />
+              <Separator />
+              <InfoRow icon={<Phone className="h-4 w-4" />} label="Emergency Contact" value={profile.emergencyContact} />
+            </CardContent>
+          </Card>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={() => setEditOpen(true)}>
+              <Edit3 className="mr-1.5 h-4 w-4" />
+              Edit Profile
+            </Button>
+            <Button variant="outline" className="flex-1">
+              <Camera className="mr-1.5 h-4 w-4" />
+              Change Photo
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "professional" && (
+        <div className="space-y-6">
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-base">Professional Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InfoRow icon={<Hash className="h-4 w-4" />} label="Employee ID" value={profile.employeeId} />
+              <Separator />
+              <InfoRow icon={<Briefcase className="h-4 w-4" />} label="Designation" value={profile.designation} />
+              <Separator />
+              <InfoRow icon={<BookOpen className="h-4 w-4" />} label="Department" value={profile.department} />
+              <Separator />
+              <InfoRow icon={<BookOpen className="h-4 w-4" />} label="Subjects Taught" value={profile.subjects.join(", ")} />
+              <Separator />
+              <InfoRow icon={<Users className="h-4 w-4" />} label="Assigned Classes" value={profile.assignedClasses.join(", ")} />
+              <Separator />
+              {profile.isClassTeacher && (
+                <>
+                  <InfoRow icon={<Award className="h-4 w-4" />} label="Class Teacher Of" value={profile.classTeacherOf || "N/A"} />
+                  <Separator />
+                </>
+              )}
+              <InfoRow icon={<TrendingUp className="h-4 w-4" />} label="Years of Experience" value={`${profile.yearsOfExperience} years`} />
+              <Separator />
+              <InfoRow icon={<GraduationCap className="h-4 w-4" />} label="Qualification" value={profile.qualification} />
+              <Separator />
+              <InfoRow icon={<Calendar className="h-4 w-4" />} label="Joining Date" value={new Date(profile.joiningDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === "settings" && (
+        <div className="space-y-6">
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Key className="h-4 w-4 text-amber-500" />
+                Security
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Change Password</p>
+                  <p className="text-xs text-muted-foreground">Last changed {new Date(DEFAULT_TEACHER_SECURITY.lastPasswordChange).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  <Key className="mr-1.5 h-3.5 w-3.5" />
+                  Change
+                </Button>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Session Management</p>
+                  <p className="text-xs text-muted-foreground">{DEFAULT_TEACHER_SECURITY.activeSessions} active session{DEFAULT_TEACHER_SECURITY.activeSessions !== 1 ? "s" : ""}</p>
+                </div>
+                <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-500/10 hover:text-red-600">
+                  <LogOut className="mr-1.5 h-3.5 w-3.5" />
+                  Sign Out All
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Bell className="h-4 w-4 text-blue-500" />
+                Notification Preferences
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <SettingToggle
+                label="Email Notifications"
+                description="Receive updates via email"
+                checked={notifications.emailNotifications}
+                onCheckedChange={(v) => setNotifications((p) => ({ ...p, emailNotifications: v }))}
+              />
+              <Separator />
+              <SettingToggle
+                label="Push Notifications"
+                description="Get notified on your device"
+                checked={notifications.pushNotifications}
+                onCheckedChange={(v) => setNotifications((p) => ({ ...p, pushNotifications: v }))}
+              />
+              <Separator />
+              <SettingToggle
+                label="Assignment Reminders"
+                description="Remind before assignment deadlines"
+                checked={notifications.assignmentReminders}
+                onCheckedChange={(v) => setNotifications((p) => ({ ...p, assignmentReminders: v }))}
+              />
+              <Separator />
+              <SettingToggle
+                label="Exam Reminders"
+                description="Remind before upcoming exams"
+                checked={notifications.examReminders}
+                onCheckedChange={(v) => setNotifications((p) => ({ ...p, examReminders: v }))}
+              />
+              <Separator />
+              <SettingToggle
+                label="Parent Messages"
+                description="Get notified for parent messages"
+                checked={notifications.parentMessages}
+                onCheckedChange={(v) => setNotifications((p) => ({ ...p, parentMessages: v }))}
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Sun className="h-4 w-4 text-violet-500" />
+                Appearance
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Theme Preference</p>
+                  <p className="text-xs text-muted-foreground">Choose your preferred theme</p>
+                </div>
+                <Select value={appearance.theme} onValueChange={(v) => setAppearance((p) => ({ ...p, theme: v as "light" | "dark" | "system" }))}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">
+                      <span className="flex items-center gap-2"><Sun className="h-3.5 w-3.5" /> Light</span>
+                    </SelectItem>
+                    <SelectItem value="dark">
+                      <span className="flex items-center gap-2"><Moon className="h-3.5 w-3.5" /> Dark</span>
+                    </SelectItem>
+                    <SelectItem value="system">
+                      <span className="flex items-center gap-2"><Monitor className="h-3.5 w-3.5" /> System</span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Language Preference</p>
+                  <p className="text-xs text-muted-foreground">Select your preferred language</p>
+                </div>
+                <Select value={appearance.language} onValueChange={(v) => setAppearance((p) => ({ ...p, language: v }))}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="English">English</SelectItem>
+                    <SelectItem value="Hindi">Hindi</SelectItem>
+                    <SelectItem value="Kannada">Kannada</SelectItem>
+                    <SelectItem value="Tamil">Tamil</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <Sheet open={editOpen} onOpenChange={setEditOpen}>
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Edit Profile</SheetTitle>
+            <SheetDescription>Update your personal information</SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 space-y-4">
+            <div className="space-y-2">
+              <Label>Full Name</Label>
+              <Input defaultValue={profile.fullName} />
+            </div>
+            <div className="space-y-2">
+              <Label>Email Address</Label>
+              <Input defaultValue={profile.email} type="email" />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone Number</Label>
+              <Input defaultValue={profile.phone} />
+            </div>
+            <div className="space-y-2">
+              <Label>Gender</Label>
+              <Select defaultValue={profile.gender.toLowerCase()}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Date of Birth</Label>
+              <Input type="date" defaultValue={profile.dateOfBirth} />
+            </div>
+            <div className="space-y-2">
+              <Label>Address</Label>
+              <Input defaultValue={profile.address} />
+            </div>
+            <div className="space-y-2">
+              <Label>Emergency Contact</Label>
+              <Input defaultValue={profile.emergencyContact} />
+            </div>
+            <Button className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700">
+              Save Changes
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
 function ProfilePage() {
   const { user } = useAuth();
-  if (user?.role === "teacher") {
-    return (
-      <PlaceholderPage
-        title="Profile"
-        subtitle="Manage your account settings."
-        icon={UserCircle}
-      />
-    );
+  const isTeacher = user?.role === "teacher";
+
+  if (isTeacher) {
+    return <TeacherProfilePage />;
   }
 
   const [activeTab, setActiveTab] = useState<ProfileTab>("personal");

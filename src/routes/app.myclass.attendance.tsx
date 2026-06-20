@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RoleGuard } from "@/components/scholarii/RoleGuard";
 import { PageHeader } from "@/components/scholarii/AppShell";
-import { TabButton, KpiCard } from "@/components/scholarii/TeacherPageLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -505,55 +504,97 @@ function MyClassAttendancePage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col overflow-hidden">
-      <PageHeader title="Attendance" subtitle="Manage attendance for Class 8-A only." />
+    <div>
+      <PageHeader
+        title="Attendance"
+        subtitle="Manage attendance for Class 8-A only."
+        action={
+          <Button size="sm" className="bg-brand-gradient text-white border-0">
+            <ClipboardCheck className="size-4 mr-1" />
+            Mark Attendance
+          </Button>
+        }
+      />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <KpiCard
-          label="Total Students"
-          value={`${totalStudents} Students`}
-          icon={Users}
-          color="text-sky-600 bg-sky-500/10"
-        />
-        <KpiCard
-          label="Present Today"
-          value={`${presentToday} Students`}
-          icon={CheckCircle2}
-          color="text-emerald-600 bg-emerald-500/10"
-        />
-        <KpiCard
-          label="Absent Today"
-          value={`${absentToday} Students`}
-          icon={UserX}
-          color="text-red-600 bg-red-500/10"
-        />
-        <KpiCard
-          label="At-Risk Students"
-          value={`${atRiskStudents} Students`}
-          icon={AlertTriangle}
-          color="text-amber-600 bg-amber-500/10"
-        />
-        <KpiCard
-          label="Average Attendance"
-          value={`${averageAttendance}%`}
-          icon={TrendingUp}
-          color="text-emerald-600 bg-emerald-500/10"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-sky-500/10 grid place-items-center">
+              <Users className="size-5 text-sky-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Total Students</div>
+              <div className="text-xl font-semibold">{totalStudents} Students</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-emerald-500/10 grid place-items-center">
+              <CheckCircle2 className="size-5 text-emerald-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Present Today</div>
+              <div className="text-xl font-semibold">{presentToday} Students</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-red-500/10 grid place-items-center">
+              <UserX className="size-5 text-red-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Absent Today</div>
+              <div className="text-xl font-semibold">{absentToday} Students</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5 border-2 border-amber-200/70 dark:border-amber-900/40">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-amber-500/10 grid place-items-center">
+              <AlertTriangle className="size-5 text-amber-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">At-Risk Students</div>
+              <div className="text-xl font-semibold">{atRiskStudents} Students</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-emerald-500/10 grid place-items-center">
+              <TrendingUp className="size-5 text-emerald-500" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Average Attendance</div>
+              <div className="text-xl font-semibold">{averageAttendance}%</div>
+            </div>
+          </div>
+        </Card>
       </div>
 
-      <div className="mt-4 flex gap-1 overflow-x-auto border-b border-border/60 pb-3">
-        {TABS.map((tab) => (
-          <TabButton
-            key={tab.id}
-            active={activeTab === tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            icon={tab.icon}
-            label={tab.label}
-          />
-        ))}
-      </div>
+      <Card className="p-4 mb-6">
+        <div className="flex gap-1">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
+                activeTab === tab.id
+                  ? "bg-violet-500/10 text-violet-600 shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <tab.icon className="size-4" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </Card>
 
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto pr-1 pb-4">
+      <div className="space-y-4 pb-4">
         {activeTab === "mark" && (
           <div className="space-y-4">
             <Card className="p-4">
