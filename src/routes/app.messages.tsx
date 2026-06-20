@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { CONVERSATIONS } from "@/lib/scholarii/messages-mock-data";
 import { TEACHER_CONVERSATIONS } from "@/lib/scholarii/teacher-messages-mock-data";
+import { PRINCIPAL_CONVERSATIONS, PRINCIPAL_FILTER_OPTIONS } from "@/lib/scholarii/principal-messages-mock-data";
 import type { Conversation, Message } from "@/lib/scholarii/messages-mock-data";
 import { useAuth } from "@/lib/scholarii/auth";
 
@@ -34,8 +35,9 @@ function getStoredPanel(): { width: number; collapsed: boolean } {
 function MessagesPage() {
   const { user } = useAuth();
   const isTeacher = user?.role === "teacher";
-  const FILTER_OPTIONS = isTeacher ? TEACHER_FILTER_OPTIONS : STUDENT_FILTER_OPTIONS;
-  const [conversations, setConversations] = useState<Conversation[]>(isTeacher ? TEACHER_CONVERSATIONS : CONVERSATIONS);
+  const isPrincipal = user?.role === "principal";
+  const FILTER_OPTIONS = isPrincipal ? PRINCIPAL_FILTER_OPTIONS : isTeacher ? TEACHER_FILTER_OPTIONS : STUDENT_FILTER_OPTIONS;
+  const [conversations, setConversations] = useState<Conversation[]>(isPrincipal ? PRINCIPAL_CONVERSATIONS : isTeacher ? TEACHER_CONVERSATIONS : CONVERSATIONS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
@@ -79,9 +81,10 @@ function MessagesPage() {
   }, [panelWidth]);
 
   const filtered = conversations.filter((c) => {
-    if (filter === "Teachers") return c.type === "dm" && c.role === "Teacher";
-    if (filter === "Students") return c.type === "dm" && !c.role && c.subject !== "Parent" && c.subject !== "Administration";
+    if (filter === "Teachers") return c.type === "dm" && (c.role === "Teacher" || c.role === "HOD");
+    if (filter === "Students") return c.type === "dm" && !c.role && c.subject !== "Parent" && c.subject !== "Administration" && c.subject !== "Staff";
     if (filter === "Parents") return c.type === "dm" && c.subject === "Parent";
+    if (filter === "Staff") return c.type === "dm" && (c.subject === "Staff" || c.subject === "Finance" || c.subject === "Administration" || c.subject === "Vice Principal");
     if (filter === "Channels") return c.type === "channel";
     if (filter === "Unread") return c.unread > 0;
     return true;
@@ -95,8 +98,8 @@ function MessagesPage() {
     const newMsg: Message = {
       id: `m${Date.now()}`,
       senderId: "me",
-      senderName: isTeacher ? "Mr. Kumar" : "Rahul Kumar",
-      senderAvatar: isTeacher ? "\ud83d\udc68\u200d\ud83c\udfeb" : "\ud83d\udc64",
+      senderName: isPrincipal ? "Principal Mehta" : isTeacher ? "Mr. Kumar" : "Rahul Kumar",
+      senderAvatar: isPrincipal ? "\ud83d\udc68\u200d\ud83c\udfeb" : isTeacher ? "\ud83d\udc68\u200d\ud83c\udfeb" : "\ud83d\udc64",
       content: input.trim(),
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       type: "text",

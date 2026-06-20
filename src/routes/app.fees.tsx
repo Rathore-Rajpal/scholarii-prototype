@@ -32,6 +32,7 @@ import {
   getParentFeesData,
   type ParentFeesData,
 } from "@/lib/scholarii/fees-mock-data";
+import PrincipalFinancePage from "@/components/scholarii/PrincipalFinancePage";
 
 export const Route = createFileRoute("/app/fees")({
   component: FeesPage,
@@ -289,6 +290,10 @@ function FeesPage() {
   const nav = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const data = useMemo(() => getParentFeesData(), []);
+
+  if (user?.role === "principal") {
+    return <PrincipalFinancePage />;
+  }
 
   if (user?.role !== "student") {
     return (

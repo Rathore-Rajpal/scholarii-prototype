@@ -104,7 +104,14 @@ const PRINCIPAL_NAV: PrincipalNav = [
       { to: "/app/compliance", label: "Compliance", icon: ShieldCheck },
     ],
   },
-  { to: "/app/communication", label: "Communications", icon: MessageSquare },
+  {
+    label: "Communications",
+    icon: MessageSquare,
+    items: [
+      { to: "/app/messages", label: "Messages", icon: MessageCircle },
+      { to: "/app/communication", label: "Communication Center", icon: Megaphone },
+    ],
+  },
   { to: "/app/settings", label: "Settings", icon: Settings },
 ];
 

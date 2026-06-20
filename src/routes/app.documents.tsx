@@ -25,14 +25,22 @@ import {
   DOCUMENT_AI_INSIGHTS,
   type StudentDocEntry,
 } from "@/lib/scholarii/teacher-documents-mock-data";
+import { useAuth } from "@/lib/scholarii/auth";
+import PrincipalDocumentsPage from "@/components/scholarii/PrincipalDocumentsPage";
 
 export const Route = createFileRoute("/app/documents")({
-  component: () => (
+  component: DocumentsPageWrapper,
+});
+
+function DocumentsPageWrapper() {
+  const { user } = useAuth();
+  if (user?.role === "principal") return <PrincipalDocumentsPage />;
+  return (
     <RoleGuard allowedRoles={["teacher"]}>
       <DocumentsPage />
     </RoleGuard>
-  ),
-});
+  );
+}
 
 type TabId = "students" | "class" | "question-papers" | "school" | "my-docs";
 type SideTab = "required" | "additional" | "history";

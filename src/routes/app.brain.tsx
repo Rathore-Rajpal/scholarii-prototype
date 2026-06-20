@@ -123,17 +123,17 @@ const studentRecords: RecordItem[] = [
 
 function KpiCard({ label, value, icon: Icon, note }: { label: string; value: string; icon: typeof FileText; note: string }) {
   return (
-    <Card className="border-border/60 p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-          <div className="mt-2 text-2xl font-semibold tracking-tight">{value}</div>
-          <div className="mt-1 text-sm text-muted-foreground">{note}</div>
+    <Card className="p-4">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
+          <Icon className="size-5 text-violet-500" />
         </div>
-        <div className="grid size-10 place-items-center rounded-2xl bg-slate-50 text-slate-700">
-          <Icon className="size-5" />
+        <div>
+          <div className="text-[11px] text-muted-foreground">{label}</div>
+          <div className="text-lg font-semibold">{value}</div>
         </div>
       </div>
+      <p className="text-[11px] text-muted-foreground">{note}</p>
     </Card>
   );
 }
@@ -150,11 +150,11 @@ function SectionCard({
   action?: ReactNode;
 }) {
   return (
-    <Card className="border-border/60 p-5 shadow-sm">
+    <Card className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">{subtitle}</p>
-          <h3 className="mt-1 text-xl font-semibold tracking-tight">{title}</h3>
+          <p className="text-[11px] text-muted-foreground mb-1">{subtitle}</p>
+          <h3 className="text-sm font-semibold">{title}</h3>
         </div>
         {action}
       </div>
@@ -199,7 +199,7 @@ function SchoolBrainPage() {
     setEditingField(null);
   };
 
-  const scrollToSection = (ref: RefObject<HTMLDivElement>) => {
+  const scrollToSection = (ref: RefObject<HTMLDivElement | null>) => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -230,16 +230,14 @@ function SchoolBrainPage() {
   };
 
   return (
-    <div className="relative space-y-6">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.16),transparent_35%),radial-gradient(circle_at_top_left,rgba(168,85,247,0.12),transparent_35%),linear-gradient(to_bottom,rgba(248,250,252,0.9),transparent)]" />
-
+    <div>
       <PageHeader
         title="School Brain"
         subtitle="Control what Scholarii AI knows about your school in one simple place."
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-50">
-              <BrainCircuit className="mr-1 size-3.5" />
+            <Badge variant="outline" className="gap-1.5">
+              <BrainCircuit className="size-3" />
               Knowledge control center
             </Badge>
             <Badge variant="outline">{lastUpdated}</Badge>
@@ -247,7 +245,7 @@ function SchoolBrainPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
         <KpiCard label="Knowledge Sources" value="248 Sources" icon={FileText} note="Connected to Scholarii AI" />
         <KpiCard label="Documents Connected" value="1,284 Documents" icon={BookOpen} note="School and compliance files" />
         <KpiCard label="Staff Profiles" value="68 Profiles" icon={Users} note="Staff knowledge records" />
@@ -255,288 +253,254 @@ function SchoolBrainPage() {
         <KpiCard label="Last Updated" value={lastUpdated} icon={Clock3} note="Latest brain refresh status" />
       </div>
 
-      <Card className="overflow-hidden backdrop-blur bg-card/50 border-border/50">
-        <div className="p-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="bg-white border border-emerald-200 p-1 rounded-full">
-              <TabsTrigger value="school" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
-                <Database className="mr-2 size-4" />
-                School Knowledge
-              </TabsTrigger>
-              <TabsTrigger value="staff" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
-                <Users className="mr-2 size-4" />
-                Staff Knowledge
-              </TabsTrigger>
-              <TabsTrigger value="student" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
-                <GraduationCap className="mr-2 size-4" />
-                Student Knowledge
-              </TabsTrigger>
-              <TabsTrigger value="updates" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
-                <Activity className="mr-2 size-4" />
-                Recent Updates
-              </TabsTrigger>
-              <TabsTrigger value="sources" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
-                <BookOpen className="mr-2 size-4" />
-                AI Knowledge Sources
-              </TabsTrigger>
-              <TabsTrigger value="access" className="rounded-full data-[state=active]:border data-[state=active]:border-emerald-300 data-[state=active]:bg-white data-[state=active]:text-emerald-600 px-4 py-2 text-sm font-medium text-muted-foreground">
-                <Settings className="mr-2 size-4" />
-                AI Access Control
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Card className="p-4 mb-8">
+          <TabsList className="h-11">
+            <TabsTrigger value="school" className="text-sm gap-2 px-5"><Database className="size-4" /> School Knowledge</TabsTrigger>
+            <TabsTrigger value="staff" className="text-sm gap-2 px-5"><Users className="size-4" /> Staff Knowledge</TabsTrigger>
+            <TabsTrigger value="student" className="text-sm gap-2 px-5"><GraduationCap className="size-4" /> Student Knowledge</TabsTrigger>
+            <TabsTrigger value="updates" className="text-sm gap-2 px-5"><Activity className="size-4" /> Recent Updates</TabsTrigger>
+            <TabsTrigger value="sources" className="text-sm gap-2 px-5"><BookOpen className="size-4" /> AI Knowledge Sources</TabsTrigger>
+            <TabsTrigger value="access" className="text-sm gap-2 px-5"><Settings className="size-4" /> AI Access Control</TabsTrigger>
+          </TabsList>
+        </Card>
 
-        <div className="p-5">
-          {activeTab === "school" && (
-            <div ref={schoolSectionRef}>
-              <SectionCard
-                title="School Knowledge"
-                subtitle="School Brain Overview"
-                action={<Badge variant="outline">Editable</Badge>}
-              >
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {schoolKnowledge.map((field) => (
-                    <div key={field.key} className="rounded-2xl border border-border bg-slate-50/60 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold">{field.label}</div>
-                          <p className="mt-2 text-sm leading-6 text-muted-foreground">{field.value}</p>
-                        </div>
-                        <Button type="button" variant="ghost" size="sm" className="h-8 gap-2 rounded-full px-3" onClick={() => openEdit(field)}>
-                          <Edit3 className="size-3.5" />
-                          Edit
-                        </Button>
+        {activeTab === "school" && (
+          <div ref={schoolSectionRef}>
+            <SectionCard
+              title="School Knowledge"
+              subtitle="School Brain Overview"
+              action={<Badge variant="outline">Editable</Badge>}
+            >
+              <div className="grid gap-3 sm:grid-cols-2">
+                {schoolKnowledge.map((field) => (
+                  <div key={field.key} className="rounded-xl border border-border/60 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold">{field.label}</div>
+                        <p className="mt-1.5 text-xs text-muted-foreground leading-5">{field.value}</p>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </SectionCard>
-            </div>
-          )}
-
-          {activeTab === "staff" && (
-            <div>
-              <SectionCard
-                title="Staff Knowledge"
-                subtitle="Staff Records Summary"
-                action={
-                  <Button type="button" variant="outline" className="h-9 rounded-full px-3" onClick={() => setStaffSheetOpen(true)}>
-                    View All Staff
-                  </Button>
-                }
-              >
-                <div className="rounded-3xl border border-border bg-gradient-to-br from-slate-50 to-white p-5">
-                  <div className="text-3xl font-semibold tracking-tight">68 Staff Profiles Available</div>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-border bg-white p-3">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Teachers</div>
-                      <div className="mt-2 text-lg font-semibold">48</div>
-                      <div className="mt-1 text-xs text-muted-foreground">Subject allocation and roles</div>
-                    </div>
-                    <div className="rounded-2xl border border-border bg-white p-3">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Admin</div>
-                      <div className="mt-2 text-lg font-semibold">12</div>
-                      <div className="mt-1 text-xs text-muted-foreground">Front office and coordination</div>
-                    </div>
-                    <div className="rounded-2xl border border-border bg-white p-3">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Support</div>
-                      <div className="mt-2 text-lg font-semibold">8</div>
-                      <div className="mt-1 text-xs text-muted-foreground">Transport and campus support</div>
+                      <Button type="button" variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full px-3 shrink-0" onClick={() => openEdit(field)}>
+                        <Edit3 className="size-3" />
+                        Edit
+                      </Button>
                     </div>
                   </div>
-                </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {staffRecords.map((item) => (
-                    <div key={item.label} className="rounded-2xl border border-border bg-slate-50/70 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="font-semibold">{item.label}</div>
-                          <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.note}</p>
-                        </div>
-                        <Badge variant="outline">{item.value}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </SectionCard>
-            </div>
-          )}
-
-          {activeTab === "student" && (
-            <div>
-              <SectionCard
-                title="Student Knowledge"
-                subtitle="Student Records Summary"
-                action={
-                  <Button type="button" variant="outline" className="h-9 rounded-full px-3" onClick={() => setStudentSheetOpen(true)}>
-                    View All Students
-                  </Button>
-                }
-              >
-                <div className="rounded-3xl border border-border bg-gradient-to-br from-slate-50 to-white p-5">
-                  <div className="text-3xl font-semibold tracking-tight">1,320 Student Records Available</div>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-border bg-white p-3">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Students</div>
-                      <div className="mt-2 text-lg font-semibold">1,320</div>
-                      <div className="mt-1 text-xs text-muted-foreground">Class and section details</div>
-                    </div>
-                    <div className="rounded-2xl border border-border bg-white p-3">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Parents</div>
-                      <div className="mt-2 text-lg font-semibold">1,186</div>
-                      <div className="mt-1 text-xs text-muted-foreground">Parent contacts and links</div>
-                    </div>
-                    <div className="rounded-2xl border border-border bg-white p-3">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Classes</div>
-                      <div className="mt-2 text-lg font-semibold">42</div>
-                      <div className="mt-1 text-xs text-muted-foreground">Class summaries</div>
-                    </div>
-                    <div className="rounded-2xl border border-border bg-white p-3">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Sections</div>
-                      <div className="mt-2 text-lg font-semibold">21</div>
-                      <div className="mt-1 text-xs text-muted-foreground">Organized sections</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {studentRecords.map((item) => (
-                    <div key={item.label} className="rounded-2xl border border-border bg-slate-50/70 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="font-semibold">{item.label}</div>
-                          <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.note}</p>
-                        </div>
-                        <Badge variant="outline">{item.value}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </SectionCard>
-            </div>
-          )}
-
-          {activeTab === "updates" && (
-            <div>
-              <SectionCard
-                title="Recent Updates"
-                subtitle="Recent knowledge activity"
-                action={<Badge variant="outline">{updates.length} updates</Badge>}
-              >
-                <div className="space-y-3">
-                  {updates.map((item, index) => (
-                    <div key={`${item.title}-${index}`} className="rounded-2xl border border-border bg-slate-50/70 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="font-semibold">{item.title}</div>
-                          <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.note}</p>
-                        </div>
-                        <Badge variant="outline">{item.time}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </SectionCard>
-              <div className="mt-4">
-                <Card className="border-border/60 bg-slate-900 p-5 text-white shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="grid size-10 place-items-center rounded-2xl bg-white/10">
-                      <School className="size-5" />
-                    </div>
-                    <div>
-                      <div className="text-xs uppercase tracking-wide text-white/60">Scholarii AI Summary</div>
-                      <h3 className="mt-1 text-lg font-semibold">School Brain Status</h3>
-                      <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80">{schoolBrainSummary}</p>
-                    </div>
-                  </div>
-                </Card>
+                ))}
               </div>
-            </div>
-          )}
+            </SectionCard>
+          </div>
+        )}
 
-          {activeTab === "sources" && (
-            <div>
-              <SectionCard
-                title="AI Knowledge Sources"
-                subtitle="What Scholarii AI learns from"
-                action={<Badge variant="outline">Visibility</Badge>}
-              >
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {knowledgeSources.map((source) => {
-                    const Icon = source.icon;
-                    return (
-                      <div key={source.label} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-white p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="grid size-10 place-items-center rounded-2xl bg-slate-50 text-slate-700">
-                            <Icon className="size-5" />
-                          </div>
-                          <div>
-                            <div className="font-semibold">{source.label}</div>
-                            <div className="text-sm text-muted-foreground">{source.count}</div>
-                          </div>
-                        </div>
-                        <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50">{source.status}</Badge>
-                      </div>
-                    );
-                  })}
-                </div>
-              </SectionCard>
-            </div>
-          )}
-
-          {activeTab === "access" && (
-            <div ref={accessSectionRef}>
-              <SectionCard
-                title="AI Access Control"
-                subtitle="What Scholarii AI can use"
-                action={<Badge variant="outline">Simple toggles</Badge>}
-              >
-                <div className="space-y-3">
-                  {accessControls.map((item) => (
-                    <div key={item.key} className="rounded-2xl border border-border bg-white p-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <div className="font-semibold">{item.label}</div>
-                          <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Badge variant="outline" className={cn(item.enabled && "border-emerald-200 bg-emerald-50 text-emerald-700")}>
-                            {item.enabled ? "Enabled" : "Disabled"}
-                          </Badge>
-                          <Switch
-                            checked={item.enabled}
-                            onCheckedChange={(checked) =>
-                              setAccessControls((current) =>
-                                current.map((control) => (control.key === item.key ? { ...control, enabled: checked } : control))
-                              )
-                            }
-                          />
-                        </div>
-                      </div>
+        {activeTab === "staff" && (
+          <div>
+            <SectionCard
+              title="Staff Knowledge"
+              subtitle="Staff Records Summary"
+              action={
+                <Button type="button" variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setStaffSheetOpen(true)}>
+                  View All Staff
+                </Button>
+              }
+            >
+              <div className="rounded-xl border border-border/60 bg-slate-50/60 p-5 mb-4">
+                <div className="text-lg font-semibold">68 Staff Profiles Available</div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  {[
+                    { label: "Teachers", value: "48", hint: "Subject allocation and roles" },
+                    { label: "Admin", value: "12", hint: "Front office and coordination" },
+                    { label: "Support", value: "8", hint: "Transport and campus support" },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl border border-border/60 bg-white p-3">
+                      <div className="text-[11px] text-muted-foreground">{item.label}</div>
+                      <div className="text-lg font-semibold">{item.value}</div>
+                      <div className="text-[10px] text-muted-foreground">{item.hint}</div>
                     </div>
                   ))}
                 </div>
-              </SectionCard>
-            </div>
-          )}
-        </div>
-      </Card>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {staffRecords.map((item) => (
+                  <div key={item.label} className="rounded-xl border border-border/60 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-semibold">{item.label}</div>
+                        <p className="mt-1 text-[11px] text-muted-foreground leading-5">{item.note}</p>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] shrink-0">{item.value}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+        )}
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <Button type="button" variant="outline" className="h-11 justify-start rounded-2xl" onClick={() => scrollToSection(schoolSectionRef)}>
-          <Edit3 className="mr-2 size-4" />
+        {activeTab === "student" && (
+          <div>
+            <SectionCard
+              title="Student Knowledge"
+              subtitle="Student Records Summary"
+              action={
+                <Button type="button" variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setStudentSheetOpen(true)}>
+                  View All Students
+                </Button>
+              }
+            >
+              <div className="rounded-xl border border-border/60 bg-slate-50/60 p-5 mb-4">
+                <div className="text-lg font-semibold">1,320 Student Records Available</div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {[
+                    { label: "Students", value: "1,320", hint: "Class and section details" },
+                    { label: "Parents", value: "1,186", hint: "Parent contacts and links" },
+                    { label: "Classes", value: "42", hint: "Class summaries" },
+                    { label: "Sections", value: "21", hint: "Organized sections" },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl border border-border/60 bg-white p-3">
+                      <div className="text-[11px] text-muted-foreground">{item.label}</div>
+                      <div className="text-lg font-semibold">{item.value}</div>
+                      <div className="text-[10px] text-muted-foreground">{item.hint}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {studentRecords.map((item) => (
+                  <div key={item.label} className="rounded-xl border border-border/60 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-semibold">{item.label}</div>
+                        <p className="mt-1 text-[11px] text-muted-foreground leading-5">{item.note}</p>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] shrink-0">{item.value}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
+        {activeTab === "updates" && (
+          <div>
+            <SectionCard
+              title="Recent Updates"
+              subtitle="Recent knowledge activity"
+              action={<Badge variant="outline">{updates.length} updates</Badge>}
+            >
+              <div className="space-y-3">
+                {updates.map((item, index) => (
+                  <div key={`${item.title}-${index}`} className="rounded-xl border border-border/60 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-semibold">{item.title}</div>
+                        <p className="mt-1 text-[11px] text-muted-foreground leading-5">{item.note}</p>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] shrink-0">{item.time}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+            <div className="mt-4">
+              <Card className="p-5 bg-slate-900 text-white border-border/50">
+                <div className="flex items-start gap-3">
+                  <div className="size-10 rounded-xl bg-white/10 grid place-items-center shrink-0">
+                    <School className="size-5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-white/60">Scholarii AI Summary</div>
+                    <h3 className="mt-1 text-sm font-semibold">School Brain Status</h3>
+                    <p className="mt-2 text-xs text-white/70 leading-5">{schoolBrainSummary}</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "sources" && (
+          <div>
+            <SectionCard
+              title="AI Knowledge Sources"
+              subtitle="What Scholarii AI learns from"
+              action={<Badge variant="outline">Visibility</Badge>}
+            >
+              <div className="grid gap-3 sm:grid-cols-2">
+                {knowledgeSources.map((source) => {
+                  const Icon = source.icon;
+                  return (
+                    <div key={source.label} className="flex items-center justify-between gap-3 rounded-xl border border-border/60 p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
+                          <Icon className="size-5 text-violet-500" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold">{source.label}</div>
+                          <div className="text-[11px] text-muted-foreground">{source.count}</div>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-0">{source.status}</Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
+        {activeTab === "access" && (
+          <div ref={accessSectionRef}>
+            <SectionCard
+              title="AI Access Control"
+              subtitle="What Scholarii AI can use"
+              action={<Badge variant="outline">Simple toggles</Badge>}
+            >
+              <div className="space-y-3">
+                {accessControls.map((item) => (
+                  <div key={item.key} className="rounded-xl border border-border/60 p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="text-xs font-semibold">{item.label}</div>
+                        <p className="mt-1 text-[11px] text-muted-foreground">{item.description}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className={cn("text-[10px]", item.enabled && "border-emerald-200 bg-emerald-500/10 text-emerald-600")}>
+                          {item.enabled ? "Enabled" : "Disabled"}
+                        </Badge>
+                        <Switch
+                          checked={item.enabled}
+                          onCheckedChange={(checked) =>
+                            setAccessControls((current) =>
+                              current.map((control) => (control.key === item.key ? { ...control, enabled: checked } : control))
+                            )
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+      </Tabs>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-8">
+        <Button type="button" variant="outline" className="h-10 justify-start gap-2 text-xs" onClick={() => scrollToSection(schoolSectionRef)}>
+          <Edit3 className="size-3.5" />
           Update School Information
         </Button>
-        <Button type="button" variant="outline" className="h-11 justify-start rounded-2xl" onClick={handleUploadKnowledge}>
-          <Upload className="mr-2 size-4" />
+        <Button type="button" variant="outline" className="h-10 justify-start gap-2 text-xs" onClick={handleUploadKnowledge}>
+          <Upload className="size-3.5" />
           Upload Knowledge Source
         </Button>
-        <Button type="button" variant="outline" className="h-11 justify-start rounded-2xl" onClick={() => scrollToSection(accessSectionRef)}>
-          <ShieldCheck className="mr-2 size-4" />
+        <Button type="button" variant="outline" className="h-10 justify-start gap-2 text-xs" onClick={() => scrollToSection(accessSectionRef)}>
+          <ShieldCheck className="size-3.5" />
           Manage AI Access
         </Button>
-        <Button type="button" className="h-11 justify-start rounded-2xl bg-brand-gradient text-white border-0" onClick={handleRefresh}>
-          <RefreshCw className="mr-2 size-4" />
+        <Button type="button" className="h-10 justify-start gap-2 text-xs bg-violet-600 hover:bg-violet-700" onClick={handleRefresh}>
+          <RefreshCw className="size-3.5" />
           Refresh School Brain
         </Button>
       </div>
@@ -567,7 +531,7 @@ function SchoolBrainPage() {
             <Button type="button" variant="outline" onClick={() => setEditingField(null)}>
               Cancel
             </Button>
-            <Button type="button" className="bg-brand-gradient text-white border-0" onClick={saveEdit}>
+            <Button type="button" className="bg-violet-600 hover:bg-violet-700" onClick={saveEdit}>
               Save Changes
             </Button>
           </DialogFooter>
@@ -582,13 +546,13 @@ function SchoolBrainPage() {
           </SheetHeader>
           <div className="mt-6 space-y-3">
             {staffRecords.map((item) => (
-              <div key={item.label} className="rounded-2xl border border-border bg-slate-50/70 p-4">
+              <div key={item.label} className="rounded-xl border border-border/60 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="font-semibold">{item.label}</div>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.note}</p>
+                    <div className="text-xs font-semibold">{item.label}</div>
+                    <p className="mt-1 text-[11px] text-muted-foreground leading-5">{item.note}</p>
                   </div>
-                  <Badge variant="outline">{item.value}</Badge>
+                  <Badge variant="outline" className="text-[10px] shrink-0">{item.value}</Badge>
                 </div>
               </div>
             ))}
@@ -604,13 +568,13 @@ function SchoolBrainPage() {
           </SheetHeader>
           <div className="mt-6 space-y-3">
             {studentRecords.map((item) => (
-              <div key={item.label} className="rounded-2xl border border-border bg-slate-50/70 p-4">
+              <div key={item.label} className="rounded-xl border border-border/60 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="font-semibold">{item.label}</div>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.note}</p>
+                    <div className="text-xs font-semibold">{item.label}</div>
+                    <p className="mt-1 text-[11px] text-muted-foreground leading-5">{item.note}</p>
                   </div>
-                  <Badge variant="outline">{item.value}</Badge>
+                  <Badge variant="outline" className="text-[10px] shrink-0">{item.value}</Badge>
                 </div>
               </div>
             ))}

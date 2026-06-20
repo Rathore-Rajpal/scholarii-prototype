@@ -23,6 +23,14 @@ import {
   PARENT_AI_SKILLS, PARENT_SUGGESTED_PROMPTS, PARENT_QUICK_ACTIONS,
   PARENT_ATTACHABLE_RESOURCES, PARENT_MOCK_CONVERSATIONS, PARENT_AI_RESPONSES,
 } from "@/lib/scholarii/parent-ai-mock-data";
+import {
+  TEACHER_AI_SKILLS, TEACHER_SUGGESTED_PROMPTS, TEACHER_QUICK_ACTIONS,
+  TEACHER_ATTACHABLE_RESOURCES, TEACHER_MOCK_CONVERSATIONS, TEACHER_AI_RESPONSES,
+} from "@/lib/scholarii/teacher-ai-mock-data";
+import {
+  PRINCIPAL_AI_SKILLS, PRINCIPAL_SUGGESTED_PROMPTS, PRINCIPAL_QUICK_ACTIONS,
+  PRINCIPAL_ATTACHABLE_RESOURCES, PRINCIPAL_MOCK_CONVERSATIONS, PRINCIPAL_AI_RESPONSES,
+} from "@/lib/scholarii/principal-ai-mock-data";
 import { useAuth } from "@/lib/scholarii/auth";
 
 export const Route = createFileRoute("/app/ai")({ component: AiStudyAssistant });
@@ -33,21 +41,24 @@ function AiStudyAssistant() {
   const { user, parentMode } = useAuth();
   const isParent = user?.role === "student" && parentMode;
   const isTeacher = user?.role === "teacher";
+  const isPrincipal = user?.role === "principal";
   const assistantTitle =
-    isTeacher ? "AI Teaching Assistant" : isParent ? "AI Assistant" : "AI Study Assistant";
-  const assistantDescription = isTeacher
-    ? "Your teaching copilot for lesson planning, feedback, and follow-up."
-    : isParent
-      ? "Your AI companion to monitor and support your child's academic journey."
-      : "Your personal AI tutor. Ask anything, learn faster.";
+    isPrincipal ? "AI School Advisor" : isTeacher ? "AI Teaching Assistant" : isParent ? "AI Assistant" : "AI Study Assistant";
+  const assistantDescription = isPrincipal
+    ? "Your AI copilot for school operations, finances, academics, and strategic decisions."
+    : isTeacher
+      ? "Your teaching copilot for lesson planning, feedback, and follow-up."
+      : isParent
+        ? "Your AI companion to monitor and support your child's academic journey."
+        : "Your personal AI tutor. Ask anything, learn faster.";
 
-  // Use parent-specific data when in parent mode
-  const AI_SKILLS_TO_USE = isParent ? PARENT_AI_SKILLS : AI_SKILLS;
-  const SUGGESTED_PROMPTS_TO_USE = isParent ? PARENT_SUGGESTED_PROMPTS : SUGGESTED_PROMPTS;
-  const QUICK_ACTIONS_TO_USE = isParent ? PARENT_QUICK_ACTIONS : QUICK_ACTIONS;
-  const ATTACHABLE_RESOURCES_TO_USE = isParent ? PARENT_ATTACHABLE_RESOURCES : ATTACHABLE_RESOURCES;
-  const MOCK_CONVERSATIONS_TO_USE = isParent ? PARENT_MOCK_CONVERSATIONS : MOCK_CONVERSATIONS;
-  const AI_RESPONSES_TO_USE = isParent ? PARENT_AI_RESPONSES : AI_RESPONSES;
+  // Use role-specific data
+  const AI_SKILLS_TO_USE = isPrincipal ? PRINCIPAL_AI_SKILLS : isTeacher ? TEACHER_AI_SKILLS : isParent ? PARENT_AI_SKILLS : AI_SKILLS;
+  const SUGGESTED_PROMPTS_TO_USE = isPrincipal ? PRINCIPAL_SUGGESTED_PROMPTS : isTeacher ? TEACHER_SUGGESTED_PROMPTS : isParent ? PARENT_SUGGESTED_PROMPTS : SUGGESTED_PROMPTS;
+  const QUICK_ACTIONS_TO_USE = isPrincipal ? PRINCIPAL_QUICK_ACTIONS : isTeacher ? TEACHER_QUICK_ACTIONS : isParent ? PARENT_QUICK_ACTIONS : QUICK_ACTIONS;
+  const ATTACHABLE_RESOURCES_TO_USE = isPrincipal ? PRINCIPAL_ATTACHABLE_RESOURCES : isTeacher ? TEACHER_ATTACHABLE_RESOURCES : isParent ? PARENT_ATTACHABLE_RESOURCES : ATTACHABLE_RESOURCES;
+  const MOCK_CONVERSATIONS_TO_USE = isPrincipal ? PRINCIPAL_MOCK_CONVERSATIONS : isTeacher ? TEACHER_MOCK_CONVERSATIONS : isParent ? PARENT_MOCK_CONVERSATIONS : MOCK_CONVERSATIONS;
+  const AI_RESPONSES_TO_USE = isPrincipal ? PRINCIPAL_AI_RESPONSES : isTeacher ? TEACHER_AI_RESPONSES : isParent ? PARENT_AI_RESPONSES : AI_RESPONSES;
 
   const [conversations, setConversations] = useState<ChatConversation[]>(MOCK_CONVERSATIONS_TO_USE);
   const [activeConvId, setActiveConvId] = useState<string | null>(MOCK_CONVERSATIONS_TO_USE[0]?.id ?? null);
@@ -112,10 +123,54 @@ function AiStudyAssistant() {
       let response = "";
 
       if (attachedResource) {
-        if (isParent) {
+        if (isPrincipal) {
+          response = `I've received the resource "${attachedResource.title}" (${attachedResource.subject}). Here's my analysis:\n\n**Key Points from ${attachedResource.title}:**\n1. Executive summary and key findings\n2. Trends and patterns identified\n3. Action items requiring attention\n4. Recommendations for decision-making\n\nWhat would you like me to help you with regarding this resource?`;
+        } else if (isTeacher) {
+          response = `I've received the resource "${attachedResource.title}" (${attachedResource.subject}). Here's my analysis:\n\n**Key Points from ${attachedResource.title}:**\n1. Teaching-relevant content summary\n2. Classroom application ideas\n3. Student engagement opportunities\n4. Assessment integration points\n\nWhat would you like me to help you with regarding this resource?`;
+        } else if (isParent) {
           response = `I've received the resource "${attachedResource.title}" (${attachedResource.subject}). Here's my analysis:\n\n**Key Points from ${attachedResource.title}:**\n1. Summary of the document\n2. Important highlights\n3. Action items if any\n4. Relevant context for your child\n\nWhat would you like me to help you with regarding this resource?`;
         } else {
           response = `I've received the resource "${attachedResource.title}" (${attachedResource.subject}). Here's my analysis:\n\n**Key Points from ${attachedResource.title}:**\n1. Core concept explanation\n2. Important formulas and definitions\n3. Application examples\n4. Exam-relevant topics\n\nWhat would you like me to help you with regarding this resource?`;
+        }
+      } else if (isPrincipal) {
+        // Principal-specific responses
+        if (lower.includes("performance") || lower.includes("overview") || lower.includes("school")) {
+          response = PRINCIPAL_AI_RESPONSES["school overview"];
+        } else if (lower.includes("fee") || lower.includes("collection") || lower.includes("defaulter")) {
+          response = PRINCIPAL_AI_RESPONSES["fee analysis"];
+        } else if (lower.includes("staff") || lower.includes("teacher") || lower.includes("employee")) {
+          response = PRINCIPAL_AI_RESPONSES["staff performance"];
+        } else if (lower.includes("student") || lower.includes("enrollment") || lower.includes("class")) {
+          response = PRINCIPAL_AI_RESPONSES["student analytics"];
+        } else if (lower.includes("compliance") || lower.includes("audit") || lower.includes("inspection")) {
+          response = PRINCIPAL_AI_RESPONSES["compliance"];
+        } else if (lower.includes("budget") || lower.includes("spending") || lower.includes("expense")) {
+          response = PRINCIPAL_AI_RESPONSES["budget"];
+        } else if (lower.includes("revenue") || lower.includes("income") || lower.includes("financial")) {
+          response = PRINCIPAL_AI_RESPONSES["revenue"];
+        } else if (lower.includes("report") || lower.includes("monthly") || lower.includes("summary")) {
+          response = PRINCIPAL_AI_RESPONSES["report"];
+        } else {
+          const key = Object.keys(PRINCIPAL_AI_RESPONSES).find((k) => lower.includes(k));
+          response = key ? PRINCIPAL_AI_RESPONSES[key] : PRINCIPAL_AI_RESPONSES["default"];
+        }
+      } else if (isTeacher) {
+        // Teacher-specific responses
+        if (lower.includes("lesson") || lower.includes("plan") || lower.includes("teach")) {
+          response = TEACHER_AI_RESPONSES["lesson plan"];
+        } else if (lower.includes("performance") || lower.includes("analysis") || lower.includes("class")) {
+          response = TEACHER_AI_RESPONSES["student analysis"];
+        } else if (lower.includes("exam") || lower.includes("test") || lower.includes("preparation")) {
+          response = TEACHER_AI_RESPONSES["exam preparation"];
+        } else if (lower.includes("quiz") || lower.includes("question") || lower.includes("assessment")) {
+          response = TEACHER_AI_RESPONSES["quiz creation"];
+        } else if (lower.includes("feedback") || lower.includes("report card") || lower.includes("comment")) {
+          response = TEACHER_AI_RESPONSES["feedback"];
+        } else if (lower.includes("parent") || lower.includes("meeting") || lower.includes("communicate")) {
+          response = TEACHER_AI_RESPONSES["parent communication"];
+        } else {
+          const key = Object.keys(TEACHER_AI_RESPONSES).find((k) => lower.includes(k));
+          response = key ? TEACHER_AI_RESPONSES[key] : TEACHER_AI_RESPONSES["default"];
         }
       } else if (isParent) {
         // Parent-specific responses
@@ -133,7 +188,7 @@ function AiStudyAssistant() {
           response = PARENT_AI_RESPONSES["focus"];
         } else if (lower.includes("support") || lower.includes("help") || lower.includes("home")) {
           response = PARENT_AI_RESPONSES["support"];
-        } else if (lower.includes("notice") || lower.includes("notice") || lower.includes("school")) {
+        } else if (lower.includes("notice") || lower.includes("school")) {
           response = PARENT_AI_RESPONSES["notices"];
         } else {
           const key = Object.keys(PARENT_AI_RESPONSES).find((k) => lower.includes(k));
