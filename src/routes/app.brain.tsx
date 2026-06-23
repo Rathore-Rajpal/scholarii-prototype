@@ -123,14 +123,14 @@ const studentRecords: RecordItem[] = [
 
 function KpiCard({ label, value, icon: Icon, note }: { label: string; value: string; icon: typeof FileText; note: string }) {
   return (
-    <Card className="p-4">
+    <Card className="p-3 sm:p-4">
       <div className="flex items-center gap-3 mb-3">
-        <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
-          <Icon className="size-5 text-violet-500" />
+        <div className="size-9 sm:size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
+          <Icon className="size-4 sm:size-5 text-violet-500" />
         </div>
         <div>
           <div className="text-[11px] text-muted-foreground">{label}</div>
-          <div className="text-lg font-semibold">{value}</div>
+          <div className="text-base sm:text-lg font-semibold">{value}</div>
         </div>
       </div>
       <p className="text-[11px] text-muted-foreground">{note}</p>
@@ -150,11 +150,11 @@ function SectionCard({
   action?: ReactNode;
 }) {
   return (
-    <Card className="p-5">
+    <Card className="p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">{subtitle}</p>
-          <h3 className="text-sm font-semibold">{title}</h3>
+          <h3 className="text-base sm:text-lg font-semibold">{title}</h3>
         </div>
         {action}
       </div>
@@ -245,7 +245,7 @@ function SchoolBrainPage() {
         }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8">
         <KpiCard label="Knowledge Sources" value="248 Sources" icon={FileText} note="Connected to Scholarii AI" />
         <KpiCard label="Documents Connected" value="1,284 Documents" icon={BookOpen} note="School and compliance files" />
         <KpiCard label="Staff Profiles" value="68 Profiles" icon={Users} note="Staff knowledge records" />
@@ -254,14 +254,14 @@ function SchoolBrainPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-4 mb-8">
-          <TabsList className="h-11">
-            <TabsTrigger value="school" className="text-sm gap-2 px-5"><Database className="size-4" /> School Knowledge</TabsTrigger>
-            <TabsTrigger value="staff" className="text-sm gap-2 px-5"><Users className="size-4" /> Staff Knowledge</TabsTrigger>
-            <TabsTrigger value="student" className="text-sm gap-2 px-5"><GraduationCap className="size-4" /> Student Knowledge</TabsTrigger>
-            <TabsTrigger value="updates" className="text-sm gap-2 px-5"><Activity className="size-4" /> Recent Updates</TabsTrigger>
-            <TabsTrigger value="sources" className="text-sm gap-2 px-5"><BookOpen className="size-4" /> AI Knowledge Sources</TabsTrigger>
-            <TabsTrigger value="access" className="text-sm gap-2 px-5"><Settings className="size-4" /> AI Access Control</TabsTrigger>
+        <Card className="p-3 sm:p-4 mb-8">
+          <TabsList className="h-11 overflow-x-auto scrollbar-hide">
+            <TabsTrigger value="school" className="text-sm gap-2 px-5 shrink-0"><Database className="size-4" /> School Knowledge</TabsTrigger>
+            <TabsTrigger value="staff" className="text-sm gap-2 px-5 shrink-0"><Users className="size-4" /> Staff Knowledge</TabsTrigger>
+            <TabsTrigger value="student" className="text-sm gap-2 px-5 shrink-0"><GraduationCap className="size-4" /> Student Knowledge</TabsTrigger>
+            <TabsTrigger value="updates" className="text-sm gap-2 px-5 shrink-0"><Activity className="size-4" /> Recent Updates</TabsTrigger>
+            <TabsTrigger value="sources" className="text-sm gap-2 px-5 shrink-0"><BookOpen className="size-4" /> AI Knowledge Sources</TabsTrigger>
+            <TabsTrigger value="access" className="text-sm gap-2 px-5 shrink-0"><Settings className="size-4" /> AI Access Control</TabsTrigger>
           </TabsList>
         </Card>
 
@@ -272,9 +272,9 @@ function SchoolBrainPage() {
               subtitle="School Brain Overview"
               action={<Badge variant="outline">Editable</Badge>}
             >
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                 {schoolKnowledge.map((field) => (
-                  <div key={field.key} className="rounded-xl border border-border/60 p-4">
+                  <div key={field.key} className="rounded-xl border border-border/60 p-3 sm:p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="text-xs font-semibold">{field.label}</div>
@@ -303,8 +303,8 @@ function SchoolBrainPage() {
                 </Button>
               }
             >
-              <div className="rounded-xl border border-border/60 bg-slate-50/60 p-5 mb-4">
-                <div className="text-lg font-semibold">68 Staff Profiles Available</div>
+              <div className="rounded-xl border border-border/60 bg-slate-50/60 p-4 sm:p-5 mb-4">
+                <div className="text-base sm:text-lg font-semibold">68 Staff Profiles Available</div>
                 <div className="mt-3 grid gap-3 sm:grid-cols-3">
                   {[
                     { label: "Teachers", value: "48", hint: "Subject allocation and roles" },
@@ -319,9 +319,9 @@ function SchoolBrainPage() {
                   ))}
                 </div>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                 {staffRecords.map((item) => (
-                  <div key={item.label} className="rounded-xl border border-border/60 p-4">
+                  <div key={item.label} className="rounded-xl border border-border/60 p-3 sm:p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-xs font-semibold">{item.label}</div>
@@ -347,8 +347,8 @@ function SchoolBrainPage() {
                 </Button>
               }
             >
-              <div className="rounded-xl border border-border/60 bg-slate-50/60 p-5 mb-4">
-                <div className="text-lg font-semibold">1,320 Student Records Available</div>
+              <div className="rounded-xl border border-border/60 bg-slate-50/60 p-4 sm:p-5 mb-4">
+                <div className="text-base sm:text-lg font-semibold">1,320 Student Records Available</div>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   {[
                     { label: "Students", value: "1,320", hint: "Class and section details" },
@@ -364,9 +364,9 @@ function SchoolBrainPage() {
                   ))}
                 </div>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                 {studentRecords.map((item) => (
-                  <div key={item.label} className="rounded-xl border border-border/60 p-4">
+                  <div key={item.label} className="rounded-xl border border-border/60 p-3 sm:p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-xs font-semibold">{item.label}</div>
@@ -390,7 +390,7 @@ function SchoolBrainPage() {
             >
               <div className="space-y-3">
                 {updates.map((item, index) => (
-                  <div key={`${item.title}-${index}`} className="rounded-xl border border-border/60 p-4">
+                  <div key={`${item.title}-${index}`} className="rounded-xl border border-border/60 p-3 sm:p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-xs font-semibold">{item.title}</div>
@@ -403,7 +403,7 @@ function SchoolBrainPage() {
               </div>
             </SectionCard>
             <div className="mt-4">
-              <Card className="p-5 bg-slate-900 text-white border-border/50">
+              <Card className="p-4 sm:p-5 bg-slate-900 text-white border-border/50">
                 <div className="flex items-start gap-3">
                   <div className="size-10 rounded-xl bg-white/10 grid place-items-center shrink-0">
                     <School className="size-5" />
@@ -426,11 +426,11 @@ function SchoolBrainPage() {
               subtitle="What Scholarii AI learns from"
               action={<Badge variant="outline">Visibility</Badge>}
             >
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {knowledgeSources.map((source) => {
                   const Icon = source.icon;
                   return (
-                    <div key={source.label} className="flex items-center justify-between gap-3 rounded-xl border border-border/60 p-4">
+                    <div key={source.label} className="flex items-center justify-between gap-3 rounded-xl border border-border/60 p-3 sm:p-4">
                       <div className="flex items-center gap-3">
                         <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
                           <Icon className="size-5 text-violet-500" />
@@ -459,12 +459,12 @@ function SchoolBrainPage() {
               <div className="space-y-3">
                 {accessControls.map((item) => (
                   <div key={item.key} className="rounded-xl border border-border/60 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
+                    <div className="flex items-center justify-between gap-3 sm:gap-4">
+                      <div className="min-w-0 flex-1">
                         <div className="text-xs font-semibold">{item.label}</div>
-                        <p className="mt-1 text-[11px] text-muted-foreground">{item.description}</p>
+                        <p className="mt-1 text-[11px] text-muted-foreground leading-5">{item.description}</p>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         <Badge variant="outline" className={cn("text-[10px]", item.enabled && "border-emerald-200 bg-emerald-500/10 text-emerald-600")}>
                           {item.enabled ? "Enabled" : "Disabled"}
                         </Badge>
@@ -486,7 +486,7 @@ function SchoolBrainPage() {
         )}
       </Tabs>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-3 mt-8">
         <Button type="button" variant="outline" className="h-10 justify-start gap-2 text-xs" onClick={() => scrollToSection(schoolSectionRef)}>
           <Edit3 className="size-3.5" />
           Update School Information
@@ -513,7 +513,7 @@ function SchoolBrainPage() {
           if (!open) setEditingField(null);
         }}
       >
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit School Knowledge</DialogTitle>
             <DialogDescription>Update the information Scholarii AI should always know about the school.</DialogDescription>
@@ -546,7 +546,7 @@ function SchoolBrainPage() {
           </SheetHeader>
           <div className="mt-6 space-y-3">
             {staffRecords.map((item) => (
-              <div key={item.label} className="rounded-xl border border-border/60 p-4">
+              <div key={item.label} className="rounded-xl border border-border/60 p-3 sm:p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-xs font-semibold">{item.label}</div>
@@ -568,7 +568,7 @@ function SchoolBrainPage() {
           </SheetHeader>
           <div className="mt-6 space-y-3">
             {studentRecords.map((item) => (
-              <div key={item.label} className="rounded-xl border border-border/60 p-4">
+              <div key={item.label} className="rounded-xl border border-border/60 p-3 sm:p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-xs font-semibold">{item.label}</div>

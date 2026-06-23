@@ -21,7 +21,7 @@ function SettingsPage() {
     <div>
       <PageHeader title="Settings" subtitle="Configure your school and personal preferences." />
       <Tabs defaultValue="general" className="grid lg:grid-cols-[220px_1fr] gap-6">
-        <TabsList className="flex lg:flex-col h-auto bg-transparent p-0 gap-1 justify-start">
+        <TabsList className="flex lg:flex-col h-auto bg-transparent p-0 gap-1 justify-start overflow-x-auto scrollbar-hide lg:overflow-x-visible">
           {[
             { v: "general", l: "General", i: Building2 },
             { v: "appearance", l: "Appearance", i: Sun },
@@ -34,18 +34,18 @@ function SettingsPage() {
         </TabsList>
 
         <div>
-          <TabsContent value="general"><Card className="p-6 space-y-5">
-            <div><h3 className="font-semibold">School information</h3><p className="text-xs text-muted-foreground">Public details shown across the app.</p></div>
+          <TabsContent value="general"><Card className="p-4 sm:p-6 space-y-5">
+            <div><h3 className="font-semibold text-base sm:text-lg">School information</h3><p className="text-xs text-muted-foreground">Public details shown across the app.</p></div>
             <Separator />
             <Row label="School name"><Input defaultValue="Scholarii Academy" /></Row>
             <Row label="Academic year"><Input defaultValue="2025–2026" /></Row>
             <Row label="Principal"><Input defaultValue="Dr. Rajesh Kumar" /></Row>
             <Row label="Contact email"><Input type="email" defaultValue="office@scholarii.school" /></Row>
-            <div className="flex justify-end"><Button className="bg-brand-gradient text-white border-0" onClick={() => toast.success("Settings saved")}>Save changes</Button></div>
+            <div className="flex sm:justify-end"><Button className="bg-brand-gradient text-white border-0 w-full sm:w-auto" onClick={() => toast.success("Settings saved")}>Save changes</Button></div>
           </Card></TabsContent>
 
-          <TabsContent value="appearance"><Card className="p-6 space-y-5">
-            <div><h3 className="font-semibold">Appearance</h3><p className="text-xs text-muted-foreground">Switch theme and density.</p></div>
+          <TabsContent value="appearance"><Card className="p-4 sm:p-6 space-y-5">
+            <div><h3 className="font-semibold text-base sm:text-lg">Appearance</h3><p className="text-xs text-muted-foreground">Switch theme and density.</p></div>
             <Separator />
             <div className="flex gap-3">
               <button onClick={() => setTheme("light")} className={`flex-1 p-4 rounded-xl border-2 ${theme === "light" ? "border-primary" : "border-border"}`}><Sun className="size-5 mb-2" /><div className="font-medium text-sm">Light</div></button>
@@ -56,8 +56,8 @@ function SettingsPage() {
             </Row>
           </Card></TabsContent>
 
-          <TabsContent value="notifications"><Card className="p-6 space-y-4">
-            <div><h3 className="font-semibold">Notifications</h3><p className="text-xs text-muted-foreground">Channels and event preferences.</p></div>
+          <TabsContent value="notifications"><Card className="p-4 sm:p-6 space-y-4">
+            <div><h3 className="font-semibold text-base sm:text-lg">Notifications</h3><p className="text-xs text-muted-foreground">Channels and event preferences.</p></div>
             <Separator />
             {[
               { l: "Email notifications", d: "Daily summaries and alerts" },
@@ -65,25 +65,25 @@ function SettingsPage() {
               { l: "Push notifications", d: "Real-time browser & app" },
               { l: "Weekly digest", d: "Sunday 8 AM recap" },
             ].map((s) => (
-              <div key={s.l} className="flex items-center justify-between">
+              <div key={s.l} className="flex items-center justify-between py-3 sm:py-4">
                 <div><div className="font-medium text-sm">{s.l}</div><div className="text-xs text-muted-foreground">{s.d}</div></div>
                 <Switch defaultChecked />
               </div>
             ))}
           </Card></TabsContent>
 
-          <TabsContent value="security"><Card className="p-6 space-y-5">
-            <div><h3 className="font-semibold">Security</h3><p className="text-xs text-muted-foreground">Account protection.</p></div>
+          <TabsContent value="security"><Card className="p-4 sm:p-6 space-y-5">
+            <div><h3 className="font-semibold text-base sm:text-lg">Security</h3><p className="text-xs text-muted-foreground">Account protection.</p></div>
             <Separator />
             <Row label="Current password"><Input type="password" placeholder="••••••••" /></Row>
             <Row label="New password"><Input type="password" placeholder="At least 8 characters" /></Row>
             <Row label="Confirm new password"><Input type="password" /></Row>
-            <div className="flex items-center justify-between"><div><div className="font-medium text-sm">Two-factor authentication</div><div className="text-xs text-muted-foreground">Add an extra layer at sign-in</div></div><Switch /></div>
-            <div className="flex justify-end"><Button className="bg-brand-gradient text-white border-0">Update password</Button></div>
+            <div className="flex items-center justify-between py-3 sm:py-4"><div><div className="font-medium text-sm">Two-factor authentication</div><div className="text-xs text-muted-foreground">Add an extra layer at sign-in</div></div><Switch /></div>
+            <div className="flex sm:justify-end"><Button className="bg-brand-gradient text-white border-0 w-full sm:w-auto">Update password</Button></div>
           </Card></TabsContent>
 
-          <TabsContent value="locale"><Card className="p-6 space-y-5">
-            <div><h3 className="font-semibold">Locale</h3><p className="text-xs text-muted-foreground">Language, region and date format.</p></div>
+          <TabsContent value="locale"><Card className="p-4 sm:p-6 space-y-5">
+            <div><h3 className="font-semibold text-base sm:text-lg">Locale</h3><p className="text-xs text-muted-foreground">Language, region and date format.</p></div>
             <Separator />
             <Row label="Language"><Select defaultValue="en"><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="hi">Hindi</SelectItem></SelectContent></Select></Row>
             <Row label="Timezone"><Select defaultValue="ist"><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="ist">Asia/Kolkata (IST)</SelectItem><SelectItem value="utc">UTC</SelectItem></SelectContent></Select></Row>

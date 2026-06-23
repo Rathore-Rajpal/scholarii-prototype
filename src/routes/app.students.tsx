@@ -201,15 +201,15 @@ function StudentsPage() {
 
       <div className="space-y-6">
         {/* KPI Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-3">
-          <Card className="p-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <Card className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Total Students</p>
               <Users className="size-4 text-muted-foreground" />
             </div>
             <div className="text-2xl font-bold mt-2">{totalStudents.toLocaleString()} Students</div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Present Today</p>
               <UserCheck className="size-4 text-emerald-500" />
@@ -217,28 +217,28 @@ function StudentsPage() {
             <div className="text-2xl font-bold mt-2">{presentToday.toLocaleString()} Present</div>
             <p className="text-xs text-muted-foreground mt-1">{((presentToday / totalStudents) * 100).toFixed(1)}%</p>
           </Card>
-          <Card className="p-4 border-2 border-amber-200/70 dark:border-amber-900/40">
+          <Card className="p-3 sm:p-4 border-2 border-amber-200/70 dark:border-amber-900/40">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Below 75% Attendance</p>
               <AlertTriangle className="size-4 text-amber-500" />
             </div>
             <div className="text-2xl font-bold mt-2">{belowAttendance} Students</div>
           </Card>
-          <Card className="p-4 border-2 border-red-200/70 dark:border-red-900/40">
+          <Card className="p-3 sm:p-4 border-2 border-red-200/70 dark:border-red-900/40">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">At-Risk Students</p>
               <AlertCircle className="size-4 text-red-500" />
             </div>
             <div className="text-2xl font-bold mt-2">{atRisk} Students</div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">New Admissions (Month)</p>
               <UserPlus className="size-4 text-muted-foreground" />
             </div>
             <div className="text-2xl font-bold mt-2">{newAdmissions} Students</div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Transfer Requests</p>
               <UserX className="size-4 text-muted-foreground" />
@@ -251,14 +251,14 @@ function StudentsPage() {
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold">Student Directory</h2>
+              <h2 className="text-base sm:text-lg font-semibold">Student Directory</h2>
               <p className="text-sm text-muted-foreground">Search and filter student records instantly.</p>
             </div>
           </div>
 
-          <Card className="p-4">
-            <div className="flex flex-wrap gap-3 items-center">
-              <div className="relative flex-1 min-w-64">
+          <Card className="p-3 sm:p-4">
+            <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+              <div className="relative flex-1 min-w-0 sm:min-w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   className="pl-9"
@@ -374,7 +374,8 @@ function StudentsPage() {
 
           <Card className="overflow-hidden">
             {viewMode === "table" ? (
-              <Table>
+              <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                <Table className="min-w-[800px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Student</TableHead>
@@ -431,11 +432,12 @@ function StudentsPage() {
                     </TableRow>
                   )}
                 </TableBody>
-              </Table>
+                </Table>
+              </div>
             ) : (
-              <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                 {rows.map((student) => (
-                  <Card key={student.id} className="p-4 cursor-pointer hover:shadow-md transition" onClick={() => setSelectedStudentId(student.id)}>
+                  <Card key={student.id} className="p-3 sm:p-4 cursor-pointer hover:shadow-md transition" onClick={() => setSelectedStudentId(student.id)}>
                     <div className="flex items-center gap-3">
                       <Avatar className="size-10">
                         <AvatarFallback style={{ backgroundColor: student.avatarColor, color: "white" }}>
@@ -443,7 +445,7 @@ function StudentsPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-semibold">{student.name}</div>
+                        <div className="font-semibold text-sm sm:text-base">{student.name}</div>
                         <div className="text-xs text-muted-foreground">Grade {student.grade}-{student.section} • {student.roll}</div>
                       </div>
                       <Badge className={`ml-auto ${riskStyles[student.risk]}`}>{student.risk}</Badge>
@@ -491,8 +493,8 @@ function StudentsPage() {
       <Sheet open={!!selectedStudentId} onOpenChange={(open) => !open && setSelectedStudentId(null)}>
         <SheetContent
           side="right"
-          className="min-w-[420px] max-w-[980px] overflow-hidden"
-          style={{ width: drawerWidth }}
+          className="w-full sm:w-[500px] sm:min-w-[420px] sm:max-w-[980px] max-w-[95vw] overflow-hidden"
+          style={{ width: typeof window !== 'undefined' && window.innerWidth < 640 ? undefined : drawerWidth }}
         >
           <div
             className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize bg-transparent hover:bg-muted/60"
@@ -505,7 +507,7 @@ function StudentsPage() {
               </SheetHeader>
               <ScrollArea className="h-full pr-3">
                 <div className="space-y-5">
-                  <Card className="p-4">
+                  <Card className="p-3 sm:p-4">
                     <div className="flex items-center gap-4">
                       <Avatar className="size-12">
                         <AvatarFallback style={{ backgroundColor: selectedStudent.avatarColor, color: "white" }}>
@@ -513,7 +515,7 @@ function StudentsPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <div className="text-lg font-semibold">{selectedStudent.name}</div>
+                        <div className="text-base sm:text-lg font-semibold">{selectedStudent.name}</div>
                         <div className="text-xs text-muted-foreground">Admission No: {selectedStudent.roll}</div>
                         <div className="text-xs text-muted-foreground">Grade {selectedStudent.grade}-{selectedStudent.section}</div>
                       </div>
@@ -524,7 +526,7 @@ function StudentsPage() {
                     </div>
                   </Card>
 
-                  <Card className="p-4">
+                  <Card className="p-3 sm:p-4">
                     <h4 className="text-sm font-semibold mb-2">AI Student Insights</h4>
                     <div className="space-y-2 text-xs text-muted-foreground">
                       {getInsights(selectedStudent).map((insight) => (
@@ -537,7 +539,8 @@ function StudentsPage() {
                   </Card>
 
                   <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="flex flex-wrap gap-2 h-auto">
+                    <div className="overflow-x-auto scrollbar-hide">
+                      <TabsList className="flex gap-2 h-auto min-w-max">
                       <TabsTrigger value="overview">Overview</TabsTrigger>
                       <TabsTrigger value="attendance">Attendance</TabsTrigger>
                       <TabsTrigger value="academics">Academics</TabsTrigger>
@@ -545,9 +548,10 @@ function StudentsPage() {
                       <TabsTrigger value="documents">Documents</TabsTrigger>
                       <TabsTrigger value="communication">Communication</TabsTrigger>
                     </TabsList>
+                    </div>
 
                     <TabsContent value="overview">
-                      <Card className="p-4 grid grid-cols-2 gap-4 text-sm">
+                      <Card className="p-3 sm:p-4 grid grid-cols-2 gap-4 text-sm">
                         <ProfileItem label="Age" value={`${14 + (Number(selectedStudent.roll) % 4)} years`} />
                         <ProfileItem label="DOB" value={`200${Number(selectedStudent.roll) % 9}-0${(Number(selectedStudent.roll) % 9) + 1}-15`} />
                         <ProfileItem label="Gender" value={selectedStudent.gender === "M" ? "Male" : "Female"} />
@@ -560,7 +564,7 @@ function StudentsPage() {
                     </TabsContent>
 
                     <TabsContent value="attendance">
-                      <Card className="p-4 space-y-4">
+                      <Card className="p-3 sm:p-4 space-y-4">
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <ProfileItem label="Current Attendance" value={`${selectedStudent.attendance}%`} />
                           <ProfileItem label="Days Present" value={`${Math.round(180 * selectedStudent.attendance / 100)}`} />
@@ -577,7 +581,7 @@ function StudentsPage() {
                     </TabsContent>
 
                     <TabsContent value="academics">
-                      <Card className="p-4 space-y-4">
+                      <Card className="p-3 sm:p-4 space-y-4">
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <ProfileItem label="Overall Score" value={`${selectedStudent.academicScore || "-"}%`} />
                           <ProfileItem label="Class Rank" value={`${(Number(selectedStudent.roll) % 25) + 1}`} />
@@ -596,7 +600,7 @@ function StudentsPage() {
                     </TabsContent>
 
                     <TabsContent value="fees">
-                      <Card className="p-4 space-y-4 text-sm">
+                      <Card className="p-3 sm:p-4 space-y-4 text-sm">
                         <ProfileItem label="Fee Status" value={selectedStudent.feeLabel} />
                         <ProfileItem label="Total Paid" value={selectedStudent.feeStatusDisplay === "Paid" ? "INR 48,000" : "INR 32,000"} />
                         <ProfileItem label="Pending Amount" value={selectedStudent.feeStatusDisplay === "Overdue" ? "INR 16,000" : selectedStudent.feeStatusDisplay === "Pending" ? "INR 8,000" : "INR 0"} />
@@ -606,7 +610,7 @@ function StudentsPage() {
                     </TabsContent>
 
                     <TabsContent value="documents">
-                      <Card className="p-4 space-y-3">
+                      <Card className="p-3 sm:p-4 space-y-3">
                         {[
                           "Birth Certificate",
                           "Aadhaar",
@@ -624,7 +628,7 @@ function StudentsPage() {
                     </TabsContent>
 
                     <TabsContent value="communication">
-                      <Card className="p-4 space-y-3 text-sm">
+                      <Card className="p-3 sm:p-4 space-y-3 text-sm">
                         <div>
                           <p className="font-medium">Recent Notices</p>
                           <p className="text-xs text-muted-foreground">2 notices sent in the last 30 days.</p>

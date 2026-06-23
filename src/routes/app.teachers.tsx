@@ -309,39 +309,39 @@ function TeachersPage() {
       />
 
       <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-          <Card className="p-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          <Card className="p-3 sm:p-4">
             <p className="text-xs text-muted-foreground">Total Staff</p>
             <div className="text-2xl font-bold mt-2">{totalStaff} Staff Members</div>
             <p className="text-xs text-muted-foreground mt-1">{totalTeachers} Teachers â€¢ 10 Admin</p>
           </Card>
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <p className="text-xs text-muted-foreground">Present Today</p>
             <div className="text-2xl font-bold mt-2">{presentToday} Present</div>
             <p className="text-xs text-muted-foreground mt-1">{Math.round((presentToday / totalTeachers) * 100)}%</p>
           </Card>
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <p className="text-xs text-muted-foreground">On Leave</p>
             <div className="text-2xl font-bold mt-2">{onLeave} Teachers</div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <p className="text-xs text-muted-foreground">Half Day Leave</p>
             <div className="text-2xl font-bold mt-2">{halfDayLeave} Staff</div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <p className="text-xs text-muted-foreground">Currently Teaching</p>
             <div className="text-2xl font-bold mt-2">{currentlyTeaching} Active</div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <p className="text-xs text-muted-foreground">Currently Free</p>
             <div className="text-2xl font-bold mt-2">{currentlyFree} Available</div>
           </Card>
-          <Card className="p-4 border-2 border-amber-200/70 dark:border-amber-900/40">
+          <Card className="p-3 sm:p-4 border-2 border-amber-200/70 dark:border-amber-900/40">
             <p className="text-xs text-muted-foreground">Overloaded Teachers</p>
             <div className="text-2xl font-bold mt-2">{overloaded} Teachers</div>
             <Badge variant="outline" className="mt-2">Warning</Badge>
           </Card>
-          <Card className="p-4 border-2 border-red-200/70 dark:border-red-900/40">
+          <Card className="p-3 sm:p-4 border-2 border-red-200/70 dark:border-red-900/40">
             <p className="text-xs text-muted-foreground">Pending Substitutions</p>
             <div className="text-2xl font-bold mt-2">{pendingSubstitutions} Unassigned</div>
             <Badge variant="destructive" className="mt-2">Critical</Badge>
@@ -350,7 +350,7 @@ function TeachersPage() {
 
         <Tabs defaultValue="workforce" className="space-y-4">
           <Card className="p-3 border-border/60 bg-white/70 backdrop-blur-xl shadow-sm">
-            <TabsList className="flex h-auto flex-wrap gap-2 bg-transparent p-0">
+            <TabsList className="flex h-auto overflow-x-auto scrollbar-hide gap-2 bg-transparent p-0">
               <TabsTrigger
                 value="workforce"
                 className="rounded-full border border-border/70 bg-white/50 px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 backdrop-blur-md data-[state=active]:border-emerald-500/70 data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-50/90 data-[state=active]:to-white/80 data-[state=active]:text-foreground data-[state=active]:shadow-[0_10px_30px_rgba(16,185,129,0.18)] data-[state=active]:ring-1 data-[state=active]:ring-emerald-200/60 hover:border-emerald-300 hover:bg-white/80 hover:text-foreground"
@@ -374,10 +374,10 @@ function TeachersPage() {
 
           <TabsContent value="workforce" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="p-5 lg:col-span-2">
+          <Card className="p-4 sm:p-5 lg:col-span-2">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-lg font-semibold">Workforce Intelligence</h3>
+                <h3 className="text-base sm:text-lg font-semibold">Workforce Intelligence</h3>
                 <p className="text-sm text-muted-foreground">Immediate staffing issues requiring attention.</p>
               </div>
               <Badge variant="secondary">Live alerts</Badge>
@@ -415,7 +415,7 @@ function TeachersPage() {
               </Card>
             </div>
           </Card>
-          <Card className="p-5">
+          <Card className="p-4 sm:p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Live Staff Mix</p>
@@ -445,7 +445,7 @@ function TeachersPage() {
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold">Staff Directory</h3>
+              <h3 className="text-base sm:text-lg font-semibold">Staff Directory</h3>
               <p className="text-sm text-muted-foreground">Search, filter, and open staff profiles.</p>
             </div>
             <div className="flex items-center gap-2">
@@ -467,8 +467,8 @@ function TeachersPage() {
             </div>
           </div>
 
-          <Card className="p-4">
-            <div className="flex flex-wrap gap-3 items-center">
+          <Card className="p-3 sm:p-4">
+            <div className="flex flex-wrap gap-2 items-center">
               <div className="relative flex-1 min-w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
@@ -550,7 +550,8 @@ function TeachersPage() {
 
           <Card className="overflow-hidden">
             {viewMode === "table" ? (
-              <Table>
+              <div className="overflow-x-auto">
+              <Table className="min-w-[800px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Teacher</TableHead>
@@ -618,6 +619,7 @@ function TeachersPage() {
                   )}
                 </TableBody>
               </Table>
+              </div>
             ) : (
               <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {rows.map((teacher) => (
@@ -674,9 +676,9 @@ function TeachersPage() {
 
         <TabsContent value="department" className="space-y-4">
           <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-4 items-start">
-            <Card className="p-5">
-              <h3 className="text-lg font-semibold mb-4">Department Overview</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            <Card className="p-4 sm:p-5">
+              <h3 className="text-base sm:text-lg font-semibold mb-4">Department Overview</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {departmentOverview.map((dept) => (
                   <Card key={dept.name} className="p-4">
                     <div className="flex items-center justify-between">
@@ -695,7 +697,7 @@ function TeachersPage() {
             </Card>
 
             <div className="space-y-4">
-              <Card className="p-5">
+              <Card className="p-4 sm:p-5">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-muted-foreground">Department Mix</p>
@@ -730,7 +732,7 @@ function TeachersPage() {
       </div>
 
       <Sheet open={!!selectedTeacherId} onOpenChange={(open) => !open && setSelectedTeacherId(null)}>
-        <SheetContent side="right" className="w-[50vw] min-w-[420px] max-w-[880px] overflow-hidden">
+        <SheetContent side="right" className="w-full sm:w-[50vw] min-w-0 sm:min-w-[420px] max-w-full sm:max-w-[880px] overflow-hidden">
           {selectedTeacher && (
             <div className="h-full flex flex-col">
               <SheetHeader>
@@ -873,7 +875,7 @@ function TeachersPage() {
       </Sheet>
 
       <Sheet open={leavePanelOpen} onOpenChange={setLeavePanelOpen}>
-        <SheetContent side="right" className="w-[420px] sm:w-[520px]">
+        <SheetContent side="right" className="w-full sm:w-[420px] md:w-[520px]">
           <SheetHeader>
             <SheetTitle>Leave Requests</SheetTitle>
           </SheetHeader>

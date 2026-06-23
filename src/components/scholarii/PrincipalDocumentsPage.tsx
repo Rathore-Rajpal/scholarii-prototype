@@ -96,7 +96,7 @@ export default function PrincipalDocumentsPage() {
         title="Documents"
         subtitle="School Document Management Center — organize, search, and manage all school documents."
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
             <Select defaultValue="2025-26">
               <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -125,10 +125,10 @@ export default function PrincipalDocumentsPage() {
                 placeholder="Search documents..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 w-44 pl-8 text-xs"
+                className="h-8 w-full sm:w-44 pl-8 text-xs"
               />
             </div>
-            <Button size="sm" className="h-8 text-xs gap-1.5 bg-violet-600 hover:bg-violet-700">
+              <Button size="sm" className="h-8 text-xs gap-1.5 bg-violet-600 hover:bg-violet-700 w-full sm:w-auto">
               <Upload className="size-3" /> Upload
             </Button>
           </div>
@@ -136,7 +136,7 @@ export default function PrincipalDocumentsPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         <KpiCard icon={FolderOpen} label="Total Documents" value={String(totalDocs)} tone="violet" />
         <KpiCard icon={FileText} label="Added This Month" value={String(thisMonthDocs)} tone="sky" />
         <KpiCard icon={Clock} label="Pending Approvals" value={String(pendingApprovals)} tone="amber" />
@@ -148,7 +148,7 @@ export default function PrincipalDocumentsPage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <Card className="p-4 mb-8">
-          <TabsList className="h-11">
+          <TabsList className="h-11 overflow-x-auto scrollbar-hide">
             <TabsTrigger value="school" className="text-sm gap-2 px-5"><BookOpen className="size-4" /> School Docs</TabsTrigger>
             <TabsTrigger value="student" className="text-sm gap-2 px-5"><Users className="size-4" /> Student Docs</TabsTrigger>
             <TabsTrigger value="staff" className="text-sm gap-2 px-5"><ShieldCheck className="size-4" /> Staff Docs</TabsTrigger>
@@ -162,7 +162,7 @@ export default function PrincipalDocumentsPage() {
         <TabsContent value="school">
           <Card className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold">School Documents</h3>
+              <h3 className="text-base sm:text-lg font-semibold">School Documents</h3>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -241,7 +241,7 @@ export default function PrincipalDocumentsPage() {
               </Select>
             </div>
             <Card className="p-5">
-              <h3 className="text-sm font-semibold mb-4">Student Documents</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-4">Student Documents</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
@@ -309,7 +309,7 @@ export default function PrincipalDocumentsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <h3 className="text-sm font-semibold mb-4">Staff Documents</h3>
+            <h3 className="text-base sm:text-lg font-semibold mb-4">Staff Documents</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
@@ -358,7 +358,7 @@ export default function PrincipalDocumentsPage() {
         {/* ═══ COMPLIANCE DOCUMENTS ═══ */}
         <TabsContent value="compliance">
           <Card className="p-5">
-            <h3 className="text-sm font-semibold mb-4">Compliance Documents</h3>
+            <h3 className="text-base sm:text-lg font-semibold mb-4">Compliance Documents</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
@@ -407,7 +407,7 @@ export default function PrincipalDocumentsPage() {
         {/* ═══ SHARED DOCUMENTS ═══ */}
         <TabsContent value="shared">
           <Card className="p-5">
-            <h3 className="text-sm font-semibold mb-4">Shared Documents</h3>
+            <h3 className="text-base sm:text-lg font-semibold mb-4">Shared Documents</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
@@ -449,8 +449,8 @@ export default function PrincipalDocumentsPage() {
 
         {/* ═══ AI INSIGHTS ═══ */}
         <TabsContent value="ai">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="p-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card className="p-4 sm:p-6">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
                 <Sparkles className="size-3.5 text-violet-500" /> AI Document Insights
               </h4>
@@ -469,7 +469,7 @@ export default function PrincipalDocumentsPage() {
               </div>
             </Card>
 
-            <Card className="p-5">
+            <Card className="p-4 sm:p-6">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Recommended Actions</h4>
               <div className="space-y-2">
                 {DOC_ACTIONS.map((action) => (

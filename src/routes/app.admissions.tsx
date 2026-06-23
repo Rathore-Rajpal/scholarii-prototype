@@ -96,41 +96,41 @@ function AdmissionsPage() {
         title="Admissions & Enrollment"
         subtitle="Admissions centre — pipeline, capacity, and quick approvals."
         action={
-          <div className="flex items-center gap-2">
-            <Button size="sm" className="bg-brand-gradient text-white border-0"><FilePlus className="mr-2" />New Admission</Button>
-            <Button size="sm" variant="outline"><FileText className="mr-2" />Import Applications</Button>
-            <Button size="sm" variant="outline"><Download className="mr-2" />Export Report</Button>
-          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+             <Button size="sm" className="bg-brand-gradient text-white border-0 w-full sm:w-auto"><FilePlus className="mr-2" />New Admission</Button>
+             <Button size="sm" variant="outline" className="w-full sm:w-auto"><FileText className="mr-2" />Import Applications</Button>
+             <Button size="sm" variant="outline" className="w-full sm:w-auto"><Download className="mr-2" />Export Report</Button>
+           </div>
         }
       />
 
       <div className="space-y-6">
         {/* KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
-          <Card className="p-4">
-            <p className="text-xs text-muted-foreground">Total Inquiries</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <Card className="p-3 sm:p-4">
+             <p className="text-xs text-muted-foreground">Total Inquiries</p>
             <div className="text-2xl font-bold mt-2">{totals.inquiries.toLocaleString()}</div>
             <div className="text-xs text-muted-foreground mt-1">+12% this month</div>
           </Card>
-          <Card className="p-4">
-            <p className="text-xs text-muted-foreground">Applications Submitted</p>
+           <Card className="p-3 sm:p-4">
+             <p className="text-xs text-muted-foreground">Applications Submitted</p>
             <div className="text-2xl font-bold mt-2">{totals.submitted}</div>
           </Card>
-          <Card className="p-4">
-            <p className="text-xs text-muted-foreground">Admissions Confirmed</p>
+           <Card className="p-3 sm:p-4">
+             <p className="text-xs text-muted-foreground">Admissions Confirmed</p>
             <div className="text-2xl font-bold mt-2">{totals.confirmed}</div>
           </Card>
-          <Card className="p-4">
-            <p className="text-xs text-muted-foreground">Conversion Rate</p>
+           <Card className="p-3 sm:p-4">
+             <p className="text-xs text-muted-foreground">Conversion Rate</p>
             <div className="text-2xl font-bold mt-2">{totals.conversion}%</div>
           </Card>
-          <Card className="p-4">
-            <p className="text-xs text-muted-foreground">Pending Approvals</p>
+           <Card className="p-3 sm:p-4">
+             <p className="text-xs text-muted-foreground">Pending Approvals</p>
             <div className="text-2xl font-bold mt-2">{totals.pending}</div>
             <Badge variant="destructive" className="mt-2">Warning</Badge>
           </Card>
-          <Card className="p-4">
-            <p className="text-xs text-muted-foreground">Seats Remaining</p>
+           <Card className="p-3 sm:p-4">
+             <p className="text-xs text-muted-foreground">Seats Remaining</p>
             <div className="text-2xl font-bold mt-2">{totals.seats}</div>
           </Card>
         </div>
@@ -140,33 +140,34 @@ function AdmissionsPage() {
           <Card className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="text-lg font-semibold">Recent Applications</h3>
+                   <h3 className="text-base sm:text-lg font-semibold">Recent Applications</h3>
                   <p className="text-sm text-muted-foreground">Latest 10 applications — click to view details.</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input className="pl-9" placeholder="Search student, parent, application..." value={query} onChange={(e) => setQuery(e.target.value)} />
-                  </div>
-                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
-                    <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All statuses</SelectItem>
-                      {STATUSES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                  <Select value={classFilter} onValueChange={(v) => setClassFilter(v)}>
-                    <SelectTrigger className="w-40"><SelectValue placeholder="Class" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All classes</SelectItem>
-                      {Array.from(new Set(applications.map((a) => a.classApplied))).map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                  <Button size="sm" variant="outline" onClick={clearFilters}>Clear</Button>
-                </div>
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                   <div className="relative">
+                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                     <Input className="pl-9" placeholder="Search student, parent, application..." value={query} onChange={(e) => setQuery(e.target.value)} />
+                   </div>
+                   <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
+                     <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="all">All statuses</SelectItem>
+                       {STATUSES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+                     </SelectContent>
+                   </Select>
+                   <Select value={classFilter} onValueChange={(v) => setClassFilter(v)}>
+                     <SelectTrigger className="w-40"><SelectValue placeholder="Class" /></SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="all">All classes</SelectItem>
+                       {Array.from(new Set(applications.map((a) => a.classApplied))).map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                     </SelectContent>
+                   </Select>
+                   <Button size="sm" variant="outline" onClick={clearFilters}>Clear</Button>
+                 </div>
               </div>
 
-              <Table>
+              <div className="overflow-x-auto">
+              <Table className="min-w-[600px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Student Name</TableHead>
@@ -196,6 +197,7 @@ function AdmissionsPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
 
               <div className="flex items-center justify-between p-4 border-t border-border text-sm">
                 <div className="text-muted-foreground">Showing {filtered.length} of {applications.length} recent applications</div>
@@ -209,7 +211,7 @@ function AdmissionsPage() {
         {/* Class Capacity Overview */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Class Capacity Overview</h3>
+            <h3 className="text-base sm:text-lg font-semibold">Class Capacity Overview</h3>
             <Select value={selectedCapacityClass} onValueChange={setSelectedCapacityClass}>
               <SelectTrigger className="w-40"><SelectValue placeholder="Select Class" /></SelectTrigger>
               <SelectContent>
@@ -225,18 +227,18 @@ function AdmissionsPage() {
             return (
               <div key={c.name} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <Card className="p-4 bg-blue-50 border-blue-200">
-                    <p className="text-xs text-muted-foreground">Filled Seats</p>
-                    <p className="text-3xl font-bold text-blue-600 mt-2">{c.filled}</p>
-                  </Card>
-                  <Card className="p-4 bg-emerald-50 border-emerald-200">
-                    <p className="text-xs text-muted-foreground">Total Seats</p>
-                    <p className="text-3xl font-bold text-emerald-600 mt-2">{c.total}</p>
-                  </Card>
-                  <Card className="p-4 bg-amber-50 border-amber-200">
-                    <p className="text-xs text-muted-foreground">Seats Available</p>
-                    <p className="text-3xl font-bold text-amber-600 mt-2">{seatsLeft}</p>
-                  </Card>
+                   <Card className="p-3 sm:p-4 bg-blue-50 border-blue-200">
+                     <p className="text-xs text-muted-foreground">Filled Seats</p>
+                     <p className="text-3xl font-bold text-blue-600 mt-2">{c.filled}</p>
+                   </Card>
+                   <Card className="p-3 sm:p-4 bg-emerald-50 border-emerald-200">
+                     <p className="text-xs text-muted-foreground">Total Seats</p>
+                     <p className="text-3xl font-bold text-emerald-600 mt-2">{c.total}</p>
+                   </Card>
+                   <Card className="p-3 sm:p-4 bg-amber-50 border-amber-200">
+                     <p className="text-xs text-muted-foreground">Seats Available</p>
+                     <p className="text-3xl font-bold text-amber-600 mt-2">{seatsLeft}</p>
+                   </Card>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">

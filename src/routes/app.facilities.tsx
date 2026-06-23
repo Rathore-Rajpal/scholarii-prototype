@@ -150,7 +150,7 @@ function FacilitiesPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <KpiCard icon={Building2} label="Total Facilities" value={String(FACILITIES.length)} tone="violet" />
         <KpiCard icon={Wrench} label="Currently Occupied" value={String(occupiedCount)} tone="sky" />
         <KpiCard icon={Clock3} label="Available Now" value={String(availableCount)} tone="emerald" />
@@ -160,8 +160,8 @@ function FacilitiesPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-4 mb-8">
-          <TabsList className="h-11">
+        <Card className="p-3 sm:p-4 mb-8">
+          <TabsList className="h-11 overflow-x-auto scrollbar-hide">
             <TabsTrigger value="facilities" className="text-sm gap-2 px-5"><LayoutGrid className="size-4" /> Facilities</TabsTrigger>
             <TabsTrigger value="schedule" className="text-sm gap-2 px-5"><Calendar className="size-4" /> Schedule</TabsTrigger>
             <TabsTrigger value="library" className="text-sm gap-2 px-5"><Library className="size-4" /> Library</TabsTrigger>
@@ -173,9 +173,9 @@ function FacilitiesPage() {
         <TabsContent value="facilities">
           <div className="space-y-4">
             {/* Filters */}
-            <Card className="p-4">
+            <Card className="p-3 sm:p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="relative flex-1 max-w-sm">
+                <div className="relative flex-1">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                   <Input
                     value={search}
@@ -199,7 +199,7 @@ function FacilitiesPage() {
             </Card>
 
             {/* Facility Cards */}
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filteredFacilities.map((facility) => {
                 const meta = STATUS_META[facility.status];
                 return (
@@ -243,13 +243,13 @@ function FacilitiesPage() {
 
         {/* ═══ SCHEDULE TAB ═══ */}
         <TabsContent value="schedule">
-          <Card className="p-5">
+          <Card className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold">Today's Schedule</h3>
+              <h3 className="text-base sm:text-lg font-semibold">Today's Schedule</h3>
               <Badge variant="outline" className="text-[9px]">{filteredSchedule.length} sessions</Badge>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs min-w-[600px]">
                 <thead>
                   <tr className="border-b border-border/60">
                     <th className="text-left p-2 text-[10px] font-medium text-muted-foreground">Facility</th>
@@ -292,14 +292,14 @@ function FacilitiesPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
               {LIBRARY_STATS.map((stat) => (
-                <Card key={stat.label} className="p-4">
+                <Card key={stat.label} className="p-3 sm:p-4">
                   <div className="text-[10px] text-muted-foreground mb-1">{stat.label}</div>
                   <div className="text-lg font-semibold">{stat.value}</div>
                 </Card>
               ))}
             </div>
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold mb-4">Library Overview</h3>
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold mb-4">Library Overview</h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="rounded-xl border border-border/60 p-4">
                   <div className="flex items-center gap-2 mb-3">
@@ -333,7 +333,7 @@ function FacilitiesPage() {
         {/* ═══ INSIGHTS TAB ═══ */}
         <TabsContent value="insights">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="p-5">
+            <Card className="p-4 sm:p-6">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
                 <Sparkles className="size-3.5 text-violet-500" /> Facility Insights
               </h4>
@@ -352,7 +352,7 @@ function FacilitiesPage() {
               </div>
             </Card>
 
-            <Card className="p-5">
+            <Card className="p-4 sm:p-6">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Recommended Actions</h4>
               <div className="space-y-2">
                 {INSIGHT_ACTIONS.map((action) => (
@@ -445,7 +445,7 @@ function KpiCard({ icon: Icon, label, value, tone }: {
     red: "bg-red-500/10 text-red-500",
   };
   return (
-    <Card className="p-4">
+    <Card className="p-3 sm:p-4">
       <div className="flex items-center gap-3">
         <div className={cn("size-10 rounded-xl grid place-items-center shrink-0", tones[tone])}>
           <Icon className="size-5" />

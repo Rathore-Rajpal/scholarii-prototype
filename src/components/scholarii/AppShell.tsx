@@ -848,7 +848,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="sticky top-0 z-30 h-16 flex items-center gap-3 px-4 lg:px-6 border-b border-border bg-background/80 backdrop-blur">
+        <header className="sticky top-0 z-30 h-14 flex items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-4 lg:px-6 border-b border-border bg-background/80 backdrop-blur">
           <Button
             variant="ghost"
             size="icon"
@@ -878,7 +878,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Input placeholder="Search students, teachers, classes..." className="pl-9 bg-muted/40 border-0" />
             </div>
           </div>
-          <div className="flex-1 sm:hidden" />
+          <Button variant="ghost" size="icon" className="sm:hidden" title="Search">
+            <Search className="size-5" />
+          </Button>
 
           {isStudent && (
             <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-border bg-muted/40 transition-all">
@@ -951,456 +953,311 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main key={showParent ? "p" : "s"} className="flex-1 overflow-y-auto p-4 lg:p-8 animate-in-up transition-all duration-300">{children}</main>
       </div>
 
-      {/* ─── Right Sidebar ─── */}
-      <aside
-        className="hidden lg:flex flex-col shrink-0 h-full bg-sidebar border-l border-sidebar-border z-30 relative"
-        style={{
-          width: rightOpen ? rightWidth : 0,
-          borderLeftWidth: rightOpen ? 1 : 0,
-          transition: isResizing ? "none" : "width 0.3s ease-in-out, border-left-width 0.3s ease-in-out",
-        }}
-      >
-        {/* Resize Handle */}
-        <div
-          ref={resizeRef}
-          className={cn(
-            "absolute left-0 top-0 h-full w-1.5 cursor-col-resize z-50 transition-colors",
-            isResizing ? "bg-emerald-500/60" : "hover:bg-emerald-500/50"
-          )}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            setIsResizing(true);
-          }}
-        />
+      {/* ─── Right Sidebar (shared content) ─── */}
+      {(() => {
+        const rightPanelTabs = [
+          ...(showParent || isStudent || user?.role === "teacher" ? [{ tab: "overview" as RightTab, label: "Overview", icon: BarChart3, badge: undefined }] : []),
+          { tab: "chat" as RightTab, label: "AI Chat", icon: MessageCircle, badge: undefined },
+          { tab: "notifications" as RightTab, label: "Notifications", icon: Bell, badge: unreadCount > 0 ? unreadCount : undefined },
+          { tab: "actions" as RightTab, label: "Quick Actions", icon: Zap, badge: undefined },
+        ];
+        const panelLabel = showParent ? "Parent Panel" : isStudent ? "Student Panel" : user?.role === "teacher" ? "Teacher Panel" : user?.role === "admin" ? "Admin Panel" : "Utilities";
+        const panelSub = showParent ? "Family Overview" : isStudent ? "Study Hub" : user?.role === "teacher" ? "Teaching Workspace" : user?.role === "admin" ? "Admin Workspace" : "AI & Actions";
 
-        {/* Right Sidebar Header */}
-        <div className="flex items-center gap-2 h-16 px-5 border-b border-sidebar-border shrink-0">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="size-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white grid place-items-center shrink-0">
-              <BrainCircuit className="size-4" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-semibold text-sidebar-foreground leading-none text-sm">
-                {showParent ? "Parent Panel" : isStudent ? "Student Panel" : user?.role === "teacher" ? "Teacher Panel" : user?.role === "admin" ? "Admin Panel" : "Utilities"}
-              </div>
-              <div className="text-[11px] text-sidebar-foreground/50 mt-0.5">
-                {showParent ? "Family Overview" : isStudent ? "Study Hub" : user?.role === "teacher" ? "Teaching Workspace" : user?.role === "admin" ? "Admin Workspace" : "AI & Actions"}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => setRightOpen(false)}
-            className="size-7 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors shrink-0"
-            title="Collapse sidebar"
-          >
-            <ChevronRight className="size-4" />
-          </button>
-        </div>
-
-        {/* Nav Items */}
-        <nav className="p-3 space-y-1 shrink-0">
-          {([
-            ...(showParent || isStudent || user?.role === "teacher" ? [{ tab: "overview" as RightTab, label: "Overview", icon: BarChart3, badge: undefined }] : []),
-            { tab: "chat" as RightTab, label: "AI Chat", icon: MessageCircle, badge: undefined },
-            { tab: "notifications" as RightTab, label: "Notifications", icon: Bell, badge: unreadCount > 0 ? unreadCount : undefined },
-            { tab: "actions" as RightTab, label: "Quick Actions", icon: Zap, badge: undefined },
-          ]).map((item) => {
-            const active = rightTab === item.tab;
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.tab}
-                onClick={() => setRightTab(item.tab)}
-                className={cn(
-                  "group relative w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
-                  active
-                    ? "bg-brand-gradient text-white shadow-glow"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-              >
-                <div className="relative">
-                  <Icon className="size-4 flex-shrink-0" />
-                  {item.badge && (
-                    <span className="absolute -top-1.5 -right-1.5 size-3.5 rounded-full bg-red-500 text-[8px] text-white grid place-items-center font-bold">
-                      {item.badge}
-                    </span>
-                  )}
+        const RightPanelInner = (
+          <div className="flex h-full flex-col">
+            {/* Header */}
+            <div className="flex items-center gap-2 h-14 px-4 border-b border-sidebar-border shrink-0 sm:h-16 sm:px-5">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="size-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white grid place-items-center shrink-0">
+                  <BrainCircuit className="size-4" />
                 </div>
-                <span className="font-medium flex-1 text-left">{item.label}</span>
+                <div className="min-w-0">
+                  <div className="font-semibold text-sidebar-foreground leading-none text-sm">{panelLabel}</div>
+                  <div className="text-[11px] text-sidebar-foreground/50 mt-0.5">{panelSub}</div>
+                </div>
+              </div>
+              <button onClick={() => setRightOpen(false)} className="size-7 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors shrink-0" title="Close">
+                <X className="size-4" />
               </button>
-            );
-          })}
-        </nav>
+            </div>
 
-        {/* Panel Content */}
-        <div className="flex-1 min-h-0 border-t border-sidebar-border overflow-hidden">
-            <div className="h-full overflow-y-auto">
-              {/* ─── Chat Tab ─── */}
-              {rightTab === "chat" && (
-                <div className="flex flex-col h-full">
-                  <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {chatMessages.length === 0 && (
-                      <div className="flex flex-col items-center text-center px-2 pt-4">
-                        <div className="size-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white grid place-items-center mb-3">
-                          <BrainCircuit className="size-5" />
-                        </div>
-                        <div className="text-sm font-semibold text-sidebar-foreground">Scholarii AI</div>
-                        <p className="text-xs text-sidebar-foreground/50 mt-1 mb-4">Ask anything about your school</p>
-                        <div className="space-y-1.5 w-full">
-                          {contextPrompts.map((p) => (
-                            <button
-                              key={p}
-                              onClick={() => { setChatInput(p); chatInputRef.current?.focus(); }}
-                              className="w-full text-left rounded-lg border border-sidebar-border bg-sidebar-accent/30 px-3 py-2 text-xs text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
-                            >
-                              {p}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {chatMessages.map((msg) => (
-                      <div key={msg.id} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
-                        <div className={cn(
-                          "max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed",
-                          msg.role === "user"
-                            ? "bg-brand-gradient text-white rounded-br-md"
-                            : "bg-sidebar-accent text-sidebar-foreground rounded-bl-md"
-                        )}>
-                          {msg.content}
-                        </div>
-                      </div>
-                    ))}
-                    {chatThinking && (
-                      <div className="flex justify-start">
-                        <div className="bg-sidebar-accent rounded-2xl rounded-bl-md px-3 py-2 text-xs text-sidebar-foreground/50">
-                          <span className="inline-flex gap-1">
-                            <span className="animate-bounce" style={{ animationDelay: "0ms" }}>.</span>
-                            <span className="animate-bounce" style={{ animationDelay: "150ms" }}>.</span>
-                            <span className="animate-bounce" style={{ animationDelay: "300ms" }}>.</span>
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-3 border-t border-sidebar-border shrink-0">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-end gap-2">
-                        <Textarea
-                          ref={chatInputRef}
-                          value={chatInput}
-                          onChange={(e) => setChatInput(e.target.value)}
-                          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleChatSend(); } }}
-                          placeholder="Ask Scholarii AI..."
-                          className="min-h-[40px] max-h-[100px] resize-none text-xs bg-sidebar-accent/30 border-sidebar-border text-sidebar-foreground placeholder:text-sidebar-foreground/40"
-                          rows={1}
-                        />
-                        <Button
-                          size="icon"
-                          onClick={handleChatSend}
-                          disabled={!chatInput.trim() || chatThinking}
-                          className="size-9 shrink-0 rounded-full bg-brand-gradient text-white hover:opacity-90 border-0"
-                        >
-                          <Send className="size-4" />
-                        </Button>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button className="size-7 rounded-md flex items-center justify-center text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors" title="Attach file">
-                          <Paperclip className="size-3.5" />
-                        </button>
-                        <button className="size-7 rounded-md flex items-center justify-center text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors" title="Voice input">
-                          <Mic className="size-3.5" />
-                        </button>
-                        <div className="flex items-center gap-1 ml-auto rounded-md border border-sidebar-border px-2 py-1 text-[11px] text-sidebar-foreground/50 cursor-pointer hover:bg-sidebar-accent transition-colors">
-                          <Star className="size-3 text-amber-500 fill-amber-500" />
-                          <span>Scholarii Default</span>
-                          <ChevronDown className="size-3" />
-                        </div>
-                      </div>
+            {/* Nav Items */}
+            <nav className="p-3 space-y-1 shrink-0">
+              {rightPanelTabs.map((item) => {
+                const active = rightTab === item.tab;
+                const Icon = item.icon;
+                return (
+                  <button key={item.tab} onClick={() => setRightTab(item.tab)} className={cn("group relative w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200", active ? "bg-brand-gradient text-white shadow-glow" : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground")}>
+                    <div className="relative">
+                      <Icon className="size-4 flex-shrink-0" />
+                      {item.badge && <span className="absolute -top-1.5 -right-1.5 size-3.5 rounded-full bg-red-500 text-[8px] text-white grid place-items-center font-bold">{item.badge}</span>}
                     </div>
-                  </div>
-                </div>
-              )}
+                    <span className="font-medium flex-1 text-left">{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
 
-              {/* ─── Notifications Tab ─── */}
-              {rightTab === "notifications" && (
-                <div className="flex flex-col h-full">
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-sidebar-border shrink-0">
-                    <div className="flex gap-1">
-                      {(["all", "school", "system"] as const).map((cat) => (
-                        <button
-                          key={cat}
-                          className="px-2.5 py-1 rounded-full text-[11px] font-medium capitalize transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                        >
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
-                    <button onClick={markAllRead} className="text-[11px] text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors flex items-center gap-1">
-                      <CheckCheck className="size-3" />
-                      Mark all read
-                    </button>
-                  </div>
-                  <ScrollArea className="flex-1">
-                    <div className="p-2 space-y-1">
-                      {notifications.map((n) => {
-                        const Icon = n.icon;
-                        return (
-                          <div
-                            key={n.id}
-                            className={cn(
-                              "flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors cursor-pointer",
-                              n.read ? "bg-transparent" : "bg-sidebar-accent/30"
-                            )}
-                            onClick={() => setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x))}
-                          >
-                            <div className={cn(
-                              "size-8 rounded-lg grid place-items-center shrink-0 mt-0.5",
-                              n.read ? "bg-sidebar-accent text-sidebar-foreground/40" : "bg-emerald-500/10 text-emerald-500"
-                            )}>
-                              <Icon className="size-4" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className={cn("text-xs font-semibold truncate", n.read ? "text-sidebar-foreground/50" : "text-sidebar-foreground")}>{n.title}</span>
-                                {!n.read && <span className="size-1.5 rounded-full bg-emerald-500 shrink-0" />}
-                              </div>
-                              <p className="text-[11px] text-sidebar-foreground/40 mt-0.5 line-clamp-2">{n.description}</p>
-                              <span className="text-[10px] text-sidebar-foreground/25 mt-1 block">{n.time}</span>
-                            </div>
+            {/* Panel Content */}
+            <div className="flex-1 min-h-0 border-t border-sidebar-border overflow-hidden">
+              <div className="h-full overflow-y-auto">
+                {/* Chat Tab */}
+                {rightTab === "chat" && (
+                  <div className="flex flex-col h-full">
+                    <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+                      {chatMessages.length === 0 && (
+                        <div className="flex flex-col items-center text-center px-2 pt-4">
+                          <div className="size-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white grid place-items-center mb-3"><BrainCircuit className="size-5" /></div>
+                          <div className="text-sm font-semibold text-sidebar-foreground">Scholarii AI</div>
+                          <p className="text-xs text-sidebar-foreground/50 mt-1 mb-4">Ask anything about your school</p>
+                          <div className="space-y-1.5 w-full">
+                            {contextPrompts.map((p) => (
+                              <button key={p} onClick={() => { setChatInput(p); chatInputRef.current?.focus(); }} className="w-full text-left rounded-lg border border-sidebar-border bg-sidebar-accent/30 px-3 py-2 text-xs text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">{p}</button>
+                            ))}
                           </div>
-                        );
-                      })}
-                    </div>
-                  </ScrollArea>
-                </div>
-              )}
-
-              {/* ─── Quick Actions Tab ─── */}
-              {rightTab === "actions" && (
-                <div className="p-4 space-y-4">
-                  {Array.from(new Set(roleQuickActions.map((a) => a.group))).map((group) => (
-                    <div key={group}>
-                      <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">{group}</div>
-                      <div className="space-y-1">
-                        {roleQuickActions.filter((a) => a.group === group).map((action) => {
-                          const Icon = action.icon;
-                          return (
-                            <button
-                              key={action.label}
-                              className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors text-left"
-                            >
-                              <div className="size-8 rounded-lg bg-sidebar-accent grid place-items-center shrink-0">
-                                <Icon className="size-4 text-sidebar-foreground/50" />
-                              </div>
-                              <span className="text-xs font-medium">{action.label}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* ─── Overview Tab (Student/Parent/Teacher) ─── */}
-              {rightTab === "overview" && (showParent || isStudent || user?.role === "teacher") && (
-                <div className="p-4 space-y-5">
-                  {/* Teacher Overview */}
-                  {user?.role === "teacher" && (
-                    <>
-                      {/* Teaching Snapshot */}
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Teaching Snapshot</div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {[
-                            { label: "Classes Today", value: "5", icon: Users, color: "text-emerald-500" },
-                            { label: "Pending Reviews", value: "20", icon: ClipboardList, color: "text-amber-500" },
-                            { label: "Upcoming Exams", value: "2", icon: GraduationCap, color: "text-violet-500" },
-                            { label: "Avg. Attendance", value: "92%", icon: ClipboardCheck, color: "text-blue-500" },
-                          ].map((stat) => (
-                            <div key={stat.label} className="rounded-xl bg-sidebar-accent/30 p-3">
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <stat.icon className={`size-3 ${stat.color}`} />
-                                <span className="text-[10px] text-sidebar-foreground/50">{stat.label}</span>
-                              </div>
-                              <p className="text-sm font-bold text-sidebar-foreground">{stat.value}</p>
-                            </div>
-                          ))}
                         </div>
-                      </div>
-
-                      {/* Upcoming Classes */}
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Classes</div>
-                        <div className="space-y-1.5">
-                          {TEACHER_UPCOMING_CLASSES.map((cls) => (
-                            <div key={cls.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
-                              <div className="size-8 rounded-lg bg-emerald-500/10 grid place-items-center shrink-0">
-                                <Users className="size-4 text-emerald-400" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-sidebar-foreground truncate">{cls.name}</p>
-                                <p className="text-[10px] text-sidebar-foreground/40">{cls.time} · {cls.students} students</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Pending Assignment Reviews */}
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Pending Reviews</div>
-                        <div className="space-y-1.5">
-                          {TEACHER_PENDING_REVIEWS.map((review) => (
-                            <div key={review.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
-                              <div className="size-8 rounded-lg bg-amber-500/10 grid place-items-center shrink-0">
-                                <ClipboardList className="size-4 text-amber-400" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-sidebar-foreground truncate">{review.assignment}</p>
-                                <p className="text-[10px] text-sidebar-foreground/40">{review.class} · {review.pendingCount} pending</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Upcoming Exams */}
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Exams</div>
-                        <div className="space-y-1.5">
-                          {TEACHER_UPCOMING_EXAMS.map((exam) => (
-                            <div key={exam.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
-                              <div className="size-8 rounded-lg bg-violet-500/10 grid place-items-center shrink-0">
-                                <GraduationCap className="size-4 text-violet-400" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-sidebar-foreground truncate">{exam.name}</p>
-                                <p className="text-[10px] text-sidebar-foreground/40">{exam.subject} · {exam.date}</p>
-                              </div>
-                              {exam.daysRemaining > 0 && (
-                                <span className="text-[10px] font-medium text-violet-400">{exam.daysRemaining}d</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* AI Teaching Suggestions */}
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">AI Suggestions</div>
-                        <div className="space-y-1.5">
-                          {TEACHER_AI_SUGGESTIONS.map((suggestion) => (
-                            <div key={suggestion.id} className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 px-3 py-2.5">
-                              <Lightbulb className="size-3.5 text-violet-400 mt-0.5 shrink-0" />
-                              <p className="text-[11px] text-sidebar-foreground/70 leading-relaxed">{suggestion.text}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Student/Parent Overview */}
-                  {(showParent || isStudent) && (
-                    <>
-                      {/* Academic Snapshot */}
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Academic Snapshot</div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {[
-                            { label: "Attendance", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.attendance : STUDENT_ACADEMIC_SNAPSHOT.attendance}%`, icon: ClipboardCheck, color: "text-emerald-500" },
-                            { label: "Performance", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.performance : STUDENT_ACADEMIC_SNAPSHOT.performance}%`, icon: TrendingUp, color: "text-blue-500" },
-                            { label: "Assignments", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.pendingAssignments : STUDENT_ACADEMIC_SNAPSHOT.pendingAssignments} Pending`, icon: Clock, color: "text-amber-500" },
-                            { label: "Exams", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.upcomingExams : STUDENT_ACADEMIC_SNAPSHOT.upcomingExams} Upcoming`, icon: CalendarClock, color: "text-violet-500" },
-                          ].map((stat) => (
-                            <div key={stat.label} className="rounded-xl bg-sidebar-accent/30 p-3">
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <stat.icon className={`size-3 ${stat.color}`} />
-                                <span className="text-[10px] text-sidebar-foreground/50">{stat.label}</span>
-                              </div>
-                              <p className="text-sm font-bold text-sidebar-foreground">{stat.value}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Upcoming Deadlines */}
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Deadlines</div>
-                        <div className="space-y-1.5">
-                          {(showParent ? PARENT_DEADLINES : STUDENT_DEADLINES).map((deadline) => (
-                            <div key={deadline.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
-                              <div className={`size-2 rounded-full shrink-0 ${deadline.daysRemaining <= 1 ? "bg-red-500" : deadline.daysRemaining <= 3 ? "bg-amber-500" : "bg-emerald-500"}`} />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-sidebar-foreground truncate">{deadline.name}</p>
-                                <p className="text-[10px] text-sidebar-foreground/40">Due {deadline.dueDate}</p>
-                              </div>
-                              <span className={`text-[10px] font-medium ${deadline.daysRemaining <= 1 ? "text-red-400" : deadline.daysRemaining <= 3 ? "text-amber-400" : "text-emerald-400"}`}>
-                                {deadline.daysRemaining === 0 ? "Today" : deadline.daysRemaining === 1 ? "Tomorrow" : `${deadline.daysRemaining}d`}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Upcoming Exams */}
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Exams</div>
-                        <div className="space-y-1.5">
-                          {(showParent ? PARENT_EXAMS : STUDENT_EXAMS).map((exam) => (
-                            <div key={exam.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
-                              <div className="size-8 rounded-lg bg-violet-500/10 grid place-items-center shrink-0">
-                                <GraduationCap className="size-4 text-violet-400" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-sidebar-foreground truncate">{exam.name}</p>
-                                <p className="text-[10px] text-sidebar-foreground/40">{exam.subject} · {exam.date}</p>
-                              </div>
-                              {exam.daysRemaining > 0 && (
-                                <span className="text-[10px] font-medium text-violet-400">{exam.daysRemaining}d</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* AI Study Suggestions */}
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">AI Suggestions</div>
-                    <div className="space-y-1.5">
-                      {(showParent ? [] : STUDENT_AI_SUGGESTIONS).map((suggestion) => (
-                        <div key={suggestion.id} className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 px-3 py-2.5">
-                          <Lightbulb className="size-3.5 text-violet-400 mt-0.5 shrink-0" />
-                          <p className="text-[11px] text-sidebar-foreground/70 leading-relaxed">{suggestion.text}</p>
+                      )}
+                      {chatMessages.map((msg) => (
+                        <div key={msg.id} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
+                          <div className={cn("max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed", msg.role === "user" ? "bg-brand-gradient text-white rounded-br-md" : "bg-sidebar-accent text-sidebar-foreground rounded-bl-md")}>{msg.content}</div>
                         </div>
                       ))}
-                      {showParent && (
-                        <div className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 px-3 py-2.5">
-                          <Lightbulb className="size-3.5 text-violet-400 mt-0.5 shrink-0" />
-                          <p className="text-[11px] text-sidebar-foreground/70 leading-relaxed">Check Aarav's mid-semester results for performance insights.</p>
+                      {chatThinking && (
+                        <div className="flex justify-start">
+                          <div className="bg-sidebar-accent rounded-2xl rounded-bl-md px-3 py-2 text-xs text-sidebar-foreground/50">
+                            <span className="inline-flex gap-1"><span className="animate-bounce" style={{ animationDelay: "0ms" }}>.</span><span className="animate-bounce" style={{ animationDelay: "150ms" }}>.</span><span className="animate-bounce" style={{ animationDelay: "300ms" }}>.</span></span>
+                          </div>
                         </div>
                       )}
                     </div>
+                    <div className="p-3 border-t border-sidebar-border shrink-0">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-end gap-2">
+                          <Textarea ref={chatInputRef} value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleChatSend(); } }} placeholder="Ask Scholarii AI..." className="min-h-[40px] max-h-[100px] resize-none text-xs bg-sidebar-accent/30 border-sidebar-border text-sidebar-foreground placeholder:text-sidebar-foreground/40" rows={1} />
+                          <Button size="icon" onClick={handleChatSend} disabled={!chatInput.trim() || chatThinking} className="size-9 shrink-0 rounded-full bg-brand-gradient text-white hover:opacity-90 border-0"><Send className="size-4" /></Button>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button className="size-7 rounded-md flex items-center justify-center text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors" title="Attach file"><Paperclip className="size-3.5" /></button>
+                          <button className="size-7 rounded-md flex items-center justify-center text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors" title="Voice input"><Mic className="size-3.5" /></button>
+                          <div className="flex items-center gap-1 ml-auto rounded-md border border-sidebar-border px-2 py-1 text-[11px] text-sidebar-foreground/50 cursor-pointer hover:bg-sidebar-accent transition-colors">
+                            <Star className="size-3 text-amber-500 fill-amber-500" /><span>Scholarii Default</span><ChevronDown className="size-3" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                    </>
-                  )}
-                </div>
-              )}
+                )}
+
+                {/* Notifications Tab */}
+                {rightTab === "notifications" && (
+                  <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between px-4 py-2 border-b border-sidebar-border shrink-0">
+                      <div className="flex gap-1">
+                        {(["all", "school", "system"] as const).map((cat) => (
+                          <button key={cat} className="px-2.5 py-1 rounded-full text-[11px] font-medium capitalize transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-foreground">{cat}</button>
+                        ))}
+                      </div>
+                      <button onClick={markAllRead} className="text-[11px] text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors flex items-center gap-1"><CheckCheck className="size-3" />Mark all read</button>
+                    </div>
+                    <ScrollArea className="flex-1">
+                      <div className="p-2 space-y-1">
+                        {notifications.map((n) => {
+                          const Icon = n.icon;
+                          return (
+                            <div key={n.id} className={cn("flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors cursor-pointer", n.read ? "bg-transparent" : "bg-sidebar-accent/30")} onClick={() => setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x))}>
+                              <div className={cn("size-8 rounded-lg grid place-items-center shrink-0 mt-0.5", n.read ? "bg-sidebar-accent text-sidebar-foreground/40" : "bg-emerald-500/10 text-emerald-500")}><Icon className="size-4" /></div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2"><span className={cn("text-xs font-semibold truncate", n.read ? "text-sidebar-foreground/50" : "text-sidebar-foreground")}>{n.title}</span>{!n.read && <span className="size-1.5 rounded-full bg-emerald-500 shrink-0" />}</div>
+                                <p className="text-[11px] text-sidebar-foreground/40 mt-0.5 line-clamp-2">{n.description}</p>
+                                <span className="text-[10px] text-sidebar-foreground/25 mt-1 block">{n.time}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                )}
+
+                {/* Quick Actions Tab */}
+                {rightTab === "actions" && (
+                  <div className="p-4 space-y-4">
+                    {Array.from(new Set(roleQuickActions.map((a) => a.group))).map((group) => (
+                      <div key={group}>
+                        <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">{group}</div>
+                        <div className="space-y-1">
+                          {roleQuickActions.filter((a) => a.group === group).map((action) => {
+                            const Icon = action.icon;
+                            return (
+                              <button key={action.label} className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors text-left">
+                                <div className="size-8 rounded-lg bg-sidebar-accent grid place-items-center shrink-0"><Icon className="size-4 text-sidebar-foreground/50" /></div>
+                                <span className="text-xs font-medium">{action.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Overview Tab */}
+                {rightTab === "overview" && (showParent || isStudent || user?.role === "teacher") && (
+                  <div className="p-4 space-y-5">
+                    {user?.role === "teacher" && (
+                      <>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Teaching Snapshot</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {[{ label: "Classes Today", value: "5", icon: Users, color: "text-emerald-500" }, { label: "Pending Reviews", value: "20", icon: ClipboardList, color: "text-amber-500" }, { label: "Upcoming Exams", value: "2", icon: GraduationCap, color: "text-violet-500" }, { label: "Avg. Attendance", value: "92%", icon: ClipboardCheck, color: "text-blue-500" }].map((stat) => (
+                              <div key={stat.label} className="rounded-xl bg-sidebar-accent/30 p-3">
+                                <div className="flex items-center gap-1.5 mb-1"><stat.icon className={`size-3 ${stat.color}`} /><span className="text-[10px] text-sidebar-foreground/50">{stat.label}</span></div>
+                                <p className="text-sm font-bold text-sidebar-foreground">{stat.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Classes</div>
+                          <div className="space-y-1.5">
+                            {TEACHER_UPCOMING_CLASSES.map((cls) => (
+                              <div key={cls.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                                <div className="size-8 rounded-lg bg-emerald-500/10 grid place-items-center shrink-0"><Users className="size-4 text-emerald-400" /></div>
+                                <div className="flex-1 min-w-0"><p className="text-xs font-medium text-sidebar-foreground truncate">{cls.name}</p><p className="text-[10px] text-sidebar-foreground/40">{cls.time} · {cls.students} students</p></div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Pending Reviews</div>
+                          <div className="space-y-1.5">
+                            {TEACHER_PENDING_REVIEWS.map((review) => (
+                              <div key={review.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                                <div className="size-8 rounded-lg bg-amber-500/10 grid place-items-center shrink-0"><ClipboardList className="size-4 text-amber-400" /></div>
+                                <div className="flex-1 min-w-0"><p className="text-xs font-medium text-sidebar-foreground truncate">{review.assignment}</p><p className="text-[10px] text-sidebar-foreground/40">{review.class} · {review.pendingCount} pending</p></div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Exams</div>
+                          <div className="space-y-1.5">
+                            {TEACHER_UPCOMING_EXAMS.map((exam) => (
+                              <div key={exam.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                                <div className="size-8 rounded-lg bg-violet-500/10 grid place-items-center shrink-0"><GraduationCap className="size-4 text-violet-400" /></div>
+                                <div className="flex-1 min-w-0"><p className="text-xs font-medium text-sidebar-foreground truncate">{exam.name}</p><p className="text-[10px] text-sidebar-foreground/40">{exam.subject} · {exam.date}</p></div>
+                                {exam.daysRemaining > 0 && <span className="text-[10px] font-medium text-violet-400">{exam.daysRemaining}d</span>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">AI Suggestions</div>
+                          <div className="space-y-1.5">
+                            {TEACHER_AI_SUGGESTIONS.map((suggestion) => (
+                              <div key={suggestion.id} className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 px-3 py-2.5">
+                                <Lightbulb className="size-3.5 text-violet-400 mt-0.5 shrink-0" />
+                                <p className="text-[11px] text-sidebar-foreground/70 leading-relaxed">{suggestion.text}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    {(showParent || isStudent) && (
+                      <>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Academic Snapshot</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {[{ label: "Attendance", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.attendance : STUDENT_ACADEMIC_SNAPSHOT.attendance}%`, icon: ClipboardCheck, color: "text-emerald-500" }, { label: "Performance", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.performance : STUDENT_ACADEMIC_SNAPSHOT.performance}%`, icon: TrendingUp, color: "text-blue-500" }, { label: "Assignments", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.pendingAssignments : STUDENT_ACADEMIC_SNAPSHOT.pendingAssignments} Pending`, icon: Clock, color: "text-amber-500" }, { label: "Exams", value: `${showParent ? PARENT_ACADEMIC_SNAPSHOT.upcomingExams : STUDENT_ACADEMIC_SNAPSHOT.upcomingExams} Upcoming`, icon: CalendarClock, color: "text-violet-500" }].map((stat) => (
+                              <div key={stat.label} className="rounded-xl bg-sidebar-accent/30 p-3">
+                                <div className="flex items-center gap-1.5 mb-1"><stat.icon className={`size-3 ${stat.color}`} /><span className="text-[10px] text-sidebar-foreground/50">{stat.label}</span></div>
+                                <p className="text-sm font-bold text-sidebar-foreground">{stat.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Deadlines</div>
+                          <div className="space-y-1.5">
+                            {(showParent ? PARENT_DEADLINES : STUDENT_DEADLINES).map((deadline) => (
+                              <div key={deadline.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                                <div className={`size-2 rounded-full shrink-0 ${deadline.daysRemaining <= 1 ? "bg-red-500" : deadline.daysRemaining <= 3 ? "bg-amber-500" : "bg-emerald-500"}`} />
+                                <div className="flex-1 min-w-0"><p className="text-xs font-medium text-sidebar-foreground truncate">{deadline.name}</p><p className="text-[10px] text-sidebar-foreground/40">Due {deadline.dueDate}</p></div>
+                                <span className={`text-[10px] font-medium ${deadline.daysRemaining <= 1 ? "text-red-400" : deadline.daysRemaining <= 3 ? "text-amber-400" : "text-emerald-400"}`}>{deadline.daysRemaining === 0 ? "Today" : deadline.daysRemaining === 1 ? "Tomorrow" : `${deadline.daysRemaining}d`}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">Upcoming Exams</div>
+                          <div className="space-y-1.5">
+                            {(showParent ? PARENT_EXAMS : STUDENT_EXAMS).map((exam) => (
+                              <div key={exam.id} className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+                                <div className="size-8 rounded-lg bg-violet-500/10 grid place-items-center shrink-0"><GraduationCap className="size-4 text-violet-400" /></div>
+                                <div className="flex-1 min-w-0"><p className="text-xs font-medium text-sidebar-foreground truncate">{exam.name}</p><p className="text-[10px] text-sidebar-foreground/40">{exam.subject} · {exam.date}</p></div>
+                                {exam.daysRemaining > 0 && <span className="text-[10px] font-medium text-violet-400">{exam.daysRemaining}d</span>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/30 font-medium mb-2 px-1">AI Suggestions</div>
+                          <div className="space-y-1.5">
+                            {(showParent ? [] : STUDENT_AI_SUGGESTIONS).map((suggestion) => (
+                              <div key={suggestion.id} className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 px-3 py-2.5">
+                                <Lightbulb className="size-3.5 text-violet-400 mt-0.5 shrink-0" />
+                                <p className="text-[11px] text-sidebar-foreground/70 leading-relaxed">{suggestion.text}</p>
+                              </div>
+                            ))}
+                            {showParent && (
+                              <div className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 px-3 py-2.5">
+                                <Lightbulb className="size-3.5 text-violet-400 mt-0.5 shrink-0" />
+                                <p className="text-[11px] text-sidebar-foreground/70 leading-relaxed">Check Aarav's mid-semester results for performance insights.</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-      </aside>
+        );
+
+        return (
+          <>
+            {/* Mobile Right Drawer */}
+            {rightOpen && (
+              <div className="fixed inset-0 z-50 lg:hidden">
+                <div className="absolute inset-0 bg-black/40" onClick={() => setRightOpen(false)} />
+                <aside className="absolute right-0 top-0 h-full w-[min(85vw,400px)] bg-sidebar border-l border-sidebar-border flex flex-col overflow-hidden animate-in slide-in-from-right duration-300">
+                  {RightPanelInner}
+                </aside>
+              </div>
+            )}
+
+            {/* Desktop Right Sidebar */}
+            <aside className="hidden lg:flex flex-col shrink-0 h-full bg-sidebar border-l border-sidebar-border z-30 relative" style={{ width: rightOpen ? rightWidth : 0, borderLeftWidth: rightOpen ? 1 : 0, transition: isResizing ? "none" : "width 0.3s ease-in-out, border-left-width 0.3s ease-in-out" }}>
+              <div ref={resizeRef} className={cn("absolute left-0 top-0 h-full w-1.5 cursor-col-resize z-50 transition-colors", isResizing ? "bg-emerald-500/60" : "hover:bg-emerald-500/50")} onMouseDown={(e) => { e.preventDefault(); setIsResizing(true); }} />
+              {RightPanelInner}
+            </aside>
+          </>
+        );
+      })()}
     </div>
   );
 }
 
 export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
-      <div>
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">{title}</h1>
-        {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
+    <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4 sm:mb-6">
+      <div className="min-w-0">
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">{title}</h1>
+        {subtitle && <p className="text-muted-foreground mt-0.5 text-sm sm:mt-1">{subtitle}</p>}
       </div>
       {action}
     </div>
@@ -1418,15 +1275,15 @@ export function StatCard({ icon: Icon, label, value, hint, tone = "default" }: {
     info: "from-sky-400 to-blue-600",
   };
   return (
-    <div className="glass rounded-2xl p-5 shadow-soft hover:-translate-y-0.5 transition-transform">
+    <div className="glass rounded-2xl p-3 sm:p-5 shadow-soft hover:-translate-y-0.5 transition-transform">
       <div className="flex items-start justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">{label}</div>
-          <div className="text-3xl font-bold mt-2 tracking-tight">{value}</div>
-          {hint && <div className="text-xs text-muted-foreground mt-1">{hint}</div>}
+        <div className="min-w-0">
+          <div className="text-xs text-muted-foreground sm:text-sm">{label}</div>
+          <div className="text-xl font-bold mt-1 tracking-tight sm:text-3xl sm:mt-2">{value}</div>
+          {hint && <div className="text-[10px] text-muted-foreground mt-0.5 sm:text-xs sm:mt-1">{hint}</div>}
         </div>
-        <div className={cn("size-11 rounded-xl grid place-items-center text-white bg-gradient-to-br", tones[tone])}>
-          <Icon className="size-5" />
+        <div className={cn("size-9 rounded-lg grid place-items-center text-white bg-gradient-to-br sm:size-11 sm:rounded-xl", tones[tone])}>
+          <Icon className="size-4 sm:size-5" />
         </div>
       </div>
     </div>

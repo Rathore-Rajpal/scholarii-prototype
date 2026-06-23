@@ -160,12 +160,12 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 
 function SettingToggle({ label, description, checked, onCheckedChange }: { label: string; description: string; checked: boolean; onCheckedChange: (v: boolean) => void }) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="space-y-0.5">
+    <div className="flex items-center justify-between gap-4">
+      <div className="space-y-0.5 min-w-0">
         <p className="text-sm font-medium">{label}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
-      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+      <Switch checked={checked} onCheckedChange={onCheckedChange} className="shrink-0" />
     </div>
   );
 }
@@ -205,7 +205,7 @@ function TeacherProfilePage() {
       </div>
 
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col items-center gap-4 sm:flex-row">
             <div className="relative">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-2xl font-bold text-white shadow-lg shadow-blue-500/25">
@@ -241,12 +241,12 @@ function TeacherProfilePage() {
       </Card>
 
       <div className="sticky top-0 z-30 -mx-6 bg-background/80 px-6 backdrop-blur-xl md:-mx-8 md:px-8">
-        <div className="flex gap-1 border-b">
+        <div className="flex gap-1 border-b overflow-x-auto scrollbar-hide">
           {TAB_LIST.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? "border-blue-500 text-blue-600"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -263,7 +263,7 @@ function TeacherProfilePage() {
         <div className="space-y-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-base">Personal Details</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Personal Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <InfoRow icon={<UserCircle className="h-4 w-4" />} label="Full Name" value={profile.fullName} />
@@ -298,7 +298,7 @@ function TeacherProfilePage() {
         <div className="space-y-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-base">Professional Details</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Professional Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <InfoRow icon={<Hash className="h-4 w-4" />} label="Employee ID" value={profile.employeeId} />
@@ -331,29 +331,29 @@ function TeacherProfilePage() {
         <div className="space-y-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <Key className="h-4 w-4 text-amber-500" />
                 Security
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5 min-w-0">
                   <p className="text-sm font-medium">Change Password</p>
                   <p className="text-xs text-muted-foreground">Last changed {new Date(DEFAULT_TEACHER_SECURITY.lastPasswordChange).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="shrink-0">
                   <Key className="mr-1.5 h-3.5 w-3.5" />
                   Change
                 </Button>
               </div>
               <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5 min-w-0">
                   <p className="text-sm font-medium">Session Management</p>
                   <p className="text-xs text-muted-foreground">{DEFAULT_TEACHER_SECURITY.activeSessions} active session{DEFAULT_TEACHER_SECURITY.activeSessions !== 1 ? "s" : ""}</p>
                 </div>
-                <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-500/10 hover:text-red-600">
+                <Button variant="ghost" size="sm" className="shrink-0 text-red-500 hover:bg-red-500/10 hover:text-red-600">
                   <LogOut className="mr-1.5 h-3.5 w-3.5" />
                   Sign Out All
                 </Button>
@@ -363,7 +363,7 @@ function TeacherProfilePage() {
 
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <Bell className="h-4 w-4 text-blue-500" />
                 Notification Preferences
               </CardTitle>
@@ -408,19 +408,19 @@ function TeacherProfilePage() {
 
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <Sun className="h-4 w-4 text-violet-500" />
                 Appearance
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5 min-w-0">
                   <p className="text-sm font-medium">Theme Preference</p>
                   <p className="text-xs text-muted-foreground">Choose your preferred theme</p>
                 </div>
                 <Select value={appearance.theme} onValueChange={(v) => setAppearance((p) => ({ ...p, theme: v as "light" | "dark" | "system" }))}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-32 shrink-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -437,13 +437,13 @@ function TeacherProfilePage() {
                 </Select>
               </div>
               <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5 min-w-0">
                   <p className="text-sm font-medium">Language Preference</p>
                   <p className="text-xs text-muted-foreground">Select your preferred language</p>
                 </div>
                 <Select value={appearance.language} onValueChange={(v) => setAppearance((p) => ({ ...p, language: v }))}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-32 shrink-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -460,7 +460,7 @@ function TeacherProfilePage() {
       )}
 
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetContent className="w-full max-w-[95vw] sm:max-w-lg overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Edit Profile</SheetTitle>
             <SheetDescription>Update your personal information</SheetDescription>
@@ -543,7 +543,7 @@ function PrincipalProfilePage() {
       </div>
 
       {/* Profile Header Card */}
-      <Card className="p-6 mb-8">
+      <Card className="p-4 sm:p-6 mb-8">
         <div className="flex flex-col items-center gap-4 sm:flex-row">
           <div className="relative">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-violet-500/10 text-2xl font-bold text-violet-600">
@@ -575,21 +575,23 @@ function PrincipalProfilePage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as PrincipalProfileTab)}>
         <Card className="p-4 mb-8">
-          <TabsList className="h-11">
-            {TAB_LIST.map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id} className="text-sm gap-2 px-5">
-                {tab.icon}
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="overflow-x-auto scrollbar-hide">
+            <TabsList className="h-11 w-max min-w-full">
+              {TAB_LIST.map((tab) => (
+                <TabsTrigger key={tab.id} value={tab.id} className="text-sm gap-2 px-5 whitespace-nowrap">
+                  {tab.icon}
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
         </Card>
 
         {/* ═══ PERSONAL ═══ */}
         {activeTab === "personal" && (
           <div>
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold mb-4">Personal Details</h3>
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-sm sm:text-lg font-semibold mb-4">Personal Details</h3>
               <div className="space-y-3">
                 <InfoRow icon={<UserCircle className="h-4 w-4" />} label="Full Name" value={profile.fullName} />
                 <Separator />
@@ -621,8 +623,8 @@ function PrincipalProfilePage() {
 
         {/* ═══ PROFESSIONAL ═══ */}
         {activeTab === "professional" && (
-          <Card className="p-5">
-            <h3 className="text-sm font-semibold mb-4">Professional Details</h3>
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-sm sm:text-lg font-semibold mb-4">Professional Details</h3>
             <div className="space-y-3">
               <InfoRow icon={<Hash className="h-4 w-4" />} label="Employee ID" value={profile.employeeId} />
               <Separator />
@@ -665,7 +667,7 @@ function PrincipalProfilePage() {
         {/* ═══ SCHOOL OVERVIEW ═══ */}
         {activeTab === "school" && (
           <div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
               {[
                 { label: "Total Students", value: schoolStats.totalStudents.toLocaleString(), icon: GraduationCap, tone: "bg-emerald-500/10 text-emerald-500" },
                 { label: "Total Staff", value: String(schoolStats.totalStaff), icon: Users, tone: "bg-sky-500/10 text-sky-500" },
@@ -692,8 +694,8 @@ function PrincipalProfilePage() {
                 );
               })}
             </div>
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold mb-3">School at a Glance</h3>
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-sm sm:text-lg font-semibold mb-3">School at a Glance</h3>
               <p className="text-xs text-muted-foreground leading-5">
                 Scholarii Modern School serves {schoolStats.totalStudents.toLocaleString()} students across {schoolStats.sectionsCount} sections
                 with a dedicated staff of {schoolStats.totalStaff} members. The school maintains a {schoolStats.attendanceRate}% attendance rate
@@ -706,18 +708,18 @@ function PrincipalProfilePage() {
         {/* ═══ SETTINGS ═══ */}
         {activeTab === "settings" && (
           <div className="space-y-4">
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-sm sm:text-lg font-semibold mb-4 flex items-center gap-2">
                 <Key className="h-4 w-4 text-amber-500" />
                 Security
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-0.5 min-w-0">
                     <p className="text-sm font-medium">Change Password</p>
                     <p className="text-xs text-muted-foreground">Last changed {new Date(DEFAULT_PRINCIPAL_SECURITY.lastPasswordChange).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
                   </div>
-                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 shrink-0">
                     <Key className="h-3.5 w-3.5" /> Change
                   </Button>
                 </div>
@@ -729,20 +731,20 @@ function PrincipalProfilePage() {
                   onCheckedChange={() => {}}
                 />
                 <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-0.5 min-w-0">
                     <p className="text-sm font-medium">Session Management</p>
                     <p className="text-xs text-muted-foreground">{DEFAULT_PRINCIPAL_SECURITY.activeSessions} active session{DEFAULT_PRINCIPAL_SECURITY.activeSessions !== 1 ? "s" : ""}</p>
                   </div>
-                  <Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5 text-red-500 hover:bg-red-500/10 hover:text-red-600">
+                  <Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5 text-red-500 hover:bg-red-500/10 hover:text-red-600 shrink-0">
                     <LogOut className="h-3.5 w-3.5" /> Sign Out All
                   </Button>
                 </div>
               </div>
             </Card>
 
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-sm sm:text-lg font-semibold mb-4 flex items-center gap-2">
                 <Bell className="h-4 w-4 text-blue-500" />
                 Notification Preferences
               </h3>
@@ -763,19 +765,19 @@ function PrincipalProfilePage() {
               </div>
             </Card>
 
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-sm sm:text-lg font-semibold mb-4 flex items-center gap-2">
                 <Sun className="h-4 w-4 text-violet-500" />
                 Appearance
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-0.5 min-w-0">
                     <p className="text-sm font-medium">Theme Preference</p>
                     <p className="text-xs text-muted-foreground">Choose your preferred theme</p>
                   </div>
                   <Select defaultValue="light">
-                    <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-32 h-8 text-xs shrink-0"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="light"><span className="flex items-center gap-2"><Sun className="h-3.5 w-3.5" /> Light</span></SelectItem>
                       <SelectItem value="dark"><span className="flex items-center gap-2"><Moon className="h-3.5 w-3.5" /> Dark</span></SelectItem>
@@ -784,13 +786,13 @@ function PrincipalProfilePage() {
                   </Select>
                 </div>
                 <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-0.5 min-w-0">
                     <p className="text-sm font-medium">Language Preference</p>
                     <p className="text-xs text-muted-foreground">Select your preferred language</p>
                   </div>
                   <Select defaultValue="English">
-                    <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-32 h-8 text-xs shrink-0"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="English">English</SelectItem>
                       <SelectItem value="Hindi">Hindi</SelectItem>
@@ -807,7 +809,7 @@ function PrincipalProfilePage() {
 
       {/* Edit Profile Sheet */}
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetContent className="w-full max-w-[95vw] sm:max-w-lg overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Edit Profile</SheetTitle>
             <SheetDescription>Update your personal information</SheetDescription>
@@ -926,7 +928,7 @@ function ProfilePage() {
       </div>
 
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col items-center gap-4 sm:flex-row">
             <div className="relative">
               <div className={`flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br ${getGradientByRole(user?.role || "student")} text-2xl font-bold text-white shadow-lg shadow-blue-500/25`}>
@@ -964,12 +966,12 @@ function ProfilePage() {
       </Card>
 
       <div className="sticky top-0 z-30 -mx-6 bg-background/80 px-6 backdrop-blur-xl md:-mx-8 md:px-8">
-        <div className="flex gap-1 border-b">
+        <div className="flex gap-1 border-b overflow-x-auto scrollbar-hide">
           {TAB_LIST.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? "border-blue-500 text-blue-600"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -986,7 +988,7 @@ function ProfilePage() {
         <div className="space-y-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-base">Personal Details</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Personal Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <InfoRow icon={<UserCircle className="h-4 w-4" />} label="Full Name" value={profile.fullName} />
@@ -1023,7 +1025,7 @@ function ProfilePage() {
         <div className="space-y-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-base">Academic Details</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Academic Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <InfoRow icon={<Hash className="h-4 w-4" />} label="Admission Number" value={profile.admissionNumber || "N/A"} />
@@ -1044,7 +1046,7 @@ function ProfilePage() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               { label: "Attendance", value: `${ACADEMIC_SNAPSHOT.attendance}%`, icon: ClipboardCheck, color: "from-emerald-500 to-emerald-600", shadow: "shadow-emerald-500/20" },
               { label: "Overall %", value: `${ACADEMIC_SNAPSHOT.overallPercentage}%`, icon: TrendingUp, color: "from-blue-500 to-blue-600", shadow: "shadow-blue-500/20" },
@@ -1073,7 +1075,7 @@ function ProfilePage() {
         <div className="space-y-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <Bell className="h-4 w-4 text-blue-500" />
                 Notification Preferences
               </CardTitle>
@@ -1111,18 +1113,18 @@ function ProfilePage() {
 
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <Key className="h-4 w-4 text-amber-500" />
                 Security
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5 min-w-0">
                   <p className="text-sm font-medium">Change Password</p>
                   <p className="text-xs text-muted-foreground">Last changed {new Date(security.lastPasswordChange).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="shrink-0">
                   <Key className="mr-1.5 h-3.5 w-3.5" />
                   Change
                 </Button>
@@ -1135,12 +1137,12 @@ function ProfilePage() {
                 onCheckedChange={() => {}}
               />
               <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5 min-w-0">
                   <p className="text-sm font-medium">Session Management</p>
                   <p className="text-xs text-muted-foreground">{security.activeSessions} active session{security.activeSessions !== 1 ? "s" : ""}</p>
                 </div>
-                <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-500/10 hover:text-red-600">
+                <Button variant="ghost" size="sm" className="shrink-0 text-red-500 hover:bg-red-500/10 hover:text-red-600">
                   <LogOut className="mr-1.5 h-3.5 w-3.5" />
                   Sign Out All
                 </Button>
@@ -1150,19 +1152,19 @@ function ProfilePage() {
 
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <Sun className="h-4 w-4 text-violet-500" />
                 Appearance
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5 min-w-0">
                   <p className="text-sm font-medium">Theme Preference</p>
                   <p className="text-xs text-muted-foreground">Choose your preferred theme</p>
                 </div>
                 <Select value={appearance.theme} onValueChange={(v) => setAppearance((p) => ({ ...p, theme: v as AppearanceSettings["theme"] }))}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-32 shrink-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1179,13 +1181,13 @@ function ProfilePage() {
                 </Select>
               </div>
               <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5 min-w-0">
                   <p className="text-sm font-medium">Language Preference</p>
                   <p className="text-xs text-muted-foreground">Select your preferred language</p>
                 </div>
                 <Select value={appearance.language} onValueChange={(v) => setAppearance((p) => ({ ...p, language: v }))}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-32 shrink-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1202,7 +1204,7 @@ function ProfilePage() {
       )}
 
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetContent className="w-full max-w-[95vw] sm:max-w-lg overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Edit Profile</SheetTitle>
             <SheetDescription>Update your personal information</SheetDescription>

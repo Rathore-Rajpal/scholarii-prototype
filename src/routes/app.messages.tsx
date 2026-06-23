@@ -135,16 +135,16 @@ function MessagesPage() {
     <div className="flex h-screen flex-col bg-background">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-border/40 bg-background/80 px-4 py-2.5 backdrop-blur-xl">
-        <div className="flex items-center gap-3">
-          <button onClick={() => setMobileView("list")} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden">
+        <div className="flex min-w-0 items-center gap-3">
+          <button onClick={() => setMobileView("list")} className="shrink-0 rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
             <MessageCircle className="h-4 w-4 text-white" />
           </div>
-          <span className="text-sm font-bold text-foreground">Messages</span>
+          <span className="shrink-0 text-sm font-bold text-foreground">Messages</span>
           {selected && (
-            <span className="text-sm text-muted-foreground">
+            <span className="min-w-0 truncate text-sm text-muted-foreground">
               / {selected.type === "channel" ? `# ${selected.name}` : selected.name}
             </span>
           )}
@@ -156,7 +156,7 @@ function MessagesPage() {
             placeholder="Search people, channels..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-48 rounded-xl border border-border/50 bg-muted/30 py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 sm:w-64"
+            className="w-full max-w-48 rounded-xl border border-border/50 bg-muted/30 py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 sm:max-w-64"
           />
         </div>
       </header>
@@ -164,7 +164,7 @@ function MessagesPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Conversations */}
         <aside
-          className={`${mobileView === "list" ? "flex" : "hidden"} flex-col border-r border-border/40 bg-background/95 transition-[width] duration-200 lg:flex`}
+          className={`${mobileView === "list" ? "flex" : "hidden"} max-lg:!w-full flex-col border-r border-border/40 bg-background/95 transition-[width] duration-200 lg:flex`}
           style={{ width: panelCollapsed ? 68 : panelWidth }}
         >
           {/* Panel Toolbar */}
@@ -276,7 +276,7 @@ function MessagesPage() {
           {selected ? (
             <>
               {/* Chat Header */}
-              <div className="flex items-center justify-between border-b border-border/40 bg-background/80 px-4 py-3 backdrop-blur-xl">
+              <div className="flex items-center justify-between border-b border-border/40 bg-background/80 px-3 py-3 backdrop-blur-xl sm:px-4">
                 <div className="flex items-center gap-3">
                   <button onClick={() => setMobileView("list")} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden">
                     <ArrowLeft className="h-5 w-5" />
@@ -304,7 +304,7 @@ function MessagesPage() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-4 py-4">
+              <div className="flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
                 <div className="space-y-4">
                   {selected.messages.map((msg) => (
                     <MessageBubble key={msg.id} message={msg} isOwn={msg.senderId === "me"} />
@@ -315,7 +315,7 @@ function MessagesPage() {
 
               {/* Input */}
               {!selected.readOnly ? (
-                <div className="border-t border-border/40 bg-background/80 px-4 py-3 backdrop-blur-xl">
+                <div className="border-t border-border/40 bg-background/80 px-3 py-3 backdrop-blur-xl sm:px-4">
                   <div className="flex items-end gap-2">
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" className="h-9 w-9"><Paperclip className="h-4 w-4" /></Button>
@@ -343,7 +343,7 @@ function MessagesPage() {
                   </div>
                 </div>
               ) : (
-                <div className="border-t border-border/40 bg-muted/20 px-4 py-3 text-center">
+                <div className="border-t border-border/40 bg-muted/20 px-3 py-3 text-center sm:px-4">
                   <p className="text-xs text-muted-foreground">This channel is read-only. Only teachers and admins can post.</p>
                 </div>
               )}
@@ -383,7 +383,7 @@ function WelcomeScreen({ onSelect, recentTeachers, recentChannels, channels }: {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-600/20">
             <MessageCircle className="h-8 w-8 text-blue-400" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">Welcome to Scholarii Messages</h2>
+          <h2 className="text-base font-bold text-foreground sm:text-lg">Welcome to Scholarii Messages</h2>
           <p className="text-sm text-muted-foreground">Connect with teachers, classmates, and school communities.</p>
         </div>
 
@@ -397,7 +397,7 @@ function WelcomeScreen({ onSelect, recentTeachers, recentChannels, channels }: {
           ].map((action) => (
             <button
               key={action.label}
-              className="flex flex-col items-center gap-2 rounded-xl border border-border/40 bg-card/50 p-4 text-center transition-all hover:border-primary/30 hover:shadow-md"
+              className="flex flex-col items-center gap-2 rounded-xl border border-border/40 bg-card/50 p-3 text-center transition-all hover:border-primary/30 hover:shadow-md sm:p-4"
             >
               <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${action.color} text-white`}>{action.icon}</div>
               <span className="text-xs font-medium text-foreground">{action.label}</span>
@@ -413,7 +413,7 @@ function WelcomeScreen({ onSelect, recentTeachers, recentChannels, channels }: {
               <button
                 key={ch.id}
                 onClick={() => onSelect(ch.id)}
-                className="flex items-center gap-2 rounded-xl border border-border/40 bg-muted/30 px-3 py-2.5 text-left transition-all hover:border-primary/30 hover:bg-primary/5"
+                className="flex items-center gap-2 rounded-xl border border-border/40 bg-muted/30 px-2.5 py-2 text-left transition-all hover:border-primary/30 hover:bg-primary/5 sm:px-3 sm:py-2.5"
               >
                 <span className="text-lg">{ch.avatar}</span>
                 <div className="min-w-0">
@@ -433,7 +433,7 @@ function WelcomeScreen({ onSelect, recentTeachers, recentChannels, channels }: {
               <button
                 key={t.id}
                 onClick={() => onSelect(t.id)}
-                className="flex flex-1 items-center gap-2 rounded-xl border border-border/40 bg-muted/30 p-3 text-left transition-all hover:border-primary/30 hover:bg-primary/5"
+                className="flex flex-1 items-center gap-2 rounded-xl border border-border/40 bg-muted/30 p-2.5 text-left transition-all hover:border-primary/30 hover:bg-primary/5 sm:p-3"
               >
                 <div className="relative shrink-0">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/60 text-base">{t.avatar}</div>
@@ -588,7 +588,7 @@ function MessageBubble({ message, isOwn }: { message: Message; isOwn: boolean })
             <span className="text-xs font-medium text-foreground">{message.senderName}</span>
           </div>
         )}
-        <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+        <div className={`rounded-2xl px-3 py-2 text-sm leading-relaxed sm:px-4 sm:py-2.5 ${
           isOwn
             ? "bg-primary text-primary-foreground rounded-br-md"
             : "bg-muted/60 text-foreground rounded-bl-md"

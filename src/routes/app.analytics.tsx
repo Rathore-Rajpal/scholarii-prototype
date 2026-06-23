@@ -131,13 +131,13 @@ function AnalyticsPage() {
       />
 
       {/* Time Range Filter */}
-      <Card className="p-4 mb-8">
+      <Card className="p-3 sm:p-4 mb-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-semibold">Time Range</p>
             <p className="text-[10px] text-muted-foreground">Select a period to review.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
               <SelectTrigger className="w-[200px] h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -150,7 +150,7 @@ function AnalyticsPage() {
       </Card>
 
       {/* Summary */}
-      <Card className="p-5 mb-8">
+      <Card className="p-4 sm:p-6 mb-8">
         <div className="flex items-start gap-3">
           <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
             <BrainCircuit className="size-5 text-violet-500" />
@@ -163,13 +163,13 @@ function AnalyticsPage() {
       </Card>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           const trend = trendMeta(kpi.direction);
           const tones = { emerald: "bg-emerald-500/10 text-emerald-500", sky: "bg-sky-500/10 text-sky-500", amber: "bg-amber-500/10 text-amber-500", violet: "bg-violet-500/10 text-violet-500" };
           return (
-            <Card key={kpi.label} className="p-4">
+            <Card key={kpi.label} className="p-3 sm:p-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className={cn("size-10 rounded-xl grid place-items-center shrink-0", tones[kpi.tone])}>
                   <Icon className="size-5" />
@@ -190,8 +190,8 @@ function AnalyticsPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-4 mb-8">
-          <TabsList className="h-11">
+        <Card className="p-3 sm:p-4 mb-8">
+          <TabsList className="h-11 overflow-x-auto scrollbar-hide">
             <TabsTrigger value="attendance" className="text-sm gap-2 px-5"><BarChart3 className="size-4" /> Attendance</TabsTrigger>
             <TabsTrigger value="academic" className="text-sm gap-2 px-5"><GraduationCap className="size-4" /> Academic</TabsTrigger>
             <TabsTrigger value="parent" className="text-sm gap-2 px-5"><Users className="size-4" /> Parent Engagement</TabsTrigger>
@@ -203,19 +203,19 @@ function AnalyticsPage() {
         {/* ═══ ATTENDANCE ═══ */}
         <TabsContent value="attendance">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {attendanceMetrics.map((m) => (
-                <Card key={m.label} className="p-4">
+                <Card key={m.label} className="p-3 sm:p-4">
                   <div className="text-[11px] text-muted-foreground mb-1">{m.label}</div>
                   <div className="text-lg font-semibold">{m.value}</div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
                 </Card>
               ))}
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <Card className="lg:col-span-2 p-5">
-                <h4 className="text-xs font-semibold mb-3">Attendance Trend</h4>
-                <div className="h-64">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+              <Card className="lg:col-span-2 p-4 sm:p-6">
+                <h4 className="text-base sm:text-lg font-semibold mb-3">Attendance Trend</h4>
+                <div className="w-full h-[200px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={attendanceChart} margin={{ top: 10, right: 12, left: -8, bottom: 0 }}>
                       <defs>
@@ -233,9 +233,9 @@ function AnalyticsPage() {
                   </ResponsiveContainer>
                 </div>
               </Card>
-              <Card className="p-5">
-                <h4 className="text-xs font-semibold mb-3">Attendance by Weekday</h4>
-                <div className="h-64">
+              <Card className="p-4 sm:p-6">
+                <h4 className="text-base sm:text-lg font-semibold mb-3">Attendance by Weekday</h4>
+                <div className="w-full h-[200px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={attendanceByDay} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -248,9 +248,9 @@ function AnalyticsPage() {
                 </div>
               </Card>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
               {["Grade 9 attendance declined by 4% this month.", "Monday attendance remains the lowest across the school.", "34 students remain below the attendance threshold."].map((item) => (
-                <Card key={item} className="p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
+                <Card key={item} className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
               ))}
             </div>
           </div>
@@ -259,17 +259,17 @@ function AnalyticsPage() {
         {/* ═══ ACADEMIC ═══ */}
         <TabsContent value="academic">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {academicMetrics.map((m) => (
-                <Card key={m.label} className="p-4">
+                <Card key={m.label} className="p-3 sm:p-4">
                   <div className="text-[11px] text-muted-foreground mb-1">{m.label}</div>
                   <div className="text-lg font-semibold">{m.value}</div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
                 </Card>
               ))}
             </div>
-            <Card className="p-5">
-              <h4 className="text-xs font-semibold mb-3">Subject Performance Summary</h4>
+            <Card className="p-4 sm:p-6">
+              <h4 className="text-base sm:text-lg font-semibold mb-3">Subject Performance Summary</h4>
               <div className="space-y-3">
                 {subjectSummary.map((s) => (
                   <div key={s.subject} className="rounded-xl border border-border/60 p-3">
@@ -287,9 +287,9 @@ function AnalyticsPage() {
                 ))}
               </div>
             </Card>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
               {["Mathematics remains the weakest subject.", "Class 8B requires intervention.", "Academic performance improved by 3% this term."].map((item) => (
-                <Card key={item} className="p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
+                <Card key={item} className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
               ))}
             </div>
           </div>
@@ -298,18 +298,18 @@ function AnalyticsPage() {
         {/* ═══ PARENT ENGAGEMENT ═══ */}
         <TabsContent value="parent">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {parentMetrics.map((m) => (
-                <Card key={m.label} className="p-4">
+                <Card key={m.label} className="p-3 sm:p-4">
                   <div className="text-[11px] text-muted-foreground mb-1">{m.label}</div>
                   <div className="text-lg font-semibold">{m.value}</div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
                 </Card>
               ))}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
               {["Grade 8 parent engagement is lowest.", "PTM participation improved by 9%.", "WhatsApp communication drives the highest engagement."].map((item) => (
-                <Card key={item} className="p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
+                <Card key={item} className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
               ))}
             </div>
           </div>
@@ -318,17 +318,17 @@ function AnalyticsPage() {
         {/* ═══ SCHOLARII ADOPTION ═══ */}
         <TabsContent value="adoption">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {adoptionMetrics.map((m) => (
-                <Card key={m.label} className="p-4">
+                <Card key={m.label} className="p-3 sm:p-4">
                   <div className="text-[11px] text-muted-foreground mb-1">{m.label}</div>
                   <div className="text-lg font-semibold">{m.value}</div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
                 </Card>
               ))}
             </div>
-            <Card className="p-5">
-              <h4 className="text-xs font-semibold mb-3">Usage Trends</h4>
+            <Card className="p-4 sm:p-6">
+              <h4 className="text-base sm:text-lg font-semibold mb-3">Usage Trends</h4>
               <div className="space-y-2">
                 {adoptionGrowth.map((item) => (
                   <div key={item.label} className="rounded-xl border border-border/60 p-3">
@@ -343,9 +343,9 @@ function AnalyticsPage() {
                 ))}
               </div>
             </Card>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
               {["Teacher AI usage increased by 18%.", "Over 1,200 hours saved through automation.", "Staff adoption remains above 90%."].map((item) => (
-                <Card key={item} className="p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
+                <Card key={item} className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
               ))}
             </div>
           </div>
@@ -353,11 +353,11 @@ function AnalyticsPage() {
 
         {/* ═══ AI INSIGHTS ═══ */}
         <TabsContent value="insights">
-          <Card className="p-5">
-            <h3 className="text-sm font-semibold mb-4">AI Insights</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-4">AI Insights</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
               {analyticsInsights.map((insight) => (
-                <Card key={insight.title} className="p-4">
+                <Card key={insight.title} className="p-3 sm:p-4">
                   <p className="text-xs font-medium">{insight.title}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">{insight.detail}</p>
                 </Card>

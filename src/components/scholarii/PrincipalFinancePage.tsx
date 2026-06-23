@@ -99,7 +99,7 @@ export default function PrincipalFinancePage() {
         title="Finance"
         subtitle="Financial Command Center — school-wide financial health at a glance."
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Select defaultValue="2025-26">
               <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -136,7 +136,7 @@ export default function PrincipalFinancePage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
         <KpiCard icon={DollarSign} label="Total Revenue" value={fmtFull(FINANCE_KPI.totalRevenue)} tone="violet" />
         <KpiCard icon={TrendingDown} label="Total Expenses" value={fmtFull(FINANCE_KPI.totalExpenses)} tone="red" />
         <KpiCard icon={TrendingUp} label="Net Surplus" value={fmtFull(FINANCE_KPI.netSurplus)} tone="emerald" />
@@ -149,8 +149,8 @@ export default function PrincipalFinancePage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-3 mb-6">
-          <TabsList className="h-9">
+        <Card className="p-2 sm:p-3 mb-6">
+          <TabsList className="h-9 overflow-x-auto scrollbar-hide">
             <TabsTrigger value="fee-mgmt" className="text-xs gap-1.5"><CreditCard className="size-3" /> Fee Management</TabsTrigger>
             <TabsTrigger value="income" className="text-xs gap-1.5"><DollarSign className="size-3" /> Income Overview</TabsTrigger>
             <TabsTrigger value="expenses" className="text-xs gap-1.5"><Receipt className="size-3" /> Expenses</TabsTrigger>
@@ -165,17 +165,17 @@ export default function PrincipalFinancePage() {
           <div className="space-y-6">
             {/* Sub KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Fees Expected</div><div className="text-lg font-semibold">{fmtFull(3000000)}</div></Card>
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Fees Collected</div><div className="text-lg font-semibold text-emerald-600">{fmtFull(FINANCE_KPI.totalFeesCollected)}</div></Card>
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Outstanding Amount</div><div className="text-lg font-semibold text-red-600">{fmtFull(FINANCE_KPI.outstandingDues)}</div></Card>
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Collection %</div><div className="text-lg font-semibold text-emerald-600">{FINANCE_KPI.collectionRate}%</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Fees Expected</div><div className="text-lg font-semibold">{fmtFull(3000000)}</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Fees Collected</div><div className="text-lg font-semibold text-emerald-600">{fmtFull(FINANCE_KPI.totalFeesCollected)}</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Outstanding Amount</div><div className="text-lg font-semibold text-red-600">{fmtFull(FINANCE_KPI.outstandingDues)}</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Collection %</div><div className="text-lg font-semibold text-emerald-600">{FINANCE_KPI.collectionRate}%</div></Card>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Defaulter Table */}
-              <Card className="lg:col-span-2 p-5">
+              <Card className="lg:col-span-2 p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold">Fee Defaulters</h3>
+                  <h3 className="text-base sm:text-lg font-semibold">Fee Defaulters</h3>
                   <div className="flex items-center gap-2">
                     <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
                       <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue /></SelectTrigger>
@@ -188,7 +188,7 @@ export default function PrincipalFinancePage() {
                   </div>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
+                    <table className="w-full min-w-[600px] text-xs">
                     <thead>
                       <tr className="border-b border-border/60">
                         <th className="text-left p-2 text-[10px] font-medium text-muted-foreground">Student</th>
@@ -228,9 +228,9 @@ export default function PrincipalFinancePage() {
 
               {/* Side charts */}
               <div className="space-y-4">
-                <Card className="p-5">
+                <Card className="p-4 sm:p-6">
                   <h4 className="text-xs font-semibold mb-3">Top 5 Defaulter Classes</h4>
-                  <div className="h-44">
+                  <div className="w-full min-h-[200px] sm:min-h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={DEFAULTER_CLASSES} layout="vertical" margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
@@ -242,9 +242,9 @@ export default function PrincipalFinancePage() {
                     </ResponsiveContainer>
                   </div>
                 </Card>
-                <Card className="p-5">
+                <Card className="p-4 sm:p-6">
                   <h4 className="text-xs font-semibold mb-3">Collection Trend</h4>
-                  <div className="h-44">
+                  <div className="w-full min-h-[200px] sm:min-h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={COLLECTION_TRENDS} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -267,9 +267,9 @@ export default function PrincipalFinancePage() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Pie Chart */}
-              <Card className="p-5">
+              <Card className="p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Income Distribution</h4>
-                <div className="h-56">
+                <div className="w-full min-h-[200px] sm:min-h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={INCOME_SOURCES} dataKey="amount" nameKey="category" cx="50%" cy="50%" outerRadius={80} innerRadius={40} paddingAngle={3}>
@@ -283,9 +283,9 @@ export default function PrincipalFinancePage() {
               </Card>
 
               {/* Monthly Trend */}
-              <Card className="lg:col-span-2 p-5">
+              <Card className="lg:col-span-2 p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Monthly Revenue Trend</h4>
-                <div className="h-56">
+                <div className="w-full min-h-[200px] sm:min-h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={MONTHLY_TRENDS} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -301,10 +301,10 @@ export default function PrincipalFinancePage() {
             </div>
 
             {/* Income Sources Table */}
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold mb-4">Income Sources</h3>
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold mb-4">Income Sources</h3>
               <div className="overflow-x-auto">
-                <table className="w-full text-xs">
+                <table className="w-full min-w-[600px] text-xs">
                   <thead>
                     <tr className="border-b border-border/60">
                       <th className="text-left p-2 text-[10px] font-medium text-muted-foreground">Category</th>
@@ -346,17 +346,17 @@ export default function PrincipalFinancePage() {
         <TabsContent value="expenses">
           <div className="space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Budget</div><div className="text-lg font-semibold">{fmtFull(totalBudget)}</div></Card>
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Actual Spend</div><div className="text-lg font-semibold">{fmtFull(totalActual)}</div></Card>
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Variance</div><div className={cn("text-lg font-semibold", totalActual > totalBudget ? "text-red-600" : "text-emerald-600")}>{totalActual > totalBudget ? "+" : ""}{((totalActual - totalBudget) / totalBudget * 100).toFixed(1)}%</div></Card>
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Salary % of Expenses</div><div className="text-lg font-semibold">{((FINANCE_KPI.totalSalaryExpense / totalActual) * 100).toFixed(0)}%</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Budget</div><div className="text-lg font-semibold">{fmtFull(totalBudget)}</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Actual Spend</div><div className="text-lg font-semibold">{fmtFull(totalActual)}</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Variance</div><div className={cn("text-lg font-semibold", totalActual > totalBudget ? "text-red-600" : "text-emerald-600")}>{totalActual > totalBudget ? "+" : ""}{((totalActual - totalBudget) / totalBudget * 100).toFixed(1)}%</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Salary % of Expenses</div><div className="text-lg font-semibold">{((FINANCE_KPI.totalSalaryExpense / totalActual) * 100).toFixed(0)}%</div></Card>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Expense Breakdown */}
-              <Card className="p-5">
+              <Card className="p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Expense Breakdown</h4>
-                <div className="h-56">
+                <div className="w-full min-h-[200px] sm:min-h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={EXPENSE_CATEGORIES} dataKey="actualSpend" nameKey="category" cx="50%" cy="50%" outerRadius={80} innerRadius={40} paddingAngle={3}>
@@ -370,9 +370,9 @@ export default function PrincipalFinancePage() {
               </Card>
 
               {/* Monthly Expense Trend */}
-              <Card className="lg:col-span-2 p-5">
+              <Card className="lg:col-span-2 p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Monthly Expense Trend</h4>
-                <div className="h-56">
+                <div className="w-full min-h-[200px] sm:min-h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={MONTHLY_TRENDS} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -388,10 +388,10 @@ export default function PrincipalFinancePage() {
             </div>
 
             {/* Expense Categories Table */}
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold mb-4">Expense Categories</h3>
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold mb-4">Expense Categories</h3>
               <div className="overflow-x-auto">
-                <table className="w-full text-xs">
+                <table className="w-full min-w-[600px] text-xs">
                   <thead>
                     <tr className="border-b border-border/60">
                       <th className="text-left p-2 text-[10px] font-medium text-muted-foreground">Category</th>
@@ -432,14 +432,14 @@ export default function PrincipalFinancePage() {
         <TabsContent value="salaries">
           <div className="space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Salary</div><div className="text-lg font-semibold">{fmtFull(FINANCE_KPI.totalSalaryExpense)}</div></Card>
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Teaching Staff</div><div className="text-lg font-semibold">{fmtFull(STAFF_SALARIES.filter((s) => s.staffType === "teaching").reduce((a, s) => a + s.salary, 0))}</div></Card>
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Non-Teaching</div><div className="text-lg font-semibold">{fmtFull(STAFF_SALARIES.filter((s) => s.staffType === "non-teaching").reduce((a, s) => a + s.salary, 0))}</div></Card>
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Pending</div><div className="text-lg font-semibold text-amber-600">{fmtFull(STAFF_SALARIES.filter((s) => s.status === "pending").reduce((a, s) => a + s.salary, 0))}</div></Card>
-              <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Processing</div><div className="text-lg font-semibold text-sky-600">{fmtFull(STAFF_SALARIES.filter((s) => s.status === "processing").reduce((a, s) => a + s.salary, 0))}</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Salary</div><div className="text-lg font-semibold">{fmtFull(FINANCE_KPI.totalSalaryExpense)}</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Teaching Staff</div><div className="text-lg font-semibold">{fmtFull(STAFF_SALARIES.filter((s) => s.staffType === "teaching").reduce((a, s) => a + s.salary, 0))}</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Non-Teaching</div><div className="text-lg font-semibold">{fmtFull(STAFF_SALARIES.filter((s) => s.staffType === "non-teaching").reduce((a, s) => a + s.salary, 0))}</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Pending</div><div className="text-lg font-semibold text-amber-600">{fmtFull(STAFF_SALARIES.filter((s) => s.status === "pending").reduce((a, s) => a + s.salary, 0))}</div></Card>
+              <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Processing</div><div className="text-lg font-semibold text-sky-600">{fmtFull(STAFF_SALARIES.filter((s) => s.status === "processing").reduce((a, s) => a + s.salary, 0))}</div></Card>
             </div>
 
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-col sm:flex-row gap-2 mb-2">
               <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
                 <SelectTrigger className="w-36 h-8 text-xs"><SelectValue placeholder="Department" /></SelectTrigger>
                 <SelectContent>
@@ -449,10 +449,10 @@ export default function PrincipalFinancePage() {
               </Select>
             </div>
 
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold mb-4">Staff Payroll</h3>
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold mb-4">Staff Payroll</h3>
               <div className="overflow-x-auto">
-                <table className="w-full text-xs">
+                <table className="w-full min-w-[600px] text-xs">
                   <thead>
                     <tr className="border-b border-border/60">
                       <th className="text-left p-2 text-[10px] font-medium text-muted-foreground">Staff</th>
@@ -495,9 +495,9 @@ export default function PrincipalFinancePage() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Revenue vs Expense */}
-              <Card className="p-5">
+              <Card className="p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Revenue vs Expense Trend</h4>
-                <div className="h-56">
+                <div className="w-full min-h-[200px] sm:min-h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={MONTHLY_TRENDS} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -513,9 +513,9 @@ export default function PrincipalFinancePage() {
               </Card>
 
               {/* Monthly Profitability */}
-              <Card className="p-5">
+              <Card className="p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Monthly Profitability</h4>
-                <div className="h-56">
+                <div className="w-full min-h-[200px] sm:min-h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={MONTHLY_TRENDS.map((m) => ({ ...m, profit: m.revenue - m.expenses }))} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -532,9 +532,9 @@ export default function PrincipalFinancePage() {
             </div>
 
             {/* Fee Collection Trend */}
-            <Card className="p-5">
+            <Card className="p-4 sm:p-6">
               <h4 className="text-xs font-semibold mb-3">Fee Collection Trend</h4>
-              <div className="h-56">
+              <div className="w-full min-h-[200px] sm:min-h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={COLLECTION_TRENDS} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -551,22 +551,22 @@ export default function PrincipalFinancePage() {
 
             {/* Top Insights */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <Card className="p-4">
+              <Card className="p-3 sm:p-4">
                 <div className="text-[10px] text-muted-foreground mb-1">Highest Earning</div>
                 <div className="text-sm font-semibold">Tuition Fees</div>
                 <div className="text-[10px] text-emerald-600">62% of total</div>
               </Card>
-              <Card className="p-4">
+              <Card className="p-3 sm:p-4">
                 <div className="text-[10px] text-muted-foreground mb-1">Highest Expense</div>
                 <div className="text-sm font-semibold">Infrastructure</div>
                 <div className="text-[10px] text-red-600">+4% over budget</div>
               </Card>
-              <Card className="p-4">
+              <Card className="p-3 sm:p-4">
                 <div className="text-[10px] text-muted-foreground mb-1">Best Month</div>
                 <div className="text-sm font-semibold">May 2026</div>
                 <div className="text-[10px] text-emerald-600">₹31L revenue</div>
               </Card>
-              <Card className="p-4">
+              <Card className="p-3 sm:p-4">
                 <div className="text-[10px] text-muted-foreground mb-1">Worst Month</div>
                 <div className="text-sm font-semibold">Mar 2026</div>
                 <div className="text-[10px] text-red-600">₹27.5L revenue</div>
@@ -578,7 +578,7 @@ export default function PrincipalFinancePage() {
         {/* ═══ AI INSIGHTS ═══ */}
         <TabsContent value="ai">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="p-5">
+            <Card className="p-4 sm:p-6">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
                 <Sparkles className="size-3.5 text-violet-500" /> AI Financial Insights
               </h4>
@@ -597,7 +597,7 @@ export default function PrincipalFinancePage() {
               </div>
             </Card>
 
-            <Card className="p-5">
+            <Card className="p-4 sm:p-6">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Recommended Actions</h4>
               <div className="space-y-2">
                 {RECOMMENDED_ACTIONS.map((action) => (
@@ -641,7 +641,7 @@ function KpiCard({ icon: Icon, label, value, tone }: {
     red: "bg-red-500/10 text-red-500",
   };
   return (
-    <Card className="p-3">
+    <Card className="p-3 sm:p-4">
       <div className="flex items-center gap-2.5">
         <div className={cn("size-8 rounded-lg grid place-items-center shrink-0", tones[tone])}>
           <Icon className="size-4" />

@@ -438,7 +438,7 @@ export function PrincipalDashboard() {
         title="Welcome back, Dr. Asha"
         subtitle="Real-time school operations command center"
         action={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <Button variant="outline" size="sm">
               <FileText className="size-4 mr-1" />
               Report
@@ -451,14 +451,16 @@ export function PrincipalDashboard() {
         }
       />
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* KPI Carousel Section */}
           <div>
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Key Performance Indicators</h2>
+              <h2 className="text-base sm:text-lg font-semibold">Key Performance Indicators</h2>
               <Badge variant="secondary">Click to drill down</Badge>
             </div>
-            <KPICarousel kpis={kpis} onKPIClick={handleKPIClick} />
+            <div className="overflow-x-auto scrollbar-hide">
+              <KPICarousel kpis={kpis} onKPIClick={handleKPIClick} />
+            </div>
           </div>
 
           {/* School Pulse Section */}
@@ -472,9 +474,9 @@ export function PrincipalDashboard() {
 
           {/* Scholarii Impact & Adoption */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Scholarii Impact &amp; Adoption</h2>
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-base sm:text-lg font-semibold">Scholarii Impact &amp; Adoption</h2>
+              <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                 {impactRanges.map((range) => (
                   <Button
                     key={range}
@@ -488,14 +490,14 @@ export function PrincipalDashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <Card className="p-5 border-2 border-emerald-200/60 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+              <Card className="p-3 sm:p-5 border-2 border-emerald-200/60 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20">
                 <div className="space-y-3">
                   <div>
                     <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">
                       Scholarii Adoption Score
                     </p>
-                    <div className="text-3xl font-bold text-foreground">{impactData.adoptionScore.score}</div>
+                    <div className="text-3xl font-bold text-foreground truncate">{impactData.adoptionScore.score}</div>
                     <p className="text-sm text-muted-foreground">{impactData.adoptionScore.label}</p>
                   </div>
                   <div className="space-y-2">
@@ -511,7 +513,7 @@ export function PrincipalDashboard() {
 
               <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {impactData.impactKpis.map((item) => (
-                  <Card key={item.label} className="p-4">
+                  <Card key={item.label} className="p-3 sm:p-4">
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">{item.label}</p>
                       <p className="text-lg font-semibold text-foreground">{item.value}</p>
@@ -527,7 +529,7 @@ export function PrincipalDashboard() {
                 {impactData.valueHighlights.map((item) => (
                   <Card
                     key={item.value}
-                    className="p-4 border-2 border-slate-200/70 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/30"
+                    className="p-3 sm:p-4 border-2 border-slate-200/70 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/30"
                   >
                     <div className="space-y-1">
                       <p className="text-sm font-semibold text-foreground">{item.value}</p>
@@ -538,18 +540,18 @@ export function PrincipalDashboard() {
               </div>
             </div>
 
-            <Card className="p-4 border border-border bg-muted/30">
-              <p className="text-sm text-muted-foreground">{impactData.summary}</p>
+            <Card className="p-3 sm:p-4 border border-border bg-muted/30">
+              <p className="text-sm text-muted-foreground line-clamp-2">{impactData.summary}</p>
             </Card>
           </div>
 
           {/* Main Content Grid: Activity Feed + Analytics + AI Insights */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
             {/* Left Column: Live Activity Feed + Quick Summary */}
             <div className="lg:col-span-1">
               <div className="space-y-4">
-                <Card className="p-4">
-                  <h4 className="font-semibold text-sm mb-2">Live Summary</h4>
+                <Card className="p-3 sm:p-4">
+                  <h4 className="font-semibold text-xs sm:text-sm mb-2">Live Summary</h4>
                   <div className="grid grid-cols-3 gap-2">
                     <div className="text-center">
                       <div className="text-xs text-muted-foreground">Present</div>
@@ -576,7 +578,7 @@ export function PrincipalDashboard() {
             {/* Middle Column: Analytics Charts */}
             <div className="lg:col-span-1 space-y-4">
               {/* Attendance Analytics Mini */}
-              <Card className="p-5">
+              <Card className="p-3 sm:p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="font-semibold text-sm">Student Attendance Trend</h3>
@@ -606,7 +608,7 @@ export function PrincipalDashboard() {
               </Card>
 
               {/* Class Performance Mini */}
-              <Card className="p-5">
+              <Card className="p-3 sm:p-5">
                 <div className="mb-4">
                   <h3 className="font-semibold text-sm">Class Performance by Grade</h3>
                   <p className="text-xs text-muted-foreground">Average test score across all subjects for each grade</p>
@@ -627,7 +629,7 @@ export function PrincipalDashboard() {
               </Card>
 
               {/* Fee Collection Mini */}
-              <Card className="p-5">
+              <Card className="p-3 sm:p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-sm">Fee Trends</h3>
                 </div>
@@ -646,10 +648,10 @@ export function PrincipalDashboard() {
 
             {/* Right Column: AI Insights */}
             <div className="lg:col-span-1">
-              <Card className="p-5 h-full">
+              <Card className="p-3 sm:p-5 h-full">
                 <div className="flex items-center gap-2 mb-4">
                   <Zap className="size-5 text-amber-500" />
-                  <h3 className="font-semibold">AI Insights</h3>
+                  <h3 className="font-semibold text-sm sm:text-base">AI Insights</h3>
                 </div>
                 <div className="max-h-[600px] overflow-y-auto">
                   <AIInsightsPanel
@@ -666,25 +668,25 @@ export function PrincipalDashboard() {
 
           {/* System Status Footer */}
           <div className="space-y-4">
-            <Card className="p-5">
-              <h3 className="font-semibold mb-4">System Status</h3>
+            <Card className="p-3 sm:p-5">
+                  <h3 className="font-semibold text-sm sm:text-base mb-4">System Status</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                 <div>
                   <div className="text-muted-foreground">Total Students</div>
-                  <div className="text-2xl font-bold mt-1">{data.students.length}</div>
+                  <div className="text-2xl font-bold mt-1 truncate">{data.students.length}</div>
                 </div>
                 <div>
                   <div className="text-muted-foreground">Total Teachers</div>
-                  <div className="text-2xl font-bold mt-1">{data.teachers.length}</div>
+                  <div className="text-2xl font-bold mt-1 truncate">{data.teachers.length}</div>
                 </div>
                 <div>
                   <div className="text-muted-foreground">Admission Pipeline</div>
-                  <div className="text-2xl font-bold mt-1">{data.admissionFunnel.admitted}</div>
+                  <div className="text-2xl font-bold mt-1 truncate">{data.admissionFunnel.admitted}</div>
                   <div className="text-xs text-muted-foreground">Admitted this term</div>
                 </div>
                 <div>
                   <div className="text-muted-foreground">Fee Target</div>
-                  <div className="text-2xl font-bold mt-1">₹{(data.feeTarget / 100000).toFixed(1)}L</div>
+                  <div className="text-2xl font-bold mt-1 truncate">₹{(data.feeTarget / 100000).toFixed(1)}L</div>
                   <div className="text-xs text-muted-foreground">Monthly target</div>
                 </div>
               </div>

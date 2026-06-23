@@ -56,9 +56,10 @@ function AcademicsPage() {
       <PageHeader title="Academics" subtitle="Exams & Results Command Center — school-wide performance overview." />
 
       {/* Academic Year Progress Timeline */}
-      <Card className="p-6 mb-6">
+      <Card className="p-4 sm:p-6 mb-6">
         <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-6">Academic Year Progress</h3>
-        <div className="flex items-start justify-between relative">
+        <div className="overflow-x-auto">
+        <div className="flex items-start justify-between relative min-w-[600px]">
           {EXAMS.map((exam, idx) => {
             const meta = STATUS_META[exam.status];
             const isActive = selectedExamId === exam.id;
@@ -99,16 +100,17 @@ function AcademicsPage() {
 
                 {/* Date range */}
                 <span className="text-[10px] text-muted-foreground whitespace-nowrap">{exam.dateRange}</span>
-              </button>
-            );
+            </button>
+          );
           })}
+        </div>
         </div>
       </Card>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-3 mb-6">
-          <TabsList className="h-9">
+        <Card className="p-3 mb-6 overflow-x-auto scrollbar-hide">
+          <TabsList className="h-9 min-w-max">
             <TabsTrigger value="overview" className="text-xs gap-1.5"><BarChart3 className="size-3" /> Overview</TabsTrigger>
             <TabsTrigger value="timetable" className="text-xs gap-1.5"><Calendar className="size-3" /> Timetable</TabsTrigger>
             <TabsTrigger value="results" className="text-xs gap-1.5"><Trophy className="size-3" /> Results</TabsTrigger>
@@ -122,32 +124,32 @@ function AcademicsPage() {
           {hasResults && stats ? (
             <div className="space-y-6">
               {/* KPI Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
-                <Card className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <Card className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-violet-500/10 grid place-items-center"><TrendingUp className="size-4 text-violet-500" /></div>
                     <div><div className="text-[10px] text-muted-foreground">Average Marks</div><div className="text-lg font-semibold">{stats.average}%</div></div>
                   </div>
                 </Card>
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-sky-500/10 grid place-items-center"><Users className="size-4 text-sky-500" /></div>
                     <div><div className="text-[10px] text-muted-foreground">Total Students</div><div className="text-lg font-semibold">{stats.totalStudents}</div></div>
                   </div>
                 </Card>
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-emerald-500/10 grid place-items-center"><CheckCircle2 className="size-4 text-emerald-500" /></div>
                     <div><div className="text-[10px] text-muted-foreground">Passed ({stats.passRate}%)</div><div className="text-lg font-semibold">{stats.passed}</div></div>
                   </div>
                 </Card>
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-red-500/10 grid place-items-center"><AlertTriangle className="size-4 text-red-500" /></div>
                     <div><div className="text-[10px] text-muted-foreground">Failed ({stats.failRate}%)</div><div className="text-lg font-semibold">{stats.failed}</div></div>
                   </div>
                 </Card>
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-amber-500/10 grid place-items-center"><Target className="size-4 text-amber-500" /></div>
                     <div><div className="text-[10px] text-muted-foreground">At-Risk</div><div className="text-lg font-semibold">{stats.atRiskRate}%</div></div>
@@ -158,13 +160,13 @@ function AcademicsPage() {
               {/* Best Class & Subject + Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="space-y-3">
-                  <Card className="p-4">
+                  <Card className="p-3 sm:p-4">
                     <div className="flex items-center gap-3">
                       <div className="size-9 rounded-lg bg-emerald-500/10 grid place-items-center"><Trophy className="size-4 text-emerald-500" /></div>
                       <div><div className="text-[10px] text-muted-foreground">Best Class</div><div className="text-lg font-semibold">{stats.bestClass}</div></div>
                     </div>
                   </Card>
-                  <Card className="p-4">
+                  <Card className="p-3 sm:p-4">
                     <div className="flex items-center gap-3">
                       <div className="size-9 rounded-lg bg-emerald-500/10 grid place-items-center"><GraduationCap className="size-4 text-emerald-500" /></div>
                       <div><div className="text-[10px] text-muted-foreground">Best Subject</div><div className="text-lg font-semibold">{stats.bestSubject}</div></div>
@@ -173,9 +175,9 @@ function AcademicsPage() {
                 </div>
 
                 {/* Subject Chart */}
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                   <h4 className="text-xs font-semibold mb-3">Subject-wise Performance</h4>
-                  <div className="h-48">
+                  <div className="min-h-[200px] sm:min-h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={subjectPerf ?? undefined} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -191,9 +193,9 @@ function AcademicsPage() {
                 </Card>
 
                 {/* Class Chart */}
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                   <h4 className="text-xs font-semibold mb-3">Class-wise Comparison</h4>
-                  <div className="h-48">
+                  <div className="min-h-[200px] sm:min-h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={classPerf ?? undefined} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -220,8 +222,8 @@ function AcademicsPage() {
 
         {/* ═══ TIMETABLE TAB ═══ */}
         <TabsContent value="timetable">
-          <Card className="p-5">
-            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
               <Calendar className="size-4 text-violet-500" />
               {selectedExam?.name} — Timetable
             </h3>
@@ -233,7 +235,7 @@ function AcademicsPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm min-w-[600px]">
                   <thead>
                     <tr className="border-b border-border/60">
                       <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Subject</th>
@@ -265,19 +267,19 @@ function AcademicsPage() {
           {hasResults && stats ? (
             <div className="space-y-6">
               {/* KPI Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Average Marks</div><div className="text-lg font-semibold">{stats.average}%</div></Card>
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Students</div><div className="text-lg font-semibold">{stats.totalStudents}</div></Card>
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Passed</div><div className="text-lg font-semibold text-emerald-600">{stats.passed} ({stats.passRate}%)</div></Card>
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Failed</div><div className="text-lg font-semibold text-red-600">{stats.failed} ({stats.failRate}%)</div></Card>
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">At-Risk</div><div className="text-lg font-semibold text-amber-600">{stats.atRiskRate}%</div></Card>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Average Marks</div><div className="text-lg font-semibold">{stats.average}%</div></Card>
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Students</div><div className="text-lg font-semibold">{stats.totalStudents}</div></Card>
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Passed</div><div className="text-lg font-semibold text-emerald-600">{stats.passed} ({stats.passRate}%)</div></Card>
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Failed</div><div className="text-lg font-semibold text-red-600">{stats.failed} ({stats.failRate}%)</div></Card>
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">At-Risk</div><div className="text-lg font-semibold text-amber-600">{stats.atRiskRate}%</div></Card>
               </div>
 
               {/* Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                   <h4 className="text-xs font-semibold mb-3">Subject-wise Performance</h4>
-                  <div className="h-56">
+                  <div className="min-h-[200px] sm:min-h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={subjectPerf ?? undefined} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -291,9 +293,9 @@ function AcademicsPage() {
                     </ResponsiveContainer>
                   </div>
                 </Card>
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                   <h4 className="text-xs font-semibold mb-3">Class-wise Comparison</h4>
-                  <div className="h-56">
+                  <div className="min-h-[200px] sm:min-h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={classPerf ?? undefined} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -322,11 +324,11 @@ function AcademicsPage() {
           {hasResults && selectedClassPerf ? (
             <div className="space-y-6">
               {/* Class Selector */}
-              <Card className="p-4">
-                <div className="flex items-center gap-4">
-                  <h3 className="text-sm font-semibold">Class Wise Results</h3>
+              <Card className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                  <h3 className="text-base sm:text-lg font-semibold">Class Wise Results</h3>
                   <Select value={selectedClass} onValueChange={setSelectedClass}>
-                    <SelectTrigger className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-full sm:w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {ALL_CLASSES.map((cls) => <SelectItem key={cls} value={cls}>Class {cls}</SelectItem>)}
                     </SelectContent>
@@ -335,13 +337,13 @@ function AcademicsPage() {
               </Card>
 
               {/* Class KPIs */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Class Average</div><div className="text-lg font-semibold">{selectedClassPerf.average}%</div></Card>
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Passing %</div><div className="text-lg font-semibold text-emerald-600">{selectedClassPerf.passRate}%</div></Card>
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Failing %</div><div className="text-lg font-semibold text-red-600">{selectedClassPerf.failRate}%</div></Card>
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">At-Risk</div><div className="text-lg font-semibold text-amber-600">{selectedClassPerf.atRisk}</div></Card>
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Passed</div><div className="text-lg font-semibold">{selectedClassPerf.passed}/{selectedClassPerf.totalStudents}</div></Card>
-                <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Failed</div><div className="text-lg font-semibold text-red-600">{selectedClassPerf.failed}</div></Card>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Class Average</div><div className="text-lg font-semibold">{selectedClassPerf.average}%</div></Card>
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Passing %</div><div className="text-lg font-semibold text-emerald-600">{selectedClassPerf.passRate}%</div></Card>
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Failing %</div><div className="text-lg font-semibold text-red-600">{selectedClassPerf.failRate}%</div></Card>
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">At-Risk</div><div className="text-lg font-semibold text-amber-600">{selectedClassPerf.atRisk}</div></Card>
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Passed</div><div className="text-lg font-semibold">{selectedClassPerf.passed}/{selectedClassPerf.totalStudents}</div></Card>
+                <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Failed</div><div className="text-lg font-semibold text-red-600">{selectedClassPerf.failed}</div></Card>
               </div>
 
               {/* Top & At-Risk */}
@@ -361,8 +363,8 @@ function AcademicsPage() {
         {/* ═══ AI ANALYSIS TAB ═══ */}
         <TabsContent value="ai">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="p-5">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+            <Card className="p-4 sm:p-6">
+              <h4 className="text-base sm:text-lg font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
                 <Sparkles className="size-3.5 text-violet-500" /> AI Insights
               </h4>
               <div className="space-y-2">
@@ -384,15 +386,15 @@ function AcademicsPage() {
                   return (
                     <div key={insight.id} className={cn("flex items-start gap-3 rounded-xl border p-3", tones[insight.type])}>
                       <Icon className={cn("size-3.5 shrink-0 mt-0.5", iconColors[insight.type])} />
-                      <span className="text-xs">{insight.text}</span>
+                      <span className="text-xs break-words">{insight.text}</span>
                     </div>
                   );
                 })}
               </div>
             </Card>
 
-            <Card className="p-5">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Recommended Actions</h4>
+            <Card className="p-4 sm:p-6">
+              <h4 className="text-base sm:text-lg font-semibold text-muted-foreground uppercase tracking-wide mb-3">Recommended Actions</h4>
               <div className="space-y-2">
                 {RECOMMENDED_ACTIONS.map((action) => (
                   <div key={action.id} className="flex items-center gap-3 rounded-xl border border-border/60 px-3 py-2.5">
@@ -407,7 +409,7 @@ function AcademicsPage() {
                         {action.priority === "high" ? "!" : action.priority === "medium" ? "•" : "i"}
                       </span>
                     </div>
-                    <p className="text-xs flex-1">{action.text}</p>
+                    <p className="text-xs flex-1 break-words">{action.text}</p>
                     <Badge variant="outline" className="text-[9px] capitalize">{action.priority}</Badge>
                   </div>
                 ))}
@@ -427,16 +429,16 @@ function TopStudentsList({ students }: { students: { rank: number; name: string;
 
   if (students.length === 0) {
     return (
-      <Card className="p-5">
-        <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><Trophy className="size-4 text-amber-500" /> Top 5 Students</h3>
+      <Card className="p-3 sm:p-4">
+        <h3 className="text-base sm:text-lg font-semibold mb-3 flex items-center gap-2"><Trophy className="size-4 text-amber-500" /> Top 5 Students</h3>
         <p className="text-xs text-muted-foreground text-center py-6">No data available for this class.</p>
       </Card>
     );
   }
 
   return (
-    <Card className="p-5">
-      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><Trophy className="size-4 text-amber-500" /> Top 5 Students</h3>
+    <Card className="p-3 sm:p-4">
+      <h3 className="text-base sm:text-lg font-semibold mb-3 flex items-center gap-2"><Trophy className="size-4 text-amber-500" /> Top 5 Students</h3>
       <div className="space-y-2">
         {students.map((s) => (
           <div key={s.rank}>
@@ -482,17 +484,17 @@ function AtRiskList({ students }: { students: { name: string; percentage: number
   const riskBg = { high: "bg-red-500/10", medium: "bg-amber-500/10", low: "bg-sky-500/10" };
 
   if (students.length === 0) {
-    return (
-      <Card className="p-5">
-        <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><AlertTriangle className="size-4 text-red-500" /> Students Needing Attention</h3>
+      return (
+      <Card className="p-3 sm:p-4">
+        <h3 className="text-base sm:text-lg font-semibold mb-3 flex items-center gap-2"><AlertTriangle className="size-4 text-red-500" /> Students Needing Attention</h3>
         <p className="text-xs text-muted-foreground text-center py-6">No at-risk students in this class.</p>
       </Card>
     );
   }
 
   return (
-    <Card className="p-5">
-      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><AlertTriangle className="size-4 text-red-500" /> Students Needing Attention</h3>
+    <Card className="p-3 sm:p-4">
+      <h3 className="text-base sm:text-lg font-semibold mb-3 flex items-center gap-2"><AlertTriangle className="size-4 text-red-500" /> Students Needing Attention</h3>
       <div className="space-y-2">
         {students.map((s) => (
           <div key={s.name}>

@@ -237,12 +237,12 @@ function CompliancePage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {complianceStats.map((stat) => {
           const Icon = stat.icon;
           const tones = { emerald: "bg-emerald-500/10 text-emerald-500", sky: "bg-sky-500/10 text-sky-500", amber: "bg-amber-500/10 text-amber-500", violet: "bg-violet-500/10 text-violet-500" };
           return (
-            <Card key={stat.label} className="p-4">
+            <Card key={stat.label} className="p-3 sm:p-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className={cn("size-10 rounded-xl grid place-items-center shrink-0", tones[stat.tone])}>
                   <Icon className="size-5" />
@@ -259,7 +259,7 @@ function CompliancePage() {
       </div>
 
       {/* Compliance Health Summary */}
-      <Card className="p-5 mb-8">
+      <Card className="p-4 sm:p-5 mb-6 sm:mb-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <div className="flex items-center gap-2 mb-3">
@@ -268,7 +268,7 @@ function CompliancePage() {
               </div>
               <div>
                 <p className="text-xs font-semibold">Compliance Health</p>
-                <div className="text-2xl font-semibold">92 / 100</div>
+                <div className="text-2xl sm:text-4xl font-semibold">92 / 100</div>
               </div>
             </div>
             <div className="flex items-center gap-2 mb-3">
@@ -279,16 +279,16 @@ function CompliancePage() {
               The school remains compliant across most regulatory requirements. Two certificates need attention within the next 30 days,
               while overall inspection readiness remains high.
             </p>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="rounded-xl border border-border/60 p-3">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+              <div className="rounded-xl border border-border/60 p-3 sm:p-4">
                 <p className="text-[11px] text-muted-foreground">Total Compliance Items</p>
                 <p className="text-lg font-semibold">18</p>
               </div>
-              <div className="rounded-xl border border-border/60 p-3">
+              <div className="rounded-xl border border-border/60 p-3 sm:p-4">
                 <p className="text-[11px] text-muted-foreground">Need Attention</p>
                 <p className="text-lg font-semibold text-amber-600">2</p>
               </div>
-              <div className="rounded-xl border border-border/60 p-3">
+              <div className="rounded-xl border border-border/60 p-3 sm:p-4">
                 <p className="text-[11px] text-muted-foreground">Critical</p>
                 <p className="text-lg font-semibold text-emerald-600">0</p>
               </div>
@@ -302,8 +302,8 @@ function CompliancePage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-4 mb-8">
-          <TabsList className="h-11">
+        <Card className="p-3 sm:p-4 mb-6 sm:mb-8">
+          <TabsList className="h-11 overflow-x-auto scrollbar-hide">
             <TabsTrigger value="overview" className="text-sm gap-2 px-5"><LayoutDashboard className="size-4" /> Overview</TabsTrigger>
             <TabsTrigger value="items" className="text-sm gap-2 px-5"><ClipboardList className="size-4" /> Compliance Items</TabsTrigger>
             <TabsTrigger value="expiring" className="text-sm gap-2 px-5"><AlertTriangle className="size-4" /> Expiring Certificates</TabsTrigger>
@@ -315,10 +315,10 @@ function CompliancePage() {
 
         {/* ═══ OVERVIEW ═══ */}
         {activeTab === "overview" && (
-          <Card className="p-5">
+          <Card className="p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <h3 className="text-sm font-semibold">Compliance Overview</h3>
+                <h3 className="text-base sm:text-lg font-semibold">Compliance Overview</h3>
                 <p className="text-xs text-muted-foreground">Summary of all compliance areas and their current status.</p>
               </div>
               <Badge variant="outline" className="text-[10px]">Summary</Badge>
@@ -346,24 +346,24 @@ function CompliancePage() {
         {/* ═══ COMPLIANCE ITEMS ═══ */}
         {activeTab === "items" && (
           <div>
-            <Card className="p-4 mb-4">
+            <Card className="p-3 sm:p-4 mb-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-xs font-semibold">Search and Filters</p>
+                  <p className="text-base sm:text-lg font-semibold">Search and Filters</p>
                   <p className="text-[11px] text-muted-foreground">Search certificate name, compliance item, or document name.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
                   <div className="relative">
                     <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      className="h-8 text-xs pl-8 w-[260px]"
+                      className="h-8 text-xs pl-8 w-full sm:w-[260px]"
                       placeholder="Search certificate, item, document..."
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                     />
                   </div>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[150px] h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectTrigger className="w-full sm:w-[150px] h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All statuses</SelectItem>
                       <SelectItem value="Healthy">Healthy</SelectItem>
@@ -372,7 +372,7 @@ function CompliancePage() {
                     </SelectContent>
                   </Select>
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-[180px] h-8 text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
+                    <SelectTrigger className="w-full sm:w-[180px] h-8 text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All categories</SelectItem>
                       <SelectItem value="Regulatory">Regulatory</SelectItem>
@@ -387,8 +387,8 @@ function CompliancePage() {
               </div>
             </Card>
 
-            <p className="text-xs font-semibold mb-3">Core Compliance Status</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-4">
+            <p className="text-base sm:text-lg font-semibold mb-3">Core Compliance Status</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
               {filteredItems.map((item) => {
                 const tone = statusToneMap[item.statusLevel];
                 return (
@@ -431,10 +431,10 @@ function CompliancePage() {
 
         {/* ═══ EXPIRING CERTIFICATES ═══ */}
         {activeTab === "expiring" && (
-          <Card className="p-5">
+          <Card className="p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <h3 className="text-sm font-semibold">Expiring Certificates & Renewals</h3>
+                <h3 className="text-base sm:text-lg font-semibold">Expiring Certificates & Renewals</h3>
                 <p className="text-xs text-muted-foreground">Sorted by nearest expiry so upcoming risks are visible first.</p>
               </div>
               <Badge variant="outline" className="text-[10px]">{expiringCertificates.length} Items</Badge>
@@ -466,10 +466,10 @@ function CompliancePage() {
 
         {/* ═══ INSPECTION READINESS ═══ */}
         {activeTab === "inspection" && (
-          <Card className="p-5">
+          <Card className="p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <h3 className="text-sm font-semibold">Inspection Readiness</h3>
+                <h3 className="text-base sm:text-lg font-semibold">Inspection Readiness</h3>
                 <p className="text-xs text-muted-foreground">Quick view of what is inspection-ready and what needs attention.</p>
               </div>
               <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[10px]">Inspection Ready</Badge>
@@ -491,7 +491,7 @@ function CompliancePage() {
             </div>
             <div className="space-y-2">
               {inspectionChecklist.map((item) => (
-                <div key={item.label} className="flex items-center justify-between rounded-xl border border-border/60 px-3 py-2">
+                <div key={item.label} className="flex items-center justify-between rounded-xl border border-border/60 px-3 py-2.5 sm:py-2">
                   <div className="flex items-center gap-2">
                     {item.done ? <CheckCircle2 className="size-3.5 text-emerald-500" /> : <CircleAlert className="size-3.5 text-amber-500" />}
                     <span className="text-xs font-medium">{item.label}</span>
@@ -507,10 +507,10 @@ function CompliancePage() {
 
         {/* ═══ CALENDAR ═══ */}
         {activeTab === "calendar" && (
-          <Card className="p-5">
+          <Card className="p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <h3 className="text-sm font-semibold">Compliance Calendar</h3>
+                <h3 className="text-base sm:text-lg font-semibold">Compliance Calendar</h3>
                 <p className="text-xs text-muted-foreground">Upcoming compliance events in a simple timeline.</p>
               </div>
               <Badge variant="outline" className="text-[10px]">Timeline</Badge>
@@ -537,10 +537,10 @@ function CompliancePage() {
 
         {/* ═══ STAFF ═══ */}
         {activeTab === "staff" && (
-          <Card className="p-5">
+          <Card className="p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <h3 className="text-sm font-semibold">Staff Compliance Overview</h3>
+                <h3 className="text-base sm:text-lg font-semibold">Staff Compliance Overview</h3>
                 <p className="text-xs text-muted-foreground">Staff verification and renewal status at a glance.</p>
               </div>
               <Badge variant="outline" className="text-[10px]">Staff</Badge>
@@ -559,10 +559,10 @@ function CompliancePage() {
       </Tabs>
 
       {/* Quick Actions */}
-      <Card className="p-4 mt-8">
+      <Card className="p-3 sm:p-4 mt-6 sm:mt-8">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-semibold">Quick Actions</p>
+            <p className="text-base sm:text-lg font-semibold">Quick Actions</p>
             <p className="text-[11px] text-muted-foreground">Minimal actions for compliance oversight.</p>
           </div>
           <div className="flex flex-wrap gap-2">
