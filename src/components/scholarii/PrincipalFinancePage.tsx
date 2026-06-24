@@ -136,7 +136,7 @@ export default function PrincipalFinancePage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
+      <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
         <KpiCard icon={DollarSign} label="Total Revenue" value={fmtFull(FINANCE_KPI.totalRevenue)} tone="violet" />
         <KpiCard icon={TrendingDown} label="Total Expenses" value={fmtFull(FINANCE_KPI.totalExpenses)} tone="red" />
         <KpiCard icon={TrendingUp} label="Net Surplus" value={fmtFull(FINANCE_KPI.netSurplus)} tone="emerald" />
@@ -230,7 +230,7 @@ export default function PrincipalFinancePage() {
               <div className="space-y-4">
                 <Card className="p-4 sm:p-6">
                   <h4 className="text-xs font-semibold mb-3">Top 5 Defaulter Classes</h4>
-                  <div className="w-full min-h-[200px] sm:min-h-[300px]">
+                  <div className="w-full h-[200px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={DEFAULTER_CLASSES} layout="vertical" margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
@@ -244,7 +244,7 @@ export default function PrincipalFinancePage() {
                 </Card>
                 <Card className="p-4 sm:p-6">
                   <h4 className="text-xs font-semibold mb-3">Collection Trend</h4>
-                  <div className="w-full min-h-[200px] sm:min-h-[300px]">
+                  <div className="w-full h-[200px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={COLLECTION_TRENDS} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -269,7 +269,7 @@ export default function PrincipalFinancePage() {
               {/* Pie Chart */}
               <Card className="p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Income Distribution</h4>
-                <div className="w-full min-h-[200px] sm:min-h-[300px]">
+                <div className="w-full h-[200px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={INCOME_SOURCES} dataKey="amount" nameKey="category" cx="50%" cy="50%" outerRadius={80} innerRadius={40} paddingAngle={3}>
@@ -285,7 +285,7 @@ export default function PrincipalFinancePage() {
               {/* Monthly Trend */}
               <Card className="lg:col-span-2 p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Monthly Revenue Trend</h4>
-                <div className="w-full min-h-[200px] sm:min-h-[300px]">
+                <div className="w-full h-[200px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={MONTHLY_TRENDS} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -356,7 +356,7 @@ export default function PrincipalFinancePage() {
               {/* Expense Breakdown */}
               <Card className="p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Expense Breakdown</h4>
-                <div className="w-full min-h-[200px] sm:min-h-[300px]">
+                <div className="w-full h-[200px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={EXPENSE_CATEGORIES} dataKey="actualSpend" nameKey="category" cx="50%" cy="50%" outerRadius={80} innerRadius={40} paddingAngle={3}>
@@ -372,7 +372,7 @@ export default function PrincipalFinancePage() {
               {/* Monthly Expense Trend */}
               <Card className="lg:col-span-2 p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Monthly Expense Trend</h4>
-                <div className="w-full min-h-[200px] sm:min-h-[300px]">
+                <div className="w-full h-[200px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={MONTHLY_TRENDS} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -497,7 +497,7 @@ export default function PrincipalFinancePage() {
               {/* Revenue vs Expense */}
               <Card className="p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Revenue vs Expense Trend</h4>
-                <div className="w-full min-h-[200px] sm:min-h-[300px]">
+                <div className="w-full h-[200px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={MONTHLY_TRENDS} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -515,7 +515,7 @@ export default function PrincipalFinancePage() {
               {/* Monthly Profitability */}
               <Card className="p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Monthly Profitability</h4>
-                <div className="w-full min-h-[200px] sm:min-h-[300px]">
+                <div className="w-full h-[200px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={MONTHLY_TRENDS.map((m) => ({ ...m, profit: m.revenue - m.expenses }))} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -534,7 +534,7 @@ export default function PrincipalFinancePage() {
             {/* Fee Collection Trend */}
             <Card className="p-4 sm:p-6">
               <h4 className="text-xs font-semibold mb-3">Fee Collection Trend</h4>
-              <div className="w-full min-h-[200px] sm:min-h-[300px]">
+              <div className="w-full h-[200px] sm:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={COLLECTION_TRENDS} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />

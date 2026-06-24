@@ -309,7 +309,7 @@ function TeachersPage() {
       />
 
       <div className="space-y-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           <Card className="p-3 sm:p-4">
             <p className="text-xs text-muted-foreground">Total Staff</p>
             <div className="text-2xl font-bold mt-2">{totalStaff} Staff Members</div>

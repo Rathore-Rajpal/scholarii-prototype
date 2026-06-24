@@ -150,7 +150,7 @@ function FacilitiesPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <KpiCard icon={Building2} label="Total Facilities" value={String(FACILITIES.length)} tone="violet" />
         <KpiCard icon={Wrench} label="Currently Occupied" value={String(occupiedCount)} tone="sky" />
         <KpiCard icon={Clock3} label="Available Now" value={String(availableCount)} tone="emerald" />

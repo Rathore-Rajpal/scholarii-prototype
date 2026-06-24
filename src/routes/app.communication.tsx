@@ -271,7 +271,7 @@ function CommunicationPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {kpis.map((item) => {
           const Icon = item.icon;
           const tones = { sky: "bg-sky-500/10 text-sky-500", emerald: "bg-emerald-500/10 text-emerald-500", violet: "bg-violet-500/10 text-violet-500", amber: "bg-amber-500/10 text-amber-500" };
@@ -473,7 +473,7 @@ function CommunicationPage() {
               </div>
               <Badge variant="outline" className="text-[10px]">84 Circulars Sent</Badge>
             </div>
-            <div className="grid grid-cols-2 gap-3 min-h-[200px] sm:min-h-[300px]">
+            <div className="grid grid-cols-2 gap-3 h-[200px] sm:h-[300px]">
               <Card className="p-3 sm:p-4">
                 <p className="text-[11px] text-muted-foreground">Read</p>
                 <div className="text-lg font-semibold mt-1">71</div>
@@ -504,7 +504,7 @@ function CommunicationPage() {
               </div>
               <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[10px]">Healthy</Badge>
             </div>
-            <div className="grid grid-cols-2 gap-3 min-h-[200px] sm:min-h-[300px]">
+            <div className="grid grid-cols-2 gap-3 h-[200px] sm:h-[300px]">
               <Card className="p-3 sm:p-4">
                 <p className="text-[11px] text-muted-foreground">Active Parents</p>
                 <div className="text-lg font-semibold mt-1">92%</div>

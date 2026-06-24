@@ -245,7 +245,7 @@ function SchoolBrainPage() {
         }
       />
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8">
+      <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8">
         <KpiCard label="Knowledge Sources" value="248 Sources" icon={FileText} note="Connected to Scholarii AI" />
         <KpiCard label="Documents Connected" value="1,284 Documents" icon={BookOpen} note="School and compliance files" />
         <KpiCard label="Staff Profiles" value="68 Profiles" icon={Users} note="Staff knowledge records" />

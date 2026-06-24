@@ -219,6 +219,90 @@ html, body {
   display: none;
 }
 
+/* Mobile KPI carousel - one card at a time with snap */
+.kpi-mobile-scroll {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  gap: 0.75rem;
+  padding-bottom: 0.25rem;
+}
+.kpi-mobile-scroll::-webkit-scrollbar {
+  display: none;
+}
+.kpi-mobile-scroll > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .kpi-mobile-scroll {
+    display: grid;
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+}
+
+/* Exam carousel - horizontal snap scroll for exam cards */
+@media (max-width: 639px) {
+  .exam-carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+  }
+  .exam-carousel::-webkit-scrollbar {
+    display: none;
+  }
+  .exam-carousel > * {
+    scroll-snap-align: center;
+    flex-shrink: 0;
+    width: calc(50% - 0.375rem);
+    min-width: 160px;
+  }
+}
+
+/* Class chips horizontal scroll */
+.chips-scroll {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+.chips-scroll::-webkit-scrollbar {
+  display: none;
+}
+.chips-scroll > * {
+  flex-shrink: 0;
+}
+
+/* Mobile timetable card layout */
+@media (max-width: 639px) {
+  .timetable-desktop-table {
+    display: none;
+  }
+  .timetable-mobile-cards {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+@media (min-width: 640px) {
+  .timetable-mobile-cards {
+    display: none !important;
+  }
+}
+
 /* Touch-friendly targets */
 @media (max-width: 639px) {
   button, a, [role="button"] {

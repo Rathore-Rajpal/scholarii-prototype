@@ -679,14 +679,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  const SidebarInner = (
+  const SidebarInner = (expanded: boolean) => (
     <div className="flex h-full flex-col">
       <div className={cn(
         "flex items-center gap-2 border-b border-sidebar-border transition-all duration-300",
-        sidebarOpen ? "h-16 px-5" : "h-16 px-3 justify-center"
+        expanded ? "h-16 px-5" : "h-16 px-3 justify-center"
       )}>
         <img src={scholariiIconUrl} alt="Scholarii icon" className="size-8 flex-shrink-0" />
-        {sidebarOpen && (
+        {expanded && (
           <div className="animate-in fade-in">
             <div className="font-semibold text-sidebar-foreground leading-none">Scholarii</div>
             <div className="text-[11px] text-muted-foreground mt-0.5 transition-all">{portalLabel} Portal</div>
@@ -712,12 +712,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                     hasActiveChild
                       ? "text-sidebar-foreground font-medium"
                       : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                    !sidebarOpen && "justify-center"
+                    !expanded && "justify-center"
                   )}
-                  title={!sidebarOpen ? group.label : ""}
+                  title={!expanded ? group.label : ""}
                 >
                   <GroupIcon className="size-4 flex-shrink-0" />
-                  {sidebarOpen && (
+                  {expanded && (
                     <>
                       <span className="font-medium flex-1 text-left">{group.label}</span>
                       <ChevronDown
@@ -728,7 +728,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       />
                     </>
                   )}
-                  {!sidebarOpen && (
+                  {!expanded && (
                     <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
                       {group.label}
                     </div>
@@ -740,7 +740,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
                   )}
                 >
-                  <div className={cn("pl-4 space-y-0.5", !sidebarOpen && "pl-0")}>
+                  <div className={cn("pl-4 space-y-0.5", !expanded && "pl-0")}>
                     {group.items.map((child) => {
                       const active = child.to === "/app" ? path === "/app" : path.startsWith(child.to);
                       const ChildIcon = child.icon;
@@ -754,15 +754,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                             active
                               ? "bg-brand-gradient text-white shadow-glow"
                               : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                            !sidebarOpen && "justify-center"
+                            !expanded && "justify-center"
                           )}
-                          title={!sidebarOpen ? child.label : ""}
+                          title={!expanded ? child.label : ""}
                         >
                           <ChildIcon className="size-4 flex-shrink-0" />
-                          {sidebarOpen && (
+                          {expanded && (
                             <span className="font-medium">{child.label}</span>
                           )}
-                          {!sidebarOpen && (
+                          {!expanded && (
                             <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
                               {child.label}
                             </div>
@@ -789,15 +789,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                 active
                   ? "bg-brand-gradient text-white shadow-glow"
                   : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                !sidebarOpen && "justify-center"
+                !expanded && "justify-center"
               )}
-              title={!sidebarOpen ? it_.label : ""}
+              title={!expanded ? it_.label : ""}
             >
               <Icon className="size-4 flex-shrink-0" />
-              {sidebarOpen && (
+              {expanded && (
                 <span className="font-medium">{it_.label}</span>
               )}
-              {!sidebarOpen && (
+              {!expanded && (
                 <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
                   {it_.label}
                 </div>
@@ -811,13 +811,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           onClick={() => { logout(); nav({ to: "/login" }); }}
           className={cn(
             "group relative w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors duration-200",
-            !sidebarOpen && "justify-center"
+            !expanded && "justify-center"
           )}
-          title={!sidebarOpen ? "Log out" : ""}
+          title={!expanded ? "Log out" : ""}
         >
           <LogOut className="size-4 flex-shrink-0" />
-          {sidebarOpen && "Log out"}
-          {!sidebarOpen && (
+          {expanded && "Log out"}
+          {!expanded && (
             <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar-accent text-sidebar-accent-foreground rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
               Log out
             </div>
@@ -834,14 +834,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         "hidden lg:flex flex-col shrink-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 overflow-hidden",
         sidebarOpen ? "w-64" : "w-20"
       )}>
-        {SidebarInner}
+        {SidebarInner(sidebarOpen)}
       </aside>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <aside className="absolute left-0 top-0 h-full w-72 bg-sidebar border-r border-sidebar-border animate-in-up overflow-hidden">
-            {SidebarInner}
+            {SidebarInner(true)}
           </aside>
         </div>
       )}

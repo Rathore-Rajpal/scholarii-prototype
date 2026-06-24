@@ -79,7 +79,7 @@ function AdminCompliancePage() {
         }
       />
 
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+      <div className="mb-8 kpi-mobile-scroll grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
         <Kpi label="Compliance Score" value="92/100" hint="Healthy" icon={ShieldCheck} tone="emerald" />
         <Kpi label="Total Items" value="18" hint="Tracked" icon={ClipboardList} tone="sky" />
         <Kpi label="Need Attention" value="2" hint="Within 30 days" icon={AlertTriangle} tone="amber" />

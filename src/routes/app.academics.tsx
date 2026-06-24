@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { RoleGuard } from "@/components/scholarii/RoleGuard";
 import { PageHeader } from "@/components/scholarii/AppShell";
 import { Card } from "@/components/ui/card";
@@ -41,6 +41,7 @@ function AcademicsPage() {
   const [selectedExamId, setSelectedExamId] = useState("unit1");
   const [selectedClass, setSelectedClass] = useState("8A");
   const [activeTab, setActiveTab] = useState("overview");
+  const examCarouselRef = useRef<HTMLDivElement>(null);
 
   const selectedExam = EXAMS.find((e) => e.id === selectedExamId);
   const hasResults = selectedExam?.status === "conducted";
@@ -51,107 +52,147 @@ function AcademicsPage() {
   const topStudents = hasResults ? TOP_STUDENTS[selectedExamId]?.[selectedClass] || [] : [];
   const atRiskStudents = hasResults ? AT_RISK_STUDENTS[selectedExamId]?.[selectedClass] || [] : [];
 
+  const scrollToExam = useCallback((examId: string) => {
+    setSelectedExamId(examId);
+    const idx = EXAMS.findIndex((e) => e.id === examId);
+    if (examCarouselRef.current && idx >= 0) {
+      const card = examCarouselRef.current.children[idx] as HTMLElement;
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    }
+  }, []);
+
   return (
     <div>
       <PageHeader title="Academics" subtitle="Exams & Results Command Center — school-wide performance overview." />
 
       {/* Academic Year Progress Timeline */}
       <Card className="p-4 sm:p-6 mb-6">
-        <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-6">Academic Year Progress</h3>
-        <div className="overflow-x-auto">
-        <div className="flex items-start justify-between relative min-w-[600px]">
-          {EXAMS.map((exam, idx) => {
+        <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-4 sm:mb-6">Academic Year Progress</h3>
+        {/* Desktop: grid layout with connector lines */}
+        <div className="hidden sm:block">
+          <div className="flex items-start justify-between relative min-w-[600px]">
+            {EXAMS.map((exam, idx) => {
+              const meta = STATUS_META[exam.status];
+              const isActive = selectedExamId === exam.id;
+              const isLast = idx === EXAMS.length - 1;
+              return (
+                <button
+                  key={exam.id}
+                  onClick={() => setSelectedExamId(exam.id)}
+                  className="flex flex-col items-center text-center group relative z-10"
+                >
+                  {!isLast && (
+                    <div className={cn("absolute top-5 left-[calc(50%+24px)] right-[calc(-50%+24px)] h-[2px]", meta.lineColor)} />
+                  )}
+                  <div className={cn(
+                    "relative size-12 rounded-full flex items-center justify-center mb-3 transition-transform group-hover:scale-110",
+                    isActive ? "ring-2 ring-offset-2 ring-violet-400" : "",
+                    meta.iconBg
+                  )}>
+                    {exam.status === "conducted" ? (
+                      <svg className="size-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    ) : (
+                      <div className="size-3 rounded-full bg-white/80" />
+                    )}
+                  </div>
+                  <span className={cn("text-xs font-semibold mb-1.5 whitespace-nowrap", isActive ? "text-foreground" : "text-muted-foreground")}>
+                    {exam.name}
+                  </span>
+                  <Badge className={cn("border-0 text-[9px] mb-1.5", meta.bg, meta.color)}>
+                    {meta.label}
+                  </Badge>
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">{exam.dateRange}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {/* Mobile: swipeable carousel */}
+        <div ref={examCarouselRef} className="exam-carousel sm:hidden">
+          {EXAMS.map((exam) => {
             const meta = STATUS_META[exam.status];
             const isActive = selectedExamId === exam.id;
-            const isLast = idx === EXAMS.length - 1;
             return (
               <button
                 key={exam.id}
-                onClick={() => setSelectedExamId(exam.id)}
-                className="flex flex-col items-center text-center group relative z-10"
-              >
-                {/* Connector line */}
-                {!isLast && (
-                  <div className={cn("absolute top-5 left-[calc(50%+24px)] right-[calc(-50%+24px)] h-[2px]", meta.lineColor)} />
+                onClick={() => scrollToExam(exam.id)}
+                className={cn(
+                  "flex flex-col items-center text-center rounded-xl p-4 transition-all",
+                  isActive ? "bg-violet-500/5 ring-2 ring-violet-400" : "bg-muted/30"
                 )}
-
-                {/* Icon circle */}
+              >
                 <div className={cn(
-                  "relative size-12 rounded-full flex items-center justify-center mb-3 transition-transform group-hover:scale-110",
-                  isActive ? "ring-2 ring-offset-2 ring-violet-400" : "",
+                  "relative size-11 rounded-full flex items-center justify-center mb-2.5",
                   meta.iconBg
                 )}>
                   {exam.status === "conducted" ? (
-                    <svg className="size-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                   ) : (
-                    <div className="size-3 rounded-full bg-white/80" />
+                    <div className="size-2.5 rounded-full bg-white/80" />
                   )}
                 </div>
-
-                {/* Label */}
-                <span className={cn("text-xs font-semibold mb-1.5 whitespace-nowrap", isActive ? "text-foreground" : "text-muted-foreground")}>
+                <span className={cn("text-[11px] font-semibold mb-1.5", isActive ? "text-foreground" : "text-muted-foreground")}>
                   {exam.name}
                 </span>
-
-                {/* Status badge */}
                 <Badge className={cn("border-0 text-[9px] mb-1.5", meta.bg, meta.color)}>
                   {meta.label}
                 </Badge>
-
-                {/* Date range */}
-                <span className="text-[10px] text-muted-foreground whitespace-nowrap">{exam.dateRange}</span>
-            </button>
-          );
+                <span className="text-[10px] text-muted-foreground">{exam.dateRange}</span>
+              </button>
+            );
           })}
-        </div>
         </div>
       </Card>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-3 mb-6 overflow-x-auto scrollbar-hide">
-          <TabsList className="h-9 min-w-max">
-            <TabsTrigger value="overview" className="text-xs gap-1.5"><BarChart3 className="size-3" /> Overview</TabsTrigger>
-            <TabsTrigger value="timetable" className="text-xs gap-1.5"><Calendar className="size-3" /> Timetable</TabsTrigger>
-            <TabsTrigger value="results" className="text-xs gap-1.5"><Trophy className="size-3" /> Results</TabsTrigger>
-            <TabsTrigger value="class-insights" className="text-xs gap-1.5"><GraduationCap className="size-3" /> Class Insights</TabsTrigger>
-            <TabsTrigger value="ai" className="text-xs gap-1.5"><Sparkles className="size-3" /> AI Analysis</TabsTrigger>
-          </TabsList>
+        <Card className="p-2 sm:p-3 mb-6">
+          <div className="overflow-x-auto scrollbar-hide">
+            <TabsList className="h-9 min-w-max w-full sm:w-auto">
+              <TabsTrigger value="overview" className="text-xs gap-1.5 px-3 sm:px-4"><BarChart3 className="size-3" /> Overview</TabsTrigger>
+              <TabsTrigger value="timetable" className="text-xs gap-1.5 px-3 sm:px-4"><Calendar className="size-3" /> Timetable</TabsTrigger>
+              <TabsTrigger value="results" className="text-xs gap-1.5 px-3 sm:px-4"><Trophy className="size-3" /> Results</TabsTrigger>
+              <TabsTrigger value="class-insights" className="text-xs gap-1.5 px-3 sm:px-4"><GraduationCap className="size-3" /> Class Insights</TabsTrigger>
+              <TabsTrigger value="ai" className="text-xs gap-1.5 px-3 sm:px-4"><Sparkles className="size-3" /> AI Analysis</TabsTrigger>
+            </TabsList>
+          </div>
         </Card>
 
         {/* ═══ OVERVIEW TAB ═══ */}
         <TabsContent value="overview">
           {hasResults && stats ? (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* KPI Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 <Card className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-violet-500/10 grid place-items-center"><TrendingUp className="size-4 text-violet-500" /></div>
+                    <div className="size-9 rounded-lg bg-violet-500/10 grid place-items-center shrink-0"><TrendingUp className="size-4 text-violet-500" /></div>
                     <div><div className="text-[10px] text-muted-foreground">Average Marks</div><div className="text-lg font-semibold">{stats.average}%</div></div>
                   </div>
                 </Card>
                 <Card className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-sky-500/10 grid place-items-center"><Users className="size-4 text-sky-500" /></div>
+                    <div className="size-9 rounded-lg bg-sky-500/10 grid place-items-center shrink-0"><Users className="size-4 text-sky-500" /></div>
                     <div><div className="text-[10px] text-muted-foreground">Total Students</div><div className="text-lg font-semibold">{stats.totalStudents}</div></div>
                   </div>
                 </Card>
                 <Card className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-emerald-500/10 grid place-items-center"><CheckCircle2 className="size-4 text-emerald-500" /></div>
+                    <div className="size-9 rounded-lg bg-emerald-500/10 grid place-items-center shrink-0"><CheckCircle2 className="size-4 text-emerald-500" /></div>
                     <div><div className="text-[10px] text-muted-foreground">Passed ({stats.passRate}%)</div><div className="text-lg font-semibold">{stats.passed}</div></div>
                   </div>
                 </Card>
                 <Card className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-red-500/10 grid place-items-center"><AlertTriangle className="size-4 text-red-500" /></div>
+                    <div className="size-9 rounded-lg bg-red-500/10 grid place-items-center shrink-0"><AlertTriangle className="size-4 text-red-500" /></div>
                     <div><div className="text-[10px] text-muted-foreground">Failed ({stats.failRate}%)</div><div className="text-lg font-semibold">{stats.failed}</div></div>
                   </div>
                 </Card>
                 <Card className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-amber-500/10 grid place-items-center"><Target className="size-4 text-amber-500" /></div>
+                    <div className="size-9 rounded-lg bg-amber-500/10 grid place-items-center shrink-0"><Target className="size-4 text-amber-500" /></div>
                     <div><div className="text-[10px] text-muted-foreground">At-Risk</div><div className="text-lg font-semibold">{stats.atRiskRate}%</div></div>
                   </div>
                 </Card>
@@ -159,16 +200,16 @@ function AcademicsPage() {
 
               {/* Best Class & Subject + Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-3">
-                  <Card className="p-3 sm:p-4">
+                <div className="flex flex-row sm:flex-col gap-3">
+                  <Card className="p-3 sm:p-4 flex-1 sm:flex-none">
                     <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-lg bg-emerald-500/10 grid place-items-center"><Trophy className="size-4 text-emerald-500" /></div>
+                      <div className="size-9 rounded-lg bg-emerald-500/10 grid place-items-center shrink-0"><Trophy className="size-4 text-emerald-500" /></div>
                       <div><div className="text-[10px] text-muted-foreground">Best Class</div><div className="text-lg font-semibold">{stats.bestClass}</div></div>
                     </div>
                   </Card>
-                  <Card className="p-3 sm:p-4">
+                  <Card className="p-3 sm:p-4 flex-1 sm:flex-none">
                     <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-lg bg-emerald-500/10 grid place-items-center"><GraduationCap className="size-4 text-emerald-500" /></div>
+                      <div className="size-9 rounded-lg bg-emerald-500/10 grid place-items-center shrink-0"><GraduationCap className="size-4 text-emerald-500" /></div>
                       <div><div className="text-[10px] text-muted-foreground">Best Subject</div><div className="text-lg font-semibold">{stats.bestSubject}</div></div>
                     </div>
                   </Card>
@@ -177,7 +218,7 @@ function AcademicsPage() {
                 {/* Subject Chart */}
                 <Card className="p-3 sm:p-4">
                   <h4 className="text-xs font-semibold mb-3">Subject-wise Performance</h4>
-                  <div className="min-h-[200px] sm:min-h-[300px]">
+                  <div className="h-[200px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={subjectPerf ?? undefined} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -195,7 +236,7 @@ function AcademicsPage() {
                 {/* Class Chart */}
                 <Card className="p-3 sm:p-4">
                   <h4 className="text-xs font-semibold mb-3">Class-wise Comparison</h4>
-                  <div className="min-h-[200px] sm:min-h-[300px]">
+                  <div className="h-[200px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={classPerf ?? undefined} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -212,7 +253,7 @@ function AcademicsPage() {
               </div>
             </div>
           ) : (
-            <Card className="p-12 text-center">
+            <Card className="p-8 sm:p-12 text-center">
               <BarChart3 className="size-10 mx-auto text-muted-foreground mb-3 opacity-40" />
               <p className="text-sm font-medium text-muted-foreground">No results available for {selectedExam?.name}.</p>
               <p className="text-xs text-muted-foreground mt-1">Results will appear once the exam is completed.</p>
@@ -228,36 +269,55 @@ function AcademicsPage() {
               {selectedExam?.name} — Timetable
             </h3>
             {!selectedExam?.timetableReady ? (
-              <div className="py-10 text-center">
+              <div className="py-8 sm:py-10 text-center">
                 <Calendar className="size-10 mx-auto text-muted-foreground mb-3 opacity-40" />
                 <p className="text-sm font-medium text-muted-foreground">Final Exam timetable has not been finalized yet.</p>
                 <p className="text-xs text-muted-foreground mt-1">The timetable for this exam is being prepared.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[600px]">
-                  <thead>
-                    <tr className="border-b border-border/60">
-                      <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Subject</th>
-                      <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Date</th>
-                      <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Time</th>
-                      <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Duration</th>
-                      <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Syllabus Covered</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {TIMETABLES[selectedExamId]?.map((entry, i) => (
-                      <tr key={i} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                        <td className="p-2.5 font-medium">{entry.subject}</td>
-                        <td className="p-2.5 text-muted-foreground">{new Date(entry.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</td>
-                        <td className="p-2.5 text-muted-foreground">{entry.time}</td>
-                        <td className="p-2.5 text-muted-foreground">{entry.duration}</td>
-                        <td className="p-2.5 text-muted-foreground text-xs">{entry.syllabus}</td>
+              <>
+                {/* Desktop table */}
+                <div className="table-mobile-scroll timetable-desktop-table">
+                  <table className="w-full text-sm min-w-[600px]">
+                    <thead>
+                      <tr className="border-b border-border/60">
+                        <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Subject</th>
+                        <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Date</th>
+                        <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Time</th>
+                        <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Duration</th>
+                        <th className="text-left p-2.5 text-[10px] font-medium text-muted-foreground uppercase">Syllabus Covered</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {TIMETABLES[selectedExamId]?.map((entry, i) => (
+                        <tr key={i} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                          <td className="p-2.5 font-medium">{entry.subject}</td>
+                          <td className="p-2.5 text-muted-foreground">{new Date(entry.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</td>
+                          <td className="p-2.5 text-muted-foreground">{entry.time}</td>
+                          <td className="p-2.5 text-muted-foreground">{entry.duration}</td>
+                          <td className="p-2.5 text-muted-foreground text-xs">{entry.syllabus}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Mobile card layout */}
+                <div className="timetable-mobile-cards hidden">
+                  {TIMETABLES[selectedExamId]?.map((entry, i) => (
+                    <div key={i} className="rounded-xl border border-border/60 p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold">{entry.subject}</span>
+                        <Badge variant="outline" className="text-[9px]">{entry.duration}</Badge>
+                      </div>
+                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><Calendar className="size-3" />{new Date(entry.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        <span className="flex items-center gap-1"><Clock className="size-3" />{entry.time}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">{entry.syllabus}</p>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </Card>
         </TabsContent>
@@ -265,9 +325,9 @@ function AcademicsPage() {
         {/* ═══ RESULTS TAB ═══ */}
         <TabsContent value="results">
           {hasResults && stats ? (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* KPI Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Average Marks</div><div className="text-lg font-semibold">{stats.average}%</div></Card>
                 <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Students</div><div className="text-lg font-semibold">{stats.totalStudents}</div></Card>
                 <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Passed</div><div className="text-lg font-semibold text-emerald-600">{stats.passed} ({stats.passRate}%)</div></Card>
@@ -279,7 +339,7 @@ function AcademicsPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card className="p-3 sm:p-4">
                   <h4 className="text-xs font-semibold mb-3">Subject-wise Performance</h4>
-                  <div className="min-h-[200px] sm:min-h-[300px]">
+                  <div className="h-[200px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={subjectPerf ?? undefined} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -295,7 +355,7 @@ function AcademicsPage() {
                 </Card>
                 <Card className="p-3 sm:p-4">
                   <h4 className="text-xs font-semibold mb-3">Class-wise Comparison</h4>
-                  <div className="min-h-[200px] sm:min-h-[300px]">
+                  <div className="h-[200px] sm:h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={classPerf ?? undefined} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -312,7 +372,7 @@ function AcademicsPage() {
               </div>
             </div>
           ) : (
-            <Card className="p-12 text-center">
+            <Card className="p-8 sm:p-12 text-center">
               <Trophy className="size-10 mx-auto text-muted-foreground mb-3 opacity-40" />
               <p className="text-sm font-medium text-muted-foreground">No results available for {selectedExam?.name}.</p>
             </Card>
@@ -322,13 +382,13 @@ function AcademicsPage() {
         {/* ═══ CLASS INSIGHTS TAB ═══ */}
         <TabsContent value="class-insights">
           {hasResults && selectedClassPerf ? (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Class Selector */}
               <Card className="p-3 sm:p-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                   <h3 className="text-base sm:text-lg font-semibold">Class Wise Results</h3>
                   <Select value={selectedClass} onValueChange={setSelectedClass}>
-                    <SelectTrigger className="w-full sm:w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-full sm:w-36 h-9 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {ALL_CLASSES.map((cls) => <SelectItem key={cls} value={cls}>Class {cls}</SelectItem>)}
                     </SelectContent>
@@ -337,7 +397,7 @@ function AcademicsPage() {
               </Card>
 
               {/* Class KPIs */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Class Average</div><div className="text-lg font-semibold">{selectedClassPerf.average}%</div></Card>
                 <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Passing %</div><div className="text-lg font-semibold text-emerald-600">{selectedClassPerf.passRate}%</div></Card>
                 <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Failing %</div><div className="text-lg font-semibold text-red-600">{selectedClassPerf.failRate}%</div></Card>
@@ -353,7 +413,7 @@ function AcademicsPage() {
               </div>
             </div>
           ) : (
-            <Card className="p-12 text-center">
+            <Card className="p-8 sm:p-12 text-center">
               <GraduationCap className="size-10 mx-auto text-muted-foreground mb-3 opacity-40" />
               <p className="text-sm font-medium text-muted-foreground">Select a class with results to view insights.</p>
             </Card>
@@ -410,7 +470,7 @@ function AcademicsPage() {
                       </span>
                     </div>
                     <p className="text-xs flex-1 break-words">{action.text}</p>
-                    <Badge variant="outline" className="text-[9px] capitalize">{action.priority}</Badge>
+                    <Badge variant="outline" className="text-[9px] capitalize shrink-0">{action.priority}</Badge>
                   </div>
                 ))}
               </div>
@@ -449,19 +509,19 @@ function TopStudentsList({ students }: { students: { rank: number; name: string;
               <span className={cn("size-7 rounded-full grid place-items-center shrink-0 text-xs font-bold",
                 s.rank === 1 ? "bg-amber-500/10 text-amber-600" : s.rank === 2 ? "bg-gray-400/10 text-gray-500" : s.rank === 3 ? "bg-orange-500/10 text-orange-600" : "bg-muted/50 text-muted-foreground"
               )}>{s.rank}</span>
-              <Avatar className="size-8">
+              <Avatar className="size-8 shrink-0">
                 <AvatarFallback className="bg-violet-500 text-white text-[10px] font-medium">{s.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-medium truncate">{s.name}</div>
                 <div className="text-[10px] text-muted-foreground">Attendance: {s.attendance}%</div>
               </div>
-              <div className="text-sm font-semibold text-emerald-600">{s.percentage}%</div>
-              {expandedId === s.rank ? <ChevronUp className="size-3 text-muted-foreground" /> : <ChevronDown className="size-3 text-muted-foreground" />}
+              <div className="text-sm font-semibold text-emerald-600 shrink-0">{s.percentage}%</div>
+              {expandedId === s.rank ? <ChevronUp className="size-3 text-muted-foreground shrink-0" /> : <ChevronDown className="size-3 text-muted-foreground shrink-0" />}
             </button>
             {expandedId === s.rank && (
               <div className="mt-1 ml-10 mb-2 rounded-xl bg-muted/20 p-3">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {Object.entries(s.marks).map(([subject, marks]) => (
                     <div key={subject} className="text-[10px]">
                       <span className="text-muted-foreground">{subject}: </span>
@@ -502,7 +562,7 @@ function AtRiskList({ students }: { students: { name: string; percentage: number
               onClick={() => setExpandedId(expandedId === s.name ? null : s.name)}
               className="w-full flex items-center gap-3 rounded-xl border border-border/60 px-3 py-2.5 hover:bg-muted/20 transition-colors text-left"
             >
-              <Avatar className="size-8">
+              <Avatar className="size-8 shrink-0">
                 <AvatarFallback className={cn("text-[10px] font-medium text-white", s.riskLevel === "high" ? "bg-red-500" : "bg-amber-500")}>
                   {s.name.split(" ").map((n) => n[0]).join("")}
                 </AvatarFallback>
@@ -515,11 +575,11 @@ function AtRiskList({ students }: { students: { name: string; percentage: number
                 <div className="text-sm font-semibold text-red-600">{s.percentage}%</div>
                 <Badge className={cn("border-0 text-[8px] capitalize", riskBg[s.riskLevel], riskColors[s.riskLevel])}>{s.riskLevel} risk</Badge>
               </div>
-              {expandedId === s.name ? <ChevronUp className="size-3 text-muted-foreground" /> : <ChevronDown className="size-3 text-muted-foreground" />}
+              {expandedId === s.name ? <ChevronUp className="size-3 text-muted-foreground shrink-0" /> : <ChevronDown className="size-3 text-muted-foreground shrink-0" />}
             </button>
             {expandedId === s.name && (
               <div className="mt-1 ml-10 mb-2 rounded-xl bg-muted/20 p-3">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {Object.entries(s.marks).map(([subject, marks]) => (
                     <div key={subject} className="text-[10px]">
                       <span className="text-muted-foreground">{subject}: </span>

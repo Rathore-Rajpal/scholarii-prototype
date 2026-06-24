@@ -237,7 +237,7 @@ function CompliancePage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {complianceStats.map((stat) => {
           const Icon = stat.icon;
           const tones = { emerald: "bg-emerald-500/10 text-emerald-500", sky: "bg-sky-500/10 text-sky-500", amber: "bg-amber-500/10 text-amber-500", violet: "bg-violet-500/10 text-violet-500" };

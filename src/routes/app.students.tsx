@@ -201,7 +201,7 @@ function StudentsPage() {
 
       <div className="space-y-6">
         {/* KPI Section */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <Card className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Total Students</p>

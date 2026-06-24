@@ -82,7 +82,7 @@ function AdminFacilitiesPage() {
         action={<Button size="sm" className="gap-2 bg-violet-600 hover:bg-violet-700" onClick={() => setBookingOpen(true)}><CalendarDays className="size-4" /> Book Facility</Button>}
       />
 
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+      <div className="mb-8 kpi-mobile-scroll grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
         <KpiCard icon={Building2} label="Total Facilities" value={String(facilities.length)} tone="violet" />
         <KpiCard icon={Clock3} label="Currently Occupied" value={String(occupied)} tone="sky" />
         <KpiCard icon={CalendarDays} label="Available Now" value={String(available)} tone="emerald" />

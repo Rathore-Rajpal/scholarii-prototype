@@ -106,7 +106,7 @@ function AdmissionsPage() {
 
       <div className="space-y-6">
         {/* KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <Card className="p-3 sm:p-4">
              <p className="text-xs text-muted-foreground">Total Inquiries</p>
             <div className="text-2xl font-bold mt-2">{totals.inquiries.toLocaleString()}</div>

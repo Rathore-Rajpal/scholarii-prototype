@@ -136,7 +136,7 @@ export default function PrincipalDocumentsPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         <KpiCard icon={FolderOpen} label="Total Documents" value={String(totalDocs)} tone="violet" />
         <KpiCard icon={FileText} label="Added This Month" value={String(thisMonthDocs)} tone="sky" />
         <KpiCard icon={Clock} label="Pending Approvals" value={String(pendingApprovals)} tone="amber" />
