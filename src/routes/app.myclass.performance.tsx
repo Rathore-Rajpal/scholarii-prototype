@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { RoleGuard } from "@/components/scholarii/RoleGuard";
 import { PageHeader } from "@/components/scholarii/AppShell";
 import { Card } from "@/components/ui/card";
@@ -43,6 +43,8 @@ import {
   BookOpen,
   Brain,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   FileText,
   Mail,
   MessageSquare,
@@ -144,8 +146,10 @@ function getAvatarClass(badge: PerformanceStudent["badge"]) {
 }
 
 function getPerformanceBadge(badge: PerformanceStudent["badge"]) {
-  if (badge === "top") return <Badge className="border-0 bg-emerald-500/10 text-emerald-700">Top Performer</Badge>;
-  if (badge === "at-risk") return <Badge className="border-0 bg-red-500/10 text-red-700">At Risk</Badge>;
+  if (badge === "top")
+    return <Badge className="border-0 bg-emerald-500/10 text-emerald-700">Top Performer</Badge>;
+  if (badge === "at-risk")
+    return <Badge className="border-0 bg-red-500/10 text-red-700">At Risk</Badge>;
   return <Badge variant="outline">Stable</Badge>;
 }
 
@@ -169,6 +173,35 @@ function PerformancePage() {
   const [perfSearch, setPerfSearch] = useState("");
   const [perfFilter, setPerfFilter] = useState<PerformanceFilter>("all");
   const [perfSort, setPerfSort] = useState<SortOption>("rank");
+  const tabScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkTabScroll = useCallback(() => {
+    const el = tabScrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    checkTabScroll();
+    const el = tabScrollRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(checkTabScroll);
+    ro.observe(el);
+    el.addEventListener("scroll", checkTabScroll, { passive: true });
+    return () => {
+      ro.disconnect();
+      el.removeEventListener("scroll", checkTabScroll);
+    };
+  }, [checkTabScroll]);
+
+  const scrollTabs = useCallback((dir: "left" | "right") => {
+    const el = tabScrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" });
+  }, []);
 
   const students = useMemo(() => CLASS_PERFORMANCE_STUDENTS, []);
 
@@ -193,9 +226,7 @@ function PerformancePage() {
     const query = perfSearch.trim().toLowerCase();
     if (query) {
       result = result.filter(
-        (s) =>
-          s.name.toLowerCase().includes(query) ||
-          String(s.roll).includes(query),
+        (s) => s.name.toLowerCase().includes(query) || String(s.roll).includes(query),
       );
     }
 
@@ -227,7 +258,10 @@ function PerformancePage() {
   );
 
   const top5 = useMemo(() => [...students].sort((a, b) => a.rank - b.rank).slice(0, 5), [students]);
-  const bottom5 = useMemo(() => [...students].sort((a, b) => b.rank - a.rank).slice(0, 5), [students]);
+  const bottom5 = useMemo(
+    () => [...students].sort((a, b) => b.rank - a.rank).slice(0, 5),
+    [students],
+  );
 
   useEffect(() => {
     if (!isResizing) return;
@@ -309,1010 +343,1089 @@ function PerformancePage() {
         </Card>
       </div>
 
-      <Card className="p-4 mb-6">
-        <div className="flex gap-1">
-          {TABS.map((tab) => (
+      <Card className="p-4 mb-4 overflow-hidden sm:mb-6">
+        <div className="relative flex items-center">
+          {canScrollLeft && (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
-                activeTab === tab.id
-                  ? "bg-violet-500/10 text-violet-600 shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
+              onClick={() => scrollTabs("left")}
+              className="absolute left-0 z-20 flex h-full w-8 items-center justify-center bg-gradient-to-r from-background via-background/90 to-transparent"
+              aria-label="Scroll left"
             >
-              <tab.icon className="size-4" />
-              {tab.label}
+              <ChevronLeft className="size-4 text-muted-foreground" />
             </button>
-          ))}
+          )}
+          <div
+            ref={tabScrollRef}
+            className="tabs-mobile-scroll flex gap-1 overflow-x-auto scrollbar-none"
+          >
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-xs font-medium transition-all",
+                  activeTab === tab.id
+                    ? "bg-violet-500/10 text-violet-600 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                )}
+              >
+                <tab.icon className="size-4" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {canScrollRight && (
+            <button
+              onClick={() => scrollTabs("right")}
+              className="absolute right-0 z-20 flex h-full w-8 items-center justify-center bg-gradient-to-l from-background via-background/90 to-transparent"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </button>
+          )}
         </div>
       </Card>
 
       <div className="space-y-4 pb-4">
-      {/* ═══════════════ TAB 1: OVERVIEW ═══════════════ */}
-      {activeTab === "overview" && (
-        <div className="space-y-4">
-          {/* Charts Row 1 */}
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-              <h3 className="text-sm font-semibold">Average Marks Trend</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Class average across completed exams.
-              </p>
-              <ChartContainer config={chartConfig} className="h-[220px] w-full">
-                <BarChart
-                  data={analytics.monthlyTrend}
-                  margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-border/50"
-                    vertical={false}
-                  />
-                  <XAxis dataKey="exam" tick={{ fontSize: 10 }} className="text-muted-foreground" />
-                  <YAxis
-                    domain={[60, 100]}
-                    tick={{ fontSize: 10 }}
-                    className="text-muted-foreground"
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="avg" fill="var(--color-avg)" radius={[8, 8, 0, 0]} barSize={42} />
-                </BarChart>
-              </ChartContainer>
-            </Card>
-
-            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-              <h3 className="text-sm font-semibold">Subject Performance</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Average, highest, and lowest marks by subject.
-              </p>
-              <ChartContainer config={subjectChartConfig} className="h-[220px] w-full">
-                <BarChart
-                  data={analytics.subjectPerf}
-                  margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-border/50"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="subject"
-                    tick={{ fontSize: 9 }}
-                    className="text-muted-foreground"
-                  />
-                  <YAxis
-                    domain={[30, 100]}
-                    tick={{ fontSize: 10 }}
-                    className="text-muted-foreground"
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="avg" fill="var(--color-avg)" radius={[4, 4, 0, 0]} barSize={14} />
-                  <Bar
-                    dataKey="highest"
-                    fill="var(--color-highest)"
-                    radius={[4, 4, 0, 0]}
-                    barSize={14}
-                  />
-                  <Bar
-                    dataKey="lowest"
-                    fill="var(--color-lowest)"
-                    radius={[4, 4, 0, 0]}
-                    barSize={14}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </Card>
-          </div>
-
-          {/* Charts Row 2 */}
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-              <h3 className="text-sm font-semibold">Attendance vs Performance</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Correlation between attendance and marks.
-              </p>
-              <ChartContainer config={scatterConfig} className="h-[220px] w-full">
-                <ScatterChart margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-                  <XAxis
-                    type="number"
-                    dataKey="attendance"
-                    name="Attendance"
-                    domain={[70, 100]}
-                    tick={{ fontSize: 10 }}
-                    className="text-muted-foreground"
-                    label={{ value: "Attendance %", position: "bottom", offset: -5, fontSize: 10 }}
-                  />
-                  <YAxis
-                    type="number"
-                    dataKey="marks"
-                    name="Marks"
-                    domain={[40, 100]}
-                    tick={{ fontSize: 10 }}
-                    className="text-muted-foreground"
-                    label={{
-                      value: "Marks %",
-                      angle: -90,
-                      position: "insideLeft",
-                      offset: 10,
-                      fontSize: 10,
-                    }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Scatter data={analytics.attendanceVsMarks} fill="var(--color-marks)" />
-                </ScatterChart>
-              </ChartContainer>
-            </Card>
-
-            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-              <h3 className="text-sm font-semibold">Exam Readiness</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Subject-wise readiness for the upcoming exams.
-              </p>
-              <ChartContainer config={readinessChartConfig} className="h-[220px] w-full">
-                <BarChart
-                  data={analytics.examReadiness}
-                  margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-border/50"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="subject"
-                    tick={{ fontSize: 9 }}
-                    className="text-muted-foreground"
-                  />
-                  <YAxis
-                    domain={[0, 100]}
-                    tick={{ fontSize: 10 }}
-                    className="text-muted-foreground"
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    dataKey="readiness"
-                    fill="var(--color-readiness)"
-                    radius={[6, 6, 0, 0]}
-                    barSize={34}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </Card>
-          </div>
-
-          {/* Top 5 / Bottom 5 + Pass/Fail */}
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-              <div className="mb-3 flex items-center gap-2">
-                <Trophy className="size-4 text-emerald-600" />
-                <h3 className="text-sm font-semibold">Top 5 Performers</h3>
-              </div>
-              <div className="space-y-2">
-                {top5.map((student, index) => (
-                  <div
-                    key={student.id}
-                    className="flex items-center gap-3 rounded-xl border border-border/60 px-3 py-2"
+        {/* ═══════════════ TAB 1: OVERVIEW ═══════════════ */}
+        {activeTab === "overview" && (
+          <div className="space-y-4">
+            {/* Charts Row 1 */}
+            <div className="grid gap-4 xl:grid-cols-2">
+              <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                <h3 className="text-sm font-semibold">Average Marks Trend</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Class average across completed exams.
+                </p>
+                <ChartContainer config={chartConfig} className="h-[220px] w-full">
+                  <BarChart
+                    data={analytics.monthlyTrend}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
                   >
-                    <span className="w-4 text-xs font-semibold text-muted-foreground">
-                      {index + 1}
-                    </span>
-                    <Avatar className="size-7">
-                      <AvatarFallback className="text-[10px] text-white bg-emerald-500">
-                        {student.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="flex-1 text-sm font-medium">{student.name}</span>
-                    <span className="text-sm font-semibold text-emerald-700">
-                      {student.average}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-              <div className="mb-3 flex items-center gap-2">
-                <AlertTriangle className="size-4 text-amber-600" />
-                <h3 className="text-sm font-semibold">Bottom 5 Performers</h3>
-              </div>
-              <div className="space-y-2">
-                {bottom5.map((student, index) => (
-                  <div
-                    key={student.id}
-                    className="flex items-center gap-3 rounded-xl border border-border/60 px-3 py-2"
-                  >
-                    <span className="w-4 text-xs font-semibold text-muted-foreground">
-                      {index + 1}
-                    </span>
-                    <Avatar className="size-7">
-                      <AvatarFallback className="text-[10px] text-white bg-amber-500">
-                        {student.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="flex-1 text-sm font-medium">{student.name}</span>
-                    <span className="text-sm font-semibold text-amber-700">
-                      {student.average}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-
-          {/* Pass/Fail + Strengths/Focus */}
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-              <h3 className="mb-3 text-sm font-semibold">Pass vs Fail</h3>
-              <div className="flex items-center gap-6">
-                <ChartContainer
-                  config={{
-                    pass: { label: "Pass", color: "hsl(142, 76%, 36%)" },
-                    fail: { label: "Fail", color: "hsl(0, 84%, 60%)" },
-                  }}
-                  className="h-[160px] w-[160px]"
-                >
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: "Pass", value: passCount, fill: "hsl(142, 76%, 36%)" },
-                        { name: "Fail", value: failCount, fill: "hsl(0, 84%, 60%)" },
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={38}
-                      outerRadius={60}
-                      paddingAngle={3}
-                      dataKey="value"
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border/50"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="exam"
+                      tick={{ fontSize: 10 }}
+                      className="text-muted-foreground"
+                    />
+                    <YAxis
+                      domain={[60, 100]}
+                      tick={{ fontSize: 10 }}
+                      className="text-muted-foreground"
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                  </PieChart>
+                    <Bar dataKey="avg" fill="var(--color-avg)" radius={[8, 8, 0, 0]} barSize={42} />
+                  </BarChart>
                 </ChartContainer>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="size-2 rounded-full bg-emerald-500" />
-                    <span>Pass: {passCount}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="size-2 rounded-full bg-red-500" />
-                    <span>Fail: {failCount}</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <div className="mb-2 flex items-center gap-2">
-                    <CheckCircle2 className="size-4 text-emerald-600" />
-                    <h3 className="text-sm font-semibold">Strength Areas</h3>
-                  </div>
-                  <div className="space-y-1.5">
-                    {STRENGTH_AREAS.map((area) => (
-                      <div
-                        key={area}
-                        className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-700"
-                      >
-                        <CheckCircle2 className="size-3.5" />
-                        {area}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div className="mb-2 flex items-center gap-2">
-                    <Target className="size-4 text-amber-600" />
-                    <h3 className="text-sm font-semibold">Focus Areas</h3>
-                  </div>
-                  <div className="space-y-1.5">
-                    {FOCUS_AREAS.map((area) => (
-                      <div
-                        key={area}
-                        className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-500/5 px-3 py-2 text-sm text-amber-700"
-                      >
-                        <Target className="size-3.5" />
-                        {area}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════ TAB 2: STUDENT PERFORMANCE ═══════════════ */}
-      {activeTab === "students" && (
-        <div className="space-y-4">
-          <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative flex-1 min-w-[240px]">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search Student"
-                  value={perfSearch}
-                  onChange={(e) => setPerfSearch(e.target.value)}
-                  className="h-9 pl-9"
-                />
-              </div>
-              <Select
-                value={perfFilter}
-                onValueChange={(v) => setPerfFilter(v as PerformanceFilter)}
-              >
-                <SelectTrigger className="h-9 w-40">
-                  <SelectValue placeholder="Performance" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PERF_FILTER_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={perfFilter}
-                onValueChange={(v) => setPerfFilter(v as PerformanceFilter)}
-              >
-                <SelectTrigger className="h-9 w-36">
-                  <SelectValue placeholder="Attendance" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Attendance</SelectItem>
-                  <SelectItem value="top">90% and above</SelectItem>
-                  <SelectItem value="stable">75% to 89%</SelectItem>
-                  <SelectItem value="at-risk">Below 75%</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={perfSort} onValueChange={(v) => setPerfSort(v as SortOption)}>
-                <SelectTrigger className="h-9 w-40">
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SORT_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-[10px]">
-                Class 8-A
-              </Badge>
-            </div>
-          </Card>
-
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {filteredStudents.map((student) => (
-              <button
-                key={student.id}
-                onClick={() => setSelectedStudentId(student.id)}
-                className="rounded-2xl border border-border/60 bg-background p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-md"
-              >
-                <div className="flex items-start gap-3">
-                  <Avatar className="size-10 shrink-0">
-                    <AvatarFallback
-                      className={cn("text-xs text-white", getAvatarClass(student.badge))}
-                    >
-                      {student.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-semibold">{student.name}</span>
-                      {getPerformanceBadge(student.badge)}
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      Roll #{student.roll} · Rank #{student.rank}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div
-                      className={cn(
-                        "text-lg font-semibold",
-                        student.average >= 85
-                          ? "text-emerald-700"
-                          : student.average >= 70
-                            ? "text-violet-700"
-                            : "text-amber-700",
-                      )}
-                    >
-                      {student.average}%
-                    </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      Attendance {student.attendance}%
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  <Progress value={student.average} className="h-2" />
-                  <div className="flex flex-wrap gap-1.5">
-                    {student.strengths.slice(0, 2).map((s) => (
-                      <Badge
-                        key={s}
-                        variant="outline"
-                        className="rounded-full border-emerald-200 bg-emerald-500/10 text-[10px] text-emerald-700"
-                      >
-                        {s}
-                      </Badge>
-                    ))}
-                    {student.weaknesses.slice(0, 1).map((w) => (
-                      <Badge
-                        key={w}
-                        variant="outline"
-                        className="rounded-full border-amber-200 bg-amber-500/10 text-[10px] text-amber-700"
-                      >
-                        Needs support in {w}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════ TAB 3: SUBJECT PERFORMANCE ═══════════════ */}
-      {activeTab === "subjects" && (
-        <div className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {SUBJECT_PERFORMANCE.map((subject) => (
-              <Card
-                key={subject.name}
-                className="rounded-2xl border border-border/60 p-4 shadow-sm"
-              >
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="text-lg">{subject.emoji}</span>
-                  <h3 className="text-sm font-semibold">{subject.name}</h3>
-                </div>
-                <div className="space-y-2.5 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Average Score</span>
-                    <span
-                      className={cn(
-                        "font-semibold",
-                        subject.average >= 80 ? "text-emerald-700" : subject.average >= 70 ? "text-violet-700" : "text-amber-700",
-                      )}
-                    >
-                      {subject.average}%
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Highest</span>
-                    <span className="font-semibold text-emerald-700">{subject.highest}%</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Lowest</span>
-                    <span className="font-semibold text-amber-700">{subject.lowest}%</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Students At Risk</span>
-                    <span className="font-semibold text-red-600">{subject.atRisk}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Pass Rate</span>
-                    <span className="font-semibold">{subject.passRate}%</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Upcoming Exam</span>
-                    <Badge variant="outline" className="rounded-full text-[10px]">
-                      {subject.upcomingExam}
-                    </Badge>
-                  </div>
-                </div>
               </Card>
-            ))}
-          </div>
 
-          {/* Subject Charts */}
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-              <h3 className="text-sm font-semibold">Subject Comparison</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Average marks across all subjects.
-              </p>
-              <ChartContainer config={subjectChartConfig} className="h-[220px] w-full">
-                <BarChart
-                  data={analytics.subjectPerf}
-                  margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-border/50"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="subject"
-                    tick={{ fontSize: 9 }}
-                    className="text-muted-foreground"
-                  />
-                  <YAxis
-                    domain={[30, 100]}
-                    tick={{ fontSize: 10 }}
-                    className="text-muted-foreground"
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="avg" fill="var(--color-avg)" radius={[4, 4, 0, 0]} barSize={14} />
-                  <Bar
-                    dataKey="highest"
-                    fill="var(--color-highest)"
-                    radius={[4, 4, 0, 0]}
-                    barSize={14}
-                  />
-                  <Bar
-                    dataKey="lowest"
-                    fill="var(--color-lowest)"
-                    radius={[4, 4, 0, 0]}
-                    barSize={14}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </Card>
-
-            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-              <h3 className="text-sm font-semibold">Exam Readiness</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Subject-wise readiness for upcoming exams.
-              </p>
-              <ChartContainer config={readinessChartConfig} className="h-[220px] w-full">
-                <BarChart
-                  data={analytics.examReadiness}
-                  margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-border/50"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="subject"
-                    tick={{ fontSize: 9 }}
-                    className="text-muted-foreground"
-                  />
-                  <YAxis
-                    domain={[0, 100]}
-                    tick={{ fontSize: 10 }}
-                    className="text-muted-foreground"
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    dataKey="readiness"
-                    fill="var(--color-readiness)"
-                    radius={[6, 6, 0, 0]}
-                    barSize={34}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </Card>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════ TAB 4: INTERVENTION CENTER ═══════════════ */}
-      {activeTab === "intervention" && (
-        <div className="space-y-4">
-          <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-            <div className="flex items-center gap-2">
-              <div className="grid size-8 place-items-center rounded-xl bg-amber-500/10">
-                <Shield className="size-4 text-amber-700" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold">Intervention Center</h3>
-                <p className="text-xs text-muted-foreground">
-                  Students who need support — auto-identified by performance rules.
+              <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                <h3 className="text-sm font-semibold">Subject Performance</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Average, highest, and lowest marks by subject.
                 </p>
-              </div>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-              <span className="rounded-full border border-border/60 px-2.5 py-1">Average &lt; 60%</span>
-              <span className="rounded-full border border-border/60 px-2.5 py-1">Attendance &lt; 75%</span>
-              <span className="rounded-full border border-border/60 px-2.5 py-1">Score Drop</span>
-              <span className="rounded-full border border-border/60 px-2.5 py-1">Missing Assignments</span>
-            </div>
-          </Card>
-
-          <div className="space-y-3">
-            {INTERVENTION_STUDENTS.map((student) => (
-              <Card
-                key={student.id}
-                className={cn(
-                  "rounded-2xl border p-4 shadow-sm",
-                  getSeverityClass(student.severity),
-                )}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="mt-1">
-                    <span className={cn("size-2.5 rounded-full", getSeverityDot(student.severity))} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-semibold">{student.name}</span>
-                      <Badge variant="outline" className="rounded-full text-[10px]">
-                        Roll #{student.roll}
-                      </Badge>
-                    </div>
-                    <div className="mt-2 grid gap-3 sm:grid-cols-3 text-xs">
-                      <div>
-                        <span className="text-muted-foreground">Attendance</span>
-                        <span className={cn(
-                          "ml-2 font-semibold",
-                          student.attendance < 75 ? "text-red-600" : "text-amber-600",
-                        )}>
-                          {student.attendance}%
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Average</span>
-                        <span className={cn(
-                          "ml-2 font-semibold",
-                          student.average < 60 ? "text-red-600" : "text-amber-600",
-                        )}>
-                          {student.average}%
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Reason</span>
-                        <span className="ml-2 font-medium">{student.reason}</span>
-                      </div>
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      <span className="font-medium">Suggested Action:</span> {student.suggestedAction}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 shrink-0">
-                    <Button variant="outline" size="sm" className="h-7 text-[10px] px-2">
-                      <MessageSquare className="mr-1 size-3" /> Add Note
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-7 text-[10px] px-2">
-                      <Phone className="mr-1 size-3" /> Contact Parent
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-7 text-[10px] px-2">
-                      <CalendarDays className="mr-1 size-3" /> Schedule PTA
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-7 text-[10px] px-2">
-                      <BookOpen className="mr-1 size-3" /> Assign Work
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-7 text-[10px] px-2">
-                      <Brain className="mr-1 size-3" /> Study Plan
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════ TAB 5: AI INSIGHTS ═══════════════ */}
-      {activeTab === "ai" && (
-        <div className="space-y-4">
-          <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-            <div className="mb-3 flex items-center gap-2">
-              <div className="grid size-8 place-items-center rounded-xl bg-violet-500/10">
-                <Brain className="size-4 text-violet-700" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold">AI Insights</h3>
-                <p className="text-xs text-muted-foreground">
-                  Focused suggestions for Class 8-A — no school-wide data.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              {PERFORMANCE_AI_INSIGHTS.map((insight, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "rounded-xl border p-3 text-sm",
-                    insight.type === "warning"
-                      ? "border-amber-200 bg-amber-500/5"
-                      : insight.type === "success"
-                        ? "border-emerald-200 bg-emerald-500/5"
-                        : "border-violet-200 bg-violet-500/5",
-                  )}
-                >
-                  <div className="flex items-start gap-2">
-                    <Sparkles
-                      className={cn(
-                        "mt-0.5 size-4 shrink-0",
-                        insight.type === "warning"
-                          ? "text-amber-500"
-                          : insight.type === "success"
-                            ? "text-emerald-500"
-                            : "text-violet-500",
-                      )}
-                    />
-                    <span className="leading-relaxed text-muted-foreground">{insight.text}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-            <h3 className="text-sm font-semibold">AI Suggestions</h3>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              {PERFORMANCE_AI_SUGGESTIONS.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-xl border border-violet-200 bg-violet-500/5 px-4 py-3 text-sm text-muted-foreground"
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-            <h3 className="text-sm font-semibold">Quick Actions</h3>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {[
-                { label: "Generate Performance Report", icon: FileText, color: "text-violet-600 bg-violet-500/10" },
-                { label: "Contact Parent", icon: Phone, color: "text-sky-600 bg-sky-500/10" },
-                { label: "Schedule PTA", icon: CalendarDays, color: "text-emerald-600 bg-emerald-500/10" },
-                { label: "Assign Extra Work", icon: BookOpen, color: "text-amber-600 bg-amber-500/10" },
-                { label: "Generate Study Plan", icon: Brain, color: "text-violet-600 bg-violet-500/10" },
-                { label: "Open AI Assistant", icon: Sparkles, color: "text-violet-600 bg-violet-500/10" },
-              ].map((action) => {
-                const Icon = action.icon;
-                return (
-                  <button
-                    key={action.label}
-                    className="flex items-center gap-3 rounded-xl border border-border/60 px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm"
+                <ChartContainer config={subjectChartConfig} className="h-[220px] w-full">
+                  <BarChart
+                    data={analytics.subjectPerf}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
                   >
-                    <div className={cn("grid size-9 place-items-center rounded-xl", action.color)}>
-                      <Icon className="size-4" />
-                    </div>
-                    <span className="text-xs font-medium">{action.label}</span>
-                  </button>
-                );
-              })}
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border/50"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="subject"
+                      tick={{ fontSize: 9 }}
+                      className="text-muted-foreground"
+                    />
+                    <YAxis
+                      domain={[30, 100]}
+                      tick={{ fontSize: 10 }}
+                      className="text-muted-foreground"
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="avg" fill="var(--color-avg)" radius={[4, 4, 0, 0]} barSize={14} />
+                    <Bar
+                      dataKey="highest"
+                      fill="var(--color-highest)"
+                      radius={[4, 4, 0, 0]}
+                      barSize={14}
+                    />
+                    <Bar
+                      dataKey="lowest"
+                      fill="var(--color-lowest)"
+                      radius={[4, 4, 0, 0]}
+                      barSize={14}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </Card>
             </div>
-          </Card>
-        </div>
-      )}
 
-      {/* ═══════════════ STUDENT WORKSPACE DRAWER ═══════════════ */}
-      <Sheet
-        open={!!selectedStudentId}
-        onOpenChange={(open) => !open && setSelectedStudentId(null)}
-      >
-        <SheetContent
-          side="right"
-          className="min-w-[420px] max-w-[980px] overflow-hidden"
-          style={{ width: drawerWidth }}
-        >
-          <div
-            className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize bg-transparent hover:bg-muted/60"
-            onMouseDown={() => setIsResizing(true)}
-          />
+            {/* Charts Row 2 */}
+            <div className="grid gap-4 xl:grid-cols-2">
+              <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                <h3 className="text-sm font-semibold">Attendance vs Performance</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Correlation between attendance and marks.
+                </p>
+                <ChartContainer config={scatterConfig} className="h-[220px] w-full">
+                  <ScatterChart margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                    <XAxis
+                      type="number"
+                      dataKey="attendance"
+                      name="Attendance"
+                      domain={[70, 100]}
+                      tick={{ fontSize: 10 }}
+                      className="text-muted-foreground"
+                      label={{
+                        value: "Attendance %",
+                        position: "bottom",
+                        offset: -5,
+                        fontSize: 10,
+                      }}
+                    />
+                    <YAxis
+                      type="number"
+                      dataKey="marks"
+                      name="Marks"
+                      domain={[40, 100]}
+                      tick={{ fontSize: 10 }}
+                      className="text-muted-foreground"
+                      label={{
+                        value: "Marks %",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: 10,
+                        fontSize: 10,
+                      }}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Scatter data={analytics.attendanceVsMarks} fill="var(--color-marks)" />
+                  </ScatterChart>
+                </ChartContainer>
+              </Card>
 
-          {selectedStudent && (
-            <div className="flex h-full flex-col">
-              <SheetHeader>
-                <SheetTitle>Student Profile</SheetTitle>
-              </SheetHeader>
+              <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                <h3 className="text-sm font-semibold">Exam Readiness</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Subject-wise readiness for the upcoming exams.
+                </p>
+                <ChartContainer config={readinessChartConfig} className="h-[220px] w-full">
+                  <BarChart
+                    data={analytics.examReadiness}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border/50"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="subject"
+                      tick={{ fontSize: 9 }}
+                      className="text-muted-foreground"
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      tick={{ fontSize: 10 }}
+                      className="text-muted-foreground"
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar
+                      dataKey="readiness"
+                      fill="var(--color-readiness)"
+                      radius={[6, 6, 0, 0]}
+                      barSize={34}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </Card>
+            </div>
 
-              <ScrollArea className="h-full pr-3">
-                <div className="space-y-5 pb-4">
-                  <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="size-12">
-                        <AvatarFallback
-                          className={cn(
-                            "text-sm text-white",
-                            getAvatarClass(selectedStudent.badge),
-                          )}
-                        >
-                          {selectedStudent.name
-                            .split(" ")
-                            .map((part) => part[0])
-                            .slice(0, 2)
-                            .join("")}
+            {/* Top 5 / Bottom 5 + Pass/Fail */}
+            <div className="grid gap-4 xl:grid-cols-2">
+              <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                <div className="mb-3 flex items-center gap-2">
+                  <Trophy className="size-4 text-emerald-600" />
+                  <h3 className="text-sm font-semibold">Top 5 Performers</h3>
+                </div>
+                <div className="space-y-2">
+                  {top5.map((student, index) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center gap-3 rounded-xl border border-border/60 px-3 py-2"
+                    >
+                      <span className="w-4 text-xs font-semibold text-muted-foreground">
+                        {index + 1}
+                      </span>
+                      <Avatar className="size-7">
+                        <AvatarFallback className="text-[10px] text-white bg-emerald-500">
+                          {student.name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
+                      <span className="flex-1 text-sm font-medium">{student.name}</span>
+                      <span className="text-sm font-semibold text-emerald-700">
+                        {student.average}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
 
+              <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                <div className="mb-3 flex items-center gap-2">
+                  <AlertTriangle className="size-4 text-amber-600" />
+                  <h3 className="text-sm font-semibold">Bottom 5 Performers</h3>
+                </div>
+                <div className="space-y-2">
+                  {bottom5.map((student, index) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center gap-3 rounded-xl border border-border/60 px-3 py-2"
+                    >
+                      <span className="w-4 text-xs font-semibold text-muted-foreground">
+                        {index + 1}
+                      </span>
+                      <Avatar className="size-7">
+                        <AvatarFallback className="text-[10px] text-white bg-amber-500">
+                          {student.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="flex-1 text-sm font-medium">{student.name}</span>
+                      <span className="text-sm font-semibold text-amber-700">
+                        {student.average}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            {/* Pass/Fail + Strengths/Focus */}
+            <div className="grid gap-4 xl:grid-cols-2">
+              <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                <h3 className="mb-3 text-sm font-semibold">Pass vs Fail</h3>
+                <div className="flex items-center gap-6">
+                  <ChartContainer
+                    config={{
+                      pass: { label: "Pass", color: "hsl(142, 76%, 36%)" },
+                      fail: { label: "Fail", color: "hsl(0, 84%, 60%)" },
+                    }}
+                    className="h-[160px] w-[160px]"
+                  >
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: "Pass", value: passCount, fill: "hsl(142, 76%, 36%)" },
+                          { name: "Fail", value: failCount, fill: "hsl(0, 84%, 60%)" },
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={38}
+                        outerRadius={60}
+                        paddingAngle={3}
+                        dataKey="value"
+                      />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                    </PieChart>
+                  </ChartContainer>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-emerald-500" />
+                      <span>Pass: {passCount}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-red-500" />
+                      <span>Fail: {failCount}</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <div className="mb-2 flex items-center gap-2">
+                      <CheckCircle2 className="size-4 text-emerald-600" />
+                      <h3 className="text-sm font-semibold">Strength Areas</h3>
+                    </div>
+                    <div className="space-y-1.5">
+                      {STRENGTH_AREAS.map((area) => (
+                        <div
+                          key={area}
+                          className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-700"
+                        >
+                          <CheckCircle2 className="size-3.5" />
+                          {area}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2 flex items-center gap-2">
+                      <Target className="size-4 text-amber-600" />
+                      <h3 className="text-sm font-semibold">Focus Areas</h3>
+                    </div>
+                    <div className="space-y-1.5">
+                      {FOCUS_AREAS.map((area) => (
+                        <div
+                          key={area}
+                          className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-500/5 px-3 py-2 text-sm text-amber-700"
+                        >
+                          <Target className="size-3.5" />
+                          {area}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════ TAB 2: STUDENT PERFORMANCE ═══════════════ */}
+        {activeTab === "students" && (
+          <div className="space-y-4">
+            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+              <div className="tabs-mobile-scroll flex items-center gap-3 overflow-x-auto scrollbar-none">
+                <div className="relative flex-1 min-w-[240px]">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search Student"
+                    value={perfSearch}
+                    onChange={(e) => setPerfSearch(e.target.value)}
+                    className="h-9 pl-9"
+                  />
+                </div>
+                <Select
+                  value={perfFilter}
+                  onValueChange={(v) => setPerfFilter(v as PerformanceFilter)}
+                >
+                  <SelectTrigger className="h-9 w-40">
+                    <SelectValue placeholder="Performance" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PERF_FILTER_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={perfFilter}
+                  onValueChange={(v) => setPerfFilter(v as PerformanceFilter)}
+                >
+                  <SelectTrigger className="h-9 w-36">
+                    <SelectValue placeholder="Attendance" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Attendance</SelectItem>
+                    <SelectItem value="top">90% and above</SelectItem>
+                    <SelectItem value="stable">75% to 89%</SelectItem>
+                    <SelectItem value="at-risk">Below 75%</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={perfSort} onValueChange={(v) => setPerfSort(v as SortOption)}>
+                  <SelectTrigger className="h-9 w-40">
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SORT_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Badge variant="outline" className="rounded-full px-3 py-1 text-[10px]">
+                  Class 8-A
+                </Badge>
+              </div>
+            </Card>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {filteredStudents.map((student) => (
+                <button
+                  key={student.id}
+                  onClick={() => setSelectedStudentId(student.id)}
+                  className="rounded-2xl border border-border/60 bg-background p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-md"
+                >
+                  <div className="flex items-start gap-3">
+                    <Avatar className="size-10 shrink-0">
+                      <AvatarFallback
+                        className={cn("text-xs text-white", getAvatarClass(student.badge))}
+                      >
+                        {student.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="truncate text-sm font-semibold">{student.name}</span>
+                        {getPerformanceBadge(student.badge)}
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        Roll #{student.roll} · Rank #{student.rank}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div
+                        className={cn(
+                          "text-lg font-semibold",
+                          student.average >= 85
+                            ? "text-emerald-700"
+                            : student.average >= 70
+                              ? "text-violet-700"
+                              : "text-amber-700",
+                        )}
+                      >
+                        {student.average}%
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">
+                        Attendance {student.attendance}%
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-2">
+                    <Progress value={student.average} className="h-2" />
+                    <div className="flex flex-wrap gap-1.5">
+                      {student.strengths.slice(0, 2).map((s) => (
+                        <Badge
+                          key={s}
+                          variant="outline"
+                          className="rounded-full border-emerald-200 bg-emerald-500/10 text-[10px] text-emerald-700"
+                        >
+                          {s}
+                        </Badge>
+                      ))}
+                      {student.weaknesses.slice(0, 1).map((w) => (
+                        <Badge
+                          key={w}
+                          variant="outline"
+                          className="rounded-full border-amber-200 bg-amber-500/10 text-[10px] text-amber-700"
+                        >
+                          Needs support in {w}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════ TAB 3: SUBJECT PERFORMANCE ═══════════════ */}
+        {activeTab === "subjects" && (
+          <div className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {SUBJECT_PERFORMANCE.map((subject) => (
+                <Card
+                  key={subject.name}
+                  className="rounded-2xl border border-border/60 p-4 shadow-sm"
+                >
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="text-lg">{subject.emoji}</span>
+                    <h3 className="text-sm font-semibold">{subject.name}</h3>
+                  </div>
+                  <div className="space-y-2.5 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Average Score</span>
+                      <span
+                        className={cn(
+                          "font-semibold",
+                          subject.average >= 80
+                            ? "text-emerald-700"
+                            : subject.average >= 70
+                              ? "text-violet-700"
+                              : "text-amber-700",
+                        )}
+                      >
+                        {subject.average}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Highest</span>
+                      <span className="font-semibold text-emerald-700">{subject.highest}%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Lowest</span>
+                      <span className="font-semibold text-amber-700">{subject.lowest}%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Students At Risk</span>
+                      <span className="font-semibold text-red-600">{subject.atRisk}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Pass Rate</span>
+                      <span className="font-semibold">{subject.passRate}%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Upcoming Exam</span>
+                      <Badge variant="outline" className="rounded-full text-[10px]">
+                        {subject.upcomingExam}
+                      </Badge>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Subject Charts */}
+            <div className="grid gap-4 xl:grid-cols-2">
+              <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                <h3 className="text-sm font-semibold">Subject Comparison</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Average marks across all subjects.
+                </p>
+                <ChartContainer config={subjectChartConfig} className="h-[220px] w-full">
+                  <BarChart
+                    data={analytics.subjectPerf}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border/50"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="subject"
+                      tick={{ fontSize: 9 }}
+                      className="text-muted-foreground"
+                    />
+                    <YAxis
+                      domain={[30, 100]}
+                      tick={{ fontSize: 10 }}
+                      className="text-muted-foreground"
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="avg" fill="var(--color-avg)" radius={[4, 4, 0, 0]} barSize={14} />
+                    <Bar
+                      dataKey="highest"
+                      fill="var(--color-highest)"
+                      radius={[4, 4, 0, 0]}
+                      barSize={14}
+                    />
+                    <Bar
+                      dataKey="lowest"
+                      fill="var(--color-lowest)"
+                      radius={[4, 4, 0, 0]}
+                      barSize={14}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </Card>
+
+              <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                <h3 className="text-sm font-semibold">Exam Readiness</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Subject-wise readiness for upcoming exams.
+                </p>
+                <ChartContainer config={readinessChartConfig} className="h-[220px] w-full">
+                  <BarChart
+                    data={analytics.examReadiness}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border/50"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="subject"
+                      tick={{ fontSize: 9 }}
+                      className="text-muted-foreground"
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      tick={{ fontSize: 10 }}
+                      className="text-muted-foreground"
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar
+                      dataKey="readiness"
+                      fill="var(--color-readiness)"
+                      radius={[6, 6, 0, 0]}
+                      barSize={34}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════ TAB 4: INTERVENTION CENTER ═══════════════ */}
+        {activeTab === "intervention" && (
+          <div className="space-y-4">
+            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+              <div className="flex items-center gap-2">
+                <div className="grid size-8 place-items-center rounded-xl bg-amber-500/10">
+                  <Shield className="size-4 text-amber-700" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold">Intervention Center</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Students who need support — auto-identified by performance rules.
+                  </p>
+                </div>
+              </div>
+              <div className="tabs-mobile-scroll mt-3 flex gap-2 overflow-x-auto scrollbar-none text-xs text-muted-foreground">
+                <span className="rounded-full border border-border/60 px-2.5 py-1">
+                  Average &lt; 60%
+                </span>
+                <span className="rounded-full border border-border/60 px-2.5 py-1">
+                  Attendance &lt; 75%
+                </span>
+                <span className="rounded-full border border-border/60 px-2.5 py-1">Score Drop</span>
+                <span className="rounded-full border border-border/60 px-2.5 py-1">
+                  Missing Assignments
+                </span>
+              </div>
+            </Card>
+
+            <div className="space-y-3">
+              {INTERVENTION_STUDENTS.map((student) => (
+                <Card
+                  key={student.id}
+                  className={cn(
+                    "rounded-2xl border p-4 shadow-sm",
+                    getSeverityClass(student.severity),
+                  )}
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                    <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+                      <div className="mt-1 shrink-0">
+                        <span
+                          className={cn("size-2.5 rounded-full", getSeverityDot(student.severity))}
+                        />
+                      </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-lg font-semibold">{selectedStudent.name}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          Roll #{selectedStudent.roll} · Class 8-A
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {getPerformanceBadge(selectedStudent.badge)}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-semibold">{student.name}</span>
                           <Badge variant="outline" className="rounded-full text-[10px]">
-                            Attendance {selectedStudent.attendance}%
-                          </Badge>
-                          <Badge variant="outline" className="rounded-full text-[10px]">
-                            Average {selectedStudent.average}%
+                            Roll #{student.roll}
                           </Badge>
                         </div>
-                      </div>
-                    </div>
-                  </Card>
-
-                  <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-                    <div className="mb-3 flex items-center gap-2">
-                      <Sparkles className="size-4 text-violet-600" />
-                      <h4 className="text-sm font-semibold">AI Student Insights</h4>
-                    </div>
-                    <div className="space-y-2 text-xs text-muted-foreground">
-                      {selectedStudent.attendance < 80
-                        ? "Attendance needs a quick follow-up."
-                        : "Attendance is strong and consistent."}
-                      <div className="flex items-start gap-2">
-                        <span className="mt-1 size-1.5 rounded-full bg-amber-500" />
-                        <span>
-                          {selectedStudent.badge === "at-risk"
-                            ? "Intervention plan should stay active."
-                            : "Performance remains within the expected band."}
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="mt-1 size-1.5 rounded-full bg-emerald-500" />
-                        <span>
-                          {selectedStudent.strengths.length > 0
-                            ? `Strong subjects: ${selectedStudent.strengths.join(", ")}.`
-                            : "No clear strengths flagged yet."}
-                        </span>
-                      </div>
-                    </div>
-                  </Card>
-
-                  <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="flex h-auto flex-wrap gap-2 bg-transparent p-0">
-                      <TabsTrigger value="overview">Overview</TabsTrigger>
-                      <TabsTrigger value="attendance">Attendance</TabsTrigger>
-                      <TabsTrigger value="academics">Academics</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="overview" className="mt-4">
-                      <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-                        <div className="grid gap-3 text-sm sm:grid-cols-2">
-                          <ProfileItem label="Student" value={selectedStudent.name} />
-                          <ProfileItem label="Class" value="8-A" />
-                          <ProfileItem label="Roll Number" value={String(selectedStudent.roll)} />
-                          <ProfileItem label="Gender" value={selectedStudent.gender} />
-                          <ProfileItem label="Attendance" value={`${selectedStudent.attendance}%`} />
-                          <ProfileItem label="Average Score" value={`${selectedStudent.average}%`} />
-                          <ProfileItem label="Rank" value={`#${selectedStudent.rank}`} />
-                          <ProfileItem
-                            label="Strengths"
-                            value={selectedStudent.strengths.join(", ") || "None"}
-                          />
+                        <div className="mt-2 grid gap-3 sm:grid-cols-3 text-xs">
+                          <div>
+                            <span className="text-muted-foreground">Attendance</span>
+                            <span
+                              className={cn(
+                                "ml-2 font-semibold",
+                                student.attendance < 75 ? "text-red-600" : "text-amber-600",
+                              )}
+                            >
+                              {student.attendance}%
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Average</span>
+                            <span
+                              className={cn(
+                                "ml-2 font-semibold",
+                                student.average < 60 ? "text-red-600" : "text-amber-600",
+                              )}
+                            >
+                              {student.average}%
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Reason</span>
+                            <span className="ml-2 font-medium">{student.reason}</span>
+                          </div>
                         </div>
-                      </Card>
-                    </TabsContent>
-
-                    <TabsContent value="attendance" className="mt-4">
-                      <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <ProfileItem
-                            label="Attendance Rate"
-                            value={`${selectedStudent.attendance}%`}
-                          />
-                          <ProfileItem
-                            label="Days Present"
-                            value={`${Math.round((180 * selectedStudent.attendance) / 100)}`}
-                          />
-                          <ProfileItem
-                            label="Days Absent"
-                            value={`${180 - Math.round((180 * selectedStudent.attendance) / 100)}`}
-                          />
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          <span className="font-medium">Suggested Action:</span>{" "}
+                          {student.suggestedAction}
                         </div>
-                        <div className="mt-4">
-                          <p className="text-xs text-muted-foreground">Attendance Status</p>
-                          <Badge
+                      </div>
+                    </div>
+                    <div className="tabs-mobile-scroll flex gap-1.5 overflow-x-auto scrollbar-none sm:shrink-0 sm:flex-wrap">
+                      <Button variant="outline" size="sm" className="h-7 shrink-0 text-[10px] px-2">
+                        <MessageSquare className="mr-1 size-3" /> Add Note
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 shrink-0 text-[10px] px-2">
+                        <Phone className="mr-1 size-3" /> Contact Parent
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 shrink-0 text-[10px] px-2">
+                        <CalendarDays className="mr-1 size-3" /> Schedule PTA
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 shrink-0 text-[10px] px-2">
+                        <BookOpen className="mr-1 size-3" /> Assign Work
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 shrink-0 text-[10px] px-2">
+                        <Brain className="mr-1 size-3" /> Study Plan
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════ TAB 5: AI INSIGHTS ═══════════════ */}
+        {activeTab === "ai" && (
+          <div className="space-y-4">
+            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+              <div className="mb-3 flex items-center gap-2">
+                <div className="grid size-8 place-items-center rounded-xl bg-violet-500/10">
+                  <Brain className="size-4 text-violet-700" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold">AI Insights</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Focused suggestions for Class 8-A — no school-wide data.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {PERFORMANCE_AI_INSIGHTS.map((insight, index) => (
+                  <div
+                    key={index}
+                    className={cn(
+                      "rounded-xl border p-3 text-sm",
+                      insight.type === "warning"
+                        ? "border-amber-200 bg-amber-500/5"
+                        : insight.type === "success"
+                          ? "border-emerald-200 bg-emerald-500/5"
+                          : "border-violet-200 bg-violet-500/5",
+                    )}
+                  >
+                    <div className="flex items-start gap-2">
+                      <Sparkles
+                        className={cn(
+                          "mt-0.5 size-4 shrink-0",
+                          insight.type === "warning"
+                            ? "text-amber-500"
+                            : insight.type === "success"
+                              ? "text-emerald-500"
+                              : "text-violet-500",
+                        )}
+                      />
+                      <span className="leading-relaxed text-muted-foreground">{insight.text}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+              <h3 className="text-sm font-semibold">AI Suggestions</h3>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {PERFORMANCE_AI_SUGGESTIONS.map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-xl border border-violet-200 bg-violet-500/5 px-4 py-3 text-sm text-muted-foreground"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+              <h3 className="text-sm font-semibold">Quick Actions</h3>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {[
+                  {
+                    label: "Generate Performance Report",
+                    icon: FileText,
+                    color: "text-violet-600 bg-violet-500/10",
+                  },
+                  { label: "Contact Parent", icon: Phone, color: "text-sky-600 bg-sky-500/10" },
+                  {
+                    label: "Schedule PTA",
+                    icon: CalendarDays,
+                    color: "text-emerald-600 bg-emerald-500/10",
+                  },
+                  {
+                    label: "Assign Extra Work",
+                    icon: BookOpen,
+                    color: "text-amber-600 bg-amber-500/10",
+                  },
+                  {
+                    label: "Generate Study Plan",
+                    icon: Brain,
+                    color: "text-violet-600 bg-violet-500/10",
+                  },
+                  {
+                    label: "Open AI Assistant",
+                    icon: Sparkles,
+                    color: "text-violet-600 bg-violet-500/10",
+                  },
+                ].map((action) => {
+                  const Icon = action.icon;
+                  return (
+                    <button
+                      key={action.label}
+                      className="flex items-center gap-3 rounded-xl border border-border/60 px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm"
+                    >
+                      <div
+                        className={cn("grid size-9 place-items-center rounded-xl", action.color)}
+                      >
+                        <Icon className="size-4" />
+                      </div>
+                      <span className="text-xs font-medium">{action.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* ═══════════════ STUDENT WORKSPACE DRAWER ═══════════════ */}
+        <Sheet
+          open={!!selectedStudentId}
+          onOpenChange={(open) => !open && setSelectedStudentId(null)}
+        >
+          <SheetContent
+            side="right"
+            className="w-full min-w-0 max-w-full sm:min-w-[420px] sm:max-w-[980px] overflow-hidden"
+            style={{ width: undefined }}
+          >
+            <div
+              className="absolute left-0 top-0 hidden h-full w-1.5 cursor-col-resize bg-transparent hover:bg-muted/60 sm:block"
+              onMouseDown={() => setIsResizing(true)}
+            />
+
+            {selectedStudent && (
+              <div className="flex h-full flex-col">
+                <SheetHeader>
+                  <SheetTitle>Student Profile</SheetTitle>
+                </SheetHeader>
+
+                <ScrollArea className="h-full pr-3">
+                  <div className="space-y-5 pb-4">
+                    <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="size-12">
+                          <AvatarFallback
                             className={cn(
-                              "mt-2 rounded-full border-0 text-[10px]",
-                              selectedStudent.attendance >= 90
-                                ? "bg-emerald-500/10 text-emerald-700"
-                                : selectedStudent.attendance >= 75
-                                  ? "bg-amber-500/10 text-amber-700"
-                                  : "bg-red-500/10 text-red-700",
+                              "text-sm text-white",
+                              getAvatarClass(selectedStudent.badge),
                             )}
                           >
-                            {selectedStudent.attendance >= 90
-                              ? "Excellent"
-                              : selectedStudent.attendance >= 75
-                                ? "Good"
-                                : "Needs Attention"}
-                          </Badge>
+                            {selectedStudent.name
+                              .split(" ")
+                              .map((part) => part[0])
+                              .slice(0, 2)
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="text-lg font-semibold">{selectedStudent.name}</div>
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            Roll #{selectedStudent.roll} · Class 8-A
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {getPerformanceBadge(selectedStudent.badge)}
+                            <Badge variant="outline" className="rounded-full text-[10px]">
+                              Attendance {selectedStudent.attendance}%
+                            </Badge>
+                            <Badge variant="outline" className="rounded-full text-[10px]">
+                              Average {selectedStudent.average}%
+                            </Badge>
+                          </div>
                         </div>
-                      </Card>
-                    </TabsContent>
-
-                    <TabsContent value="academics" className="mt-4 space-y-4">
-                      <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-                        <h4 className="text-sm font-semibold">Subject Marks</h4>
-                        <div className="mt-4 space-y-3">
-                          {selectedStudent.subjects.map((subject) => (
-                            <div key={subject.name} className="space-y-1.5">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="font-medium">{subject.name}</span>
-                                <span className="text-muted-foreground">
-                                  {subject.marks}/{subject.max} · {subject.grade}
-                                </span>
-                              </div>
-                              <Progress value={subject.marks} className="h-2" />
-                            </div>
-                          ))}
-                        </div>
-                      </Card>
-
-                      <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-                        <h4 className="text-sm font-semibold">Exam Trend</h4>
-                        <ChartContainer config={chartConfig} className="h-[180px] w-full">
-                          <LineChart
-                            data={selectedStudent.examHistory}
-                            margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-                            <XAxis
-                              dataKey="exam"
-                              tick={{ fontSize: 10 }}
-                              className="text-muted-foreground"
-                            />
-                            <YAxis
-                              domain={[40, 100]}
-                              tick={{ fontSize: 10 }}
-                              className="text-muted-foreground"
-                            />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Line
-                              type="monotone"
-                              dataKey="percentage"
-                              stroke="var(--color-percentage)"
-                              strokeWidth={2}
-                              dot={{ r: 3 }}
-                            />
-                          </LineChart>
-                        </ChartContainer>
-                      </Card>
-                    </TabsContent>
-                  </Tabs>
-
-                  <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <div>
-                        <h4 className="text-sm font-semibold">Teacher Actions</h4>
-                        <p className="text-xs text-muted-foreground">Class-level actions only.</p>
                       </div>
-                      <Badge variant="secondary">Allowed</Badge>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <Button variant="outline" size="sm" className="justify-start">
-                        <MessageSquare className="size-4 mr-2" /> Add Remark
-                      </Button>
-                      <Button variant="outline" size="sm" className="justify-start">
-                        <Phone className="size-4 mr-2" /> Contact Parent
-                      </Button>
-                      <Button variant="outline" size="sm" className="justify-start">
-                        <CalendarDays className="size-4 mr-2" /> Schedule Meeting
-                      </Button>
-                      <Button variant="outline" size="sm" className="justify-start">
-                        <BookOpen className="size-4 mr-2" /> Assign Work
-                      </Button>
-                      <Button variant="outline" size="sm" className="justify-start">
-                        <TrendingUp className="size-4 mr-2" /> View Performance
-                      </Button>
-                      <Button variant="outline" size="sm" className="justify-start">
-                        <Brain className="size-4 mr-2" /> Generate AI Insights
-                      </Button>
-                    </div>
-                  </Card>
-                </div>
-              </ScrollArea>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
+                    </Card>
+
+                    <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                      <div className="mb-3 flex items-center gap-2">
+                        <Sparkles className="size-4 text-violet-600" />
+                        <h4 className="text-sm font-semibold">AI Student Insights</h4>
+                      </div>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        {selectedStudent.attendance < 80
+                          ? "Attendance needs a quick follow-up."
+                          : "Attendance is strong and consistent."}
+                        <div className="flex items-start gap-2">
+                          <span className="mt-1 size-1.5 rounded-full bg-amber-500" />
+                          <span>
+                            {selectedStudent.badge === "at-risk"
+                              ? "Intervention plan should stay active."
+                              : "Performance remains within the expected band."}
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="mt-1 size-1.5 rounded-full bg-emerald-500" />
+                          <span>
+                            {selectedStudent.strengths.length > 0
+                              ? `Strong subjects: ${selectedStudent.strengths.join(", ")}.`
+                              : "No clear strengths flagged yet."}
+                          </span>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <Tabs defaultValue="overview" className="w-full">
+                      <TabsList className="flex h-auto flex-wrap gap-2 bg-transparent p-0">
+                        <TabsTrigger value="overview">Overview</TabsTrigger>
+                        <TabsTrigger value="attendance">Attendance</TabsTrigger>
+                        <TabsTrigger value="academics">Academics</TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="overview" className="mt-4">
+                        <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                          <div className="grid gap-3 text-sm sm:grid-cols-2">
+                            <ProfileItem label="Student" value={selectedStudent.name} />
+                            <ProfileItem label="Class" value="8-A" />
+                            <ProfileItem label="Roll Number" value={String(selectedStudent.roll)} />
+                            <ProfileItem label="Gender" value={selectedStudent.gender} />
+                            <ProfileItem
+                              label="Attendance"
+                              value={`${selectedStudent.attendance}%`}
+                            />
+                            <ProfileItem
+                              label="Average Score"
+                              value={`${selectedStudent.average}%`}
+                            />
+                            <ProfileItem label="Rank" value={`#${selectedStudent.rank}`} />
+                            <ProfileItem
+                              label="Strengths"
+                              value={selectedStudent.strengths.join(", ") || "None"}
+                            />
+                          </div>
+                        </Card>
+                      </TabsContent>
+
+                      <TabsContent value="attendance" className="mt-4">
+                        <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            <ProfileItem
+                              label="Attendance Rate"
+                              value={`${selectedStudent.attendance}%`}
+                            />
+                            <ProfileItem
+                              label="Days Present"
+                              value={`${Math.round((180 * selectedStudent.attendance) / 100)}`}
+                            />
+                            <ProfileItem
+                              label="Days Absent"
+                              value={`${180 - Math.round((180 * selectedStudent.attendance) / 100)}`}
+                            />
+                          </div>
+                          <div className="mt-4">
+                            <p className="text-xs text-muted-foreground">Attendance Status</p>
+                            <Badge
+                              className={cn(
+                                "mt-2 rounded-full border-0 text-[10px]",
+                                selectedStudent.attendance >= 90
+                                  ? "bg-emerald-500/10 text-emerald-700"
+                                  : selectedStudent.attendance >= 75
+                                    ? "bg-amber-500/10 text-amber-700"
+                                    : "bg-red-500/10 text-red-700",
+                              )}
+                            >
+                              {selectedStudent.attendance >= 90
+                                ? "Excellent"
+                                : selectedStudent.attendance >= 75
+                                  ? "Good"
+                                  : "Needs Attention"}
+                            </Badge>
+                          </div>
+                        </Card>
+                      </TabsContent>
+
+                      <TabsContent value="academics" className="mt-4 space-y-4">
+                        <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                          <h4 className="text-sm font-semibold">Subject Marks</h4>
+                          <div className="mt-4 space-y-3">
+                            {selectedStudent.subjects.map((subject) => (
+                              <div key={subject.name} className="space-y-1.5">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="font-medium">{subject.name}</span>
+                                  <span className="text-muted-foreground">
+                                    {subject.marks}/{subject.max} · {subject.grade}
+                                  </span>
+                                </div>
+                                <Progress value={subject.marks} className="h-2" />
+                              </div>
+                            ))}
+                          </div>
+                        </Card>
+
+                        <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                          <h4 className="text-sm font-semibold">Exam Trend</h4>
+                          <ChartContainer config={chartConfig} className="h-[180px] w-full">
+                            <LineChart
+                              data={selectedStudent.examHistory}
+                              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                              <XAxis
+                                dataKey="exam"
+                                tick={{ fontSize: 10 }}
+                                className="text-muted-foreground"
+                              />
+                              <YAxis
+                                domain={[40, 100]}
+                                tick={{ fontSize: 10 }}
+                                className="text-muted-foreground"
+                              />
+                              <ChartTooltip content={<ChartTooltipContent />} />
+                              <Line
+                                type="monotone"
+                                dataKey="percentage"
+                                stroke="var(--color-percentage)"
+                                strokeWidth={2}
+                                dot={{ r: 3 }}
+                              />
+                            </LineChart>
+                          </ChartContainer>
+                        </Card>
+                      </TabsContent>
+                    </Tabs>
+
+                    <Card className="rounded-2xl border border-border/60 p-4 shadow-sm">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div>
+                          <h4 className="text-sm font-semibold">Teacher Actions</h4>
+                          <p className="text-xs text-muted-foreground">Class-level actions only.</p>
+                        </div>
+                        <Badge variant="secondary">Allowed</Badge>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <Button variant="outline" size="sm" className="justify-start">
+                          <MessageSquare className="size-4 mr-2" /> Add Remark
+                        </Button>
+                        <Button variant="outline" size="sm" className="justify-start">
+                          <Phone className="size-4 mr-2" /> Contact Parent
+                        </Button>
+                        <Button variant="outline" size="sm" className="justify-start">
+                          <CalendarDays className="size-4 mr-2" /> Schedule Meeting
+                        </Button>
+                        <Button variant="outline" size="sm" className="justify-start">
+                          <BookOpen className="size-4 mr-2" /> Assign Work
+                        </Button>
+                        <Button variant="outline" size="sm" className="justify-start">
+                          <TrendingUp className="size-4 mr-2" /> View Performance
+                        </Button>
+                        <Button variant="outline" size="sm" className="justify-start">
+                          <Brain className="size-4 mr-2" /> Generate AI Insights
+                        </Button>
+                      </div>
+                    </Card>
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );

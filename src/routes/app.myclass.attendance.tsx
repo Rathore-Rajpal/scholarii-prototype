@@ -57,8 +57,10 @@ import {
   Sparkles,
   Phone,
   BarChart3,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/myclass/attendance")({
@@ -336,6 +338,44 @@ function MyClassAttendancePage() {
   const [studentViewMode, setStudentViewMode] = useState<StudentViewMode>("grid");
   const [selectedStudentId, setSelectedStudentId] = useState<string>(students[0]?.id ?? "");
   const [selectedProfileTab, setSelectedProfileTab] = useState<ProfileTab>("overview");
+  const tabScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkTabScroll = useCallback(() => {
+    const el = tabScrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    const el = tabScrollRef.current;
+    if (!el) return;
+    checkTabScroll();
+    el.addEventListener("scroll", checkTabScroll, { passive: true });
+    window.addEventListener("resize", checkTabScroll);
+    return () => {
+      el.removeEventListener("scroll", checkTabScroll);
+      window.removeEventListener("resize", checkTabScroll);
+    };
+  }, [checkTabScroll]);
+
+  useEffect(() => {
+    const el = tabScrollRef.current;
+    if (!el) return;
+    const activeBtn = el.querySelector("[data-active-tab]");
+    if (activeBtn) {
+      activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+  }, [activeTab]);
+
+  const scrollTabs = (direction: "left" | "right") => {
+    const el = tabScrollRef.current;
+    if (!el) return;
+    const scrollAmount = el.clientWidth - 80;
+    el.scrollBy({ left: direction === "left" ? -scrollAmount : scrollAmount, behavior: "smooth" });
+  };
 
   const classStudents = useMemo(() => {
     return students.map((student) => ({
@@ -574,23 +614,44 @@ function MyClassAttendancePage() {
         </Card>
       </div>
 
-      <Card className="p-4 mb-6">
-        <div className="flex gap-1">
-          {TABS.map((tab) => (
+      <Card className="p-4 mb-4 overflow-hidden sm:mb-6">
+        <div className="relative flex items-center">
+          {canScrollLeft && (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
-                activeTab === tab.id
-                  ? "bg-violet-500/10 text-violet-600 shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
+              onClick={() => scrollTabs("left")}
+              className="absolute left-0 z-20 flex h-full w-8 items-center justify-center bg-gradient-to-r from-background via-background/90 to-transparent"
+              aria-label="Scroll left"
             >
-              <tab.icon className="size-4" />
-              {tab.label}
+              <ChevronLeft className="size-4 text-muted-foreground" />
             </button>
-          ))}
+          )}
+          <div ref={tabScrollRef} className="tabs-mobile-scroll flex gap-1">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                data-active-tab={activeTab === tab.id || undefined}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-xs font-medium transition-all",
+                  activeTab === tab.id
+                    ? "bg-violet-500/10 text-violet-600 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                )}
+              >
+                <tab.icon className="size-4" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {canScrollRight && (
+            <button
+              onClick={() => scrollTabs("right")}
+              className="absolute right-0 z-20 flex h-full w-8 items-center justify-center bg-gradient-to-l from-background via-background/90 to-transparent"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </button>
+          )}
         </div>
       </Card>
 
@@ -609,7 +670,7 @@ function MyClassAttendancePage() {
                       className="bg-transparent outline-none"
                     />
                   </div>
-                  <div className="relative min-w-[240px] flex-1">
+                  <div className="relative min-w-[160px] flex-1 sm:min-w-[240px]">
                     <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       className="pl-9"
@@ -618,22 +679,25 @@ function MyClassAttendancePage() {
                       onChange={(event) => setMarkSearch(event.target.value)}
                     />
                   </div>
-                  <Badge variant="secondary" className="rounded-full px-3 py-1">
+                  <Badge
+                    variant="secondary"
+                    className="hidden rounded-full px-3 py-1 sm:inline-flex"
+                  >
                     Class {CLASS_NAME}
                   </Badge>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 lg:justify-end">
                   <Button variant="outline" size="sm" onClick={() => applyBulk("present")}>
                     <CheckCircle2 className="mr-2 size-4" />
-                    Mark All Present
+                    <span className="hidden sm:inline">Mark All </span>Present
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => applyBulk("absent")}>
                     <UserX className="mr-2 size-4" />
-                    Mark All Absent
+                    <span className="hidden sm:inline">Mark All </span>Absent
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => applyBulk("late")}>
                     <Clock3 className="mr-2 size-4" />
-                    Mark All Late
+                    <span className="hidden sm:inline">Mark All </span>Late
                   </Button>
                   <Button variant="outline" size="sm" onClick={resetBulk}>
                     <RotateCcw className="mr-2 size-4" />
@@ -772,6 +836,85 @@ function MyClassAttendancePage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="md:hidden">
+                {filteredMarkStudents.map((student) => {
+                  const currentStatus = attendanceState[student.id] ?? "present";
+                  return (
+                    <div key={student.id} className="border-t border-border/50 p-3">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar className="size-8 shrink-0">
+                          <AvatarFallback className="bg-sky-500 text-xs text-white">
+                            {student.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="truncate text-xs font-medium">{student.name}</span>
+                            <span className="shrink-0 text-[10px] text-muted-foreground">
+                              #{student.roll}
+                            </span>
+                          </div>
+                          <div className="mt-0.5 text-[10px] text-muted-foreground">
+                            {student.parentName}
+                          </div>
+                        </div>
+                        <span
+                          className={cn(
+                            "shrink-0 text-[10px] font-semibold",
+                            student.attendance >= 95
+                              ? "text-emerald-700"
+                              : student.attendance >= 75
+                                ? "text-amber-700"
+                                : "text-red-700",
+                          )}
+                        >
+                          {student.attendance}%
+                        </span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {STATUS_ORDER.map((status) => (
+                          <button
+                            key={status}
+                            type="button"
+                            onClick={() => markStudent(student.id, status)}
+                            className={cn(
+                              "rounded-md border px-2 py-0.5 text-[10px] font-medium transition-all",
+                              currentStatus === status
+                                ? `${statusMeta[status].bg} ${statusMeta[status].color} border-transparent`
+                                : "border-border/60 text-muted-foreground hover:bg-muted",
+                            )}
+                          >
+                            {statusMeta[status].label}
+                          </button>
+                        ))}
+                        <div className="ml-auto flex gap-1">
+                          <button
+                            onClick={() => {
+                              setSelectedStudentId(student.id);
+                              setSelectedProfileTab("remarks");
+                              setActiveTab("student");
+                            }}
+                            className="rounded border border-border/60 px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-muted"
+                          >
+                            Remark
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedStudentId(student.id);
+                              setSelectedProfileTab("overview");
+                              setActiveTab("student");
+                            }}
+                            className="rounded border border-border/60 px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-muted"
+                          >
+                            Profile
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </Card>
 
