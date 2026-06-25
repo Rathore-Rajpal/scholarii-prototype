@@ -140,7 +140,7 @@ function AdminAcademicsPage() {
         <KpiTile label="Syllabus Completion" value="74%" sub="School average" icon={TrendingUp} tone="green" />
       </div>
 
-      <div className="mt-6 mb-4 flex flex-wrap gap-4 border-b border-gray-200">
+      <div className="mt-6 mb-4 flex overflow-x-auto scrollbar-hide border-b border-gray-200">
         <TabButton active={activeTab === "timetable"} onClick={() => setActiveTab("timetable")}>Class Timetable</TabButton>
         <TabButton active={activeTab === "exams"} onClick={() => setActiveTab("exams")}>Exam Schedule</TabButton>
         <TabButton active={activeTab === "reports"} onClick={() => setActiveTab("reports")}>Report Cards</TabButton>
@@ -162,7 +162,7 @@ function AdminAcademicsPage() {
             </Button>
           </div>
           <p className="text-sm text-gray-400 mt-1 mb-4">3 lectures - short break - 3 lectures - lunch - 2 lectures</p>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {periods.map((period) => period.break ? (
               <div key={period.label} className="rounded-xl bg-gray-50 p-4">
                 <p className="text-sm font-semibold text-gray-700">{period.label}</p>
@@ -198,6 +198,26 @@ function AdminAcademicsPage() {
               <DataTable headers={["Subject", "Class", "Date", "Time", "Room", "Invigilator", "Status"]}>
                 {filteredExams.map((exam) => <tr key={exam.join("-")} className="border-b border-gray-50">{exam.map((cell, index) => <td key={`${cell}-${index}`} className="px-4 py-3 text-sm text-gray-600">{index === 6 ? <StatusBadge status={cell as "Upcoming" | "Completed"} /> : cell}</td>)}</tr>)}
               </DataTable>
+              <div className="space-y-3 p-4 lg:hidden">
+                {filteredExams.map((exam) => (
+                  <div key={`${exam[0]}-${exam[1]}-${exam[2]}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{exam[0]}</div>
+                        <div className="text-xs text-gray-500">{exam[1]}</div>
+                      </div>
+                      <StatusBadge status={exam[6] as "Upcoming" | "Completed"} />
+                    </div>
+                    <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+                      <Info label="Date" value={exam[2]} />
+                      <Info label="Time" value={exam[3]} />
+                      <Info label="Room" value={exam[4]} />
+                      <Info label="Invigilator" value={exam[5]} />
+                    </div>
+                    <button className="w-full rounded-lg border border-violet-200 py-2 text-sm font-medium text-violet-600">View Details</button>
+                  </div>
+                ))}
+              </div>
             </Card>
             <Card className="border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="mb-3 font-semibold text-gray-900">This Month's Exams</h3>
@@ -259,6 +279,24 @@ function AdminAcademicsPage() {
                   </tr>
                 ))}
               </DataTable>
+              <div className="space-y-3 p-4 lg:hidden">
+                {reportCards.map((card) => (
+                  <div key={card.student} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{card.student}</div>
+                        <div className="text-xs text-gray-500">{card.className}</div>
+                      </div>
+                      <ReportBadge status={card.status} />
+                    </div>
+                    <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+                      <Info label="Printed On" value={card.printedOn} />
+                      <Info label="Term" value={selectedTerm} />
+                    </div>
+                    <div className="w-full">{card.status !== "Not Ready" ? <ReportAction status={card.status} /> : <button className="w-full rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-400">Not Ready</button>}</div>
+                  </div>
+                ))}
+              </div>
             </Card>
             <Card className="border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="mb-3 font-semibold text-gray-900">Term 1 Report Cards</h3>
@@ -337,7 +375,7 @@ function KpiTile({ label, value, sub, icon: Icon, tone, dot }: { label: string; 
 }
 
 function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button onClick={onClick} className={cn("border-b-2 px-1 pb-3 text-sm", active ? "border-violet-600 font-semibold text-violet-600" : "border-transparent text-gray-500 hover:text-gray-700")}>{children}</button>;
+  return <button onClick={onClick} className={cn("min-w-fit whitespace-nowrap border-b-2 px-3 py-2.5 text-xs lg:px-5 lg:py-3 lg:text-sm", active ? "border-violet-600 font-semibold text-violet-600" : "border-transparent text-gray-500 hover:text-gray-700")}>{children}</button>;
 }
 
 function Section({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
@@ -354,12 +392,21 @@ function Section({ title, subtitle, children }: { title: string; subtitle: strin
 
 function DataTable({ headers, children }: { headers: string[]; children: React.ReactNode }) {
   return (
-    <table className="w-full min-w-[760px] text-left">
+    <table className="hidden w-full min-w-[760px] text-left lg:table">
       <thead className="bg-gray-50">
         <tr>{headers.map((header) => <th key={header} className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">{header}</th>)}</tr>
       </thead>
       <tbody>{children}</tbody>
     </table>
+  );
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-gray-400">{label}</div>
+      <div className="font-medium text-gray-900">{value}</div>
+    </div>
   );
 }
 
@@ -421,21 +468,22 @@ function BulkPrintModal({ onClose }: { onClose: () => void }) {
   }, []);
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div className="relative max-h-[85vh] w-full max-w-[550px] overflow-y-auto rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4" onClick={onClose}>
+      <div className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl lg:max-h-[85vh] lg:max-w-[550px] lg:rounded-2xl" onClick={(event) => event.stopPropagation()}>
+        <div className="lg:hidden flex justify-center pt-3 pb-1"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
         <button onClick={onClose} className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 hover:bg-gray-100">
           <X size={18} />
         </button>
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           <h2 className="text-lg font-semibold text-gray-900">Bulk Print Report Cards</h2>
           <div className="mt-5 space-y-4">
             <ModalSelect label="Select Grade" options={["All Grades", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10"]} />
             <ModalSelect label="Select Section" options={["All", "A", "B"]} />
             <ModalSelect label="Print Only" options={["Ready Cards", "All Cards"]} />
           </div>
-          <div className="mt-6 flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button className="bg-violet-600 hover:bg-violet-700" onClick={() => { toast.success("Report card sent to printer"); onClose(); }}>Print Now</Button>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <Button variant="outline" className="w-full py-2.5 text-sm font-medium" onClick={onClose}>Cancel</Button>
+            <Button className="w-full bg-violet-600 py-2.5 text-sm font-medium hover:bg-violet-700" onClick={() => { toast.success("Report card sent to printer"); onClose(); }}>Print Now</Button>
           </div>
         </div>
       </div>

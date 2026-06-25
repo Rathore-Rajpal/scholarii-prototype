@@ -277,6 +277,15 @@ function StatusBadge({ children, className }: { children: string; className: str
   );
 }
 
+function DashboardInfo({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-gray-400">{label}</div>
+      <div className="font-medium text-gray-900">{value}</div>
+    </div>
+  );
+}
+
 function IconBubble({ icon: Icon, tone }: { icon: LucideIcon; tone: Tone }) {
   return (
     <div className={`grid size-10 place-items-center rounded-xl ${toneClasses[tone].soft}`}>
@@ -541,22 +550,23 @@ function KpiModalDialog({ modal, onClose }: { modal: KpiModal; onClose: () => vo
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/60 z-[9999] flex items-end lg:items-center justify-center p-0 lg:p-4"
       style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-[650px] max-h-[85vh] overflow-y-auto relative my-auto"
+        className="bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl w-full lg:max-w-[650px] max-h-[90vh] lg:max-h-[85vh] overflow-y-auto relative"
         onClick={(event) => event.stopPropagation()}
       >
+        <div className="lg:hidden flex justify-center pt-3 pb-1"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
         <button aria-label="Close modal" className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600" onClick={onClose}>
           <X size={18} />
         </button>
 
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           <h2 className="mb-1 pr-10 text-xl font-semibold text-gray-900">{modal.title}</h2>
 
-          <div className="mb-6 grid grid-cols-3 gap-3">
+          <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
             {modal.stats.map((stat) => (
               <div key={stat.label} className="rounded-xl bg-gray-50 p-4">
                 <div className="text-xs text-gray-500">{stat.label}</div>
@@ -568,7 +578,7 @@ function KpiModalDialog({ modal, onClose }: { modal: KpiModal; onClose: () => vo
           {modal.chart && <ModalChartView chart={modal.chart} />}
 
           <h3 className="mb-3 text-sm font-semibold text-gray-700">{modal.tableTitle}</h3>
-          <div className="overflow-x-auto rounded-xl border border-gray-100">
+          <div className="hidden overflow-x-auto rounded-xl border border-gray-100 lg:block">
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-gray-50">
                 <tr>
@@ -591,6 +601,33 @@ function KpiModalDialog({ modal, onClose }: { modal: KpiModal; onClose: () => vo
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="space-y-3 lg:hidden">
+            {modal.rows.map((row, rowIndex) => (
+              <div key={`${modal.tableTitle}-mobile-${rowIndex}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-sm font-semibold text-violet-700">
+                      {row[0].split(" ").map((part) => part[0]).slice(0, 2).join("")}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{row[0]}</div>
+                      <div className="text-xs text-gray-500">{row[1] ?? ""}</div>
+                    </div>
+                  </div>
+                  {row[4] && <ModalCell value={row[4]} />}
+                </div>
+                <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+                  {row.slice(1, 5).map((cell, index) => (
+                    <div key={`${cell}-${index}`}>
+                      <div className="text-gray-400">{modal.columns[index + 1] ?? "Detail"}</div>
+                      <div className="font-medium text-gray-900"><ModalCell value={cell} /></div>
+                    </div>
+                  ))}
+                </div>
+                <button className="w-full rounded-lg border border-violet-200 py-2 text-sm font-medium text-violet-600">View Details</button>
+              </div>
+            ))}
           </div>
 
           {modal.title === "Today's Visitor Log" && (
@@ -1063,18 +1100,19 @@ function QuickActionModal({ action, onClose }: { action: QuickActionTitle; onClo
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/60 z-[9999] flex items-end lg:items-center justify-center p-0 lg:p-4"
       style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-[650px] max-h-[85vh] overflow-y-auto relative my-auto"
+        className="bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl w-full lg:max-w-[650px] max-h-[90vh] lg:max-h-[85vh] overflow-y-auto relative"
         onClick={(event) => event.stopPropagation()}
       >
+        <div className="lg:hidden flex justify-center pt-3 pb-1"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
         <button aria-label="Close modal" className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600" onClick={onClose}>
           <X size={18} />
         </button>
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           <h2 className="mb-1 pr-10 text-xl font-semibold text-gray-900">{title}</h2>
           <p className="mb-6 text-sm text-gray-500">{subtitle}</p>
           {content}
@@ -1145,6 +1183,23 @@ export function AdminDashboard() {
       />
 
       <div className="relative pb-3">
+        <div className="grid grid-cols-2 gap-3 lg:hidden">
+          {kpiCards.map((card) => (
+            <button key={card.label} type="button" onClick={() => setSelectedKpiLabel(card.label)} className="text-left">
+              <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-xs font-medium text-gray-500">{card.label}</div>
+                  <span className={`mt-1 size-2 rounded-full ${toneClasses[card.dot].dot}`} />
+                </div>
+                <div className="mt-3 text-2xl font-bold tracking-tight text-gray-950">{card.value}</div>
+                <div className="mt-2 text-xs font-medium">
+                  <span className={card.deltaTone}>{card.delta}</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="hidden lg:block">
         <Button
           variant="ghost"
           size="icon"
@@ -1199,6 +1254,7 @@ export function AdminDashboard() {
         >
           <ChevronRight className="size-4" />
         </Button>
+        </div>
       </div>
 
       {selectedKpiModal && <KpiModalDialog modal={selectedKpiModal} onClose={() => setSelectedKpiLabel(null)} />}
@@ -1211,17 +1267,17 @@ export function AdminDashboard() {
 
       <section className="mt-5">
         <SectionHeading title="Quick Actions" subtitle="Frequently used tasks" />
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-3">
           {quickActions.map((action) => (
             <button
               key={action.title}
               type="button"
               onClick={() => setSelectedQuickAction(action.title)}
-              className={`rounded-xl border bg-white p-5 text-left shadow-sm transition hover:border-violet-400 hover:shadow-md ${toneClasses[action.tone].border}`}
+              className={`rounded-xl border bg-white p-3 text-left shadow-sm transition hover:border-violet-400 hover:shadow-md lg:p-5 ${toneClasses[action.tone].border}`}
             >
               <IconBubble icon={action.icon} tone={action.tone} />
-              <div className="mt-4 font-semibold text-gray-950">{action.title}</div>
-              <div className="mt-1 text-sm text-gray-500">{action.desc}</div>
+              <div className="mt-3 text-sm font-semibold text-gray-950 lg:mt-4 lg:text-base">{action.title}</div>
+              <div className="mt-1 hidden text-sm text-gray-500 lg:block">{action.desc}</div>
             </button>
           ))}
         </div>
@@ -1355,7 +1411,7 @@ export function AdminDashboard() {
       <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="rounded-xl bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Today's Admissions</h2>
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 hidden overflow-x-auto lg:block">
             <table className="w-full min-w-[560px] text-left text-sm">
               <thead className="text-xs uppercase text-gray-400">
                 <tr>
@@ -1385,11 +1441,34 @@ export function AdminDashboard() {
               </tbody>
             </table>
           </div>
+          <div className="mt-4 space-y-3 lg:hidden">
+            {admissions.map((row) => (
+              <div key={row.student} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-sm font-semibold text-violet-700">
+                      {row.student.split(" ").map((part) => part[0]).slice(0, 2).join("")}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{row.student}</div>
+                      <div className="text-xs text-gray-500">{row.parent}</div>
+                    </div>
+                  </div>
+                  <StatusBadge className={row.badge}>{row.status}</StatusBadge>
+                </div>
+                <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+                  <DashboardInfo label="Grade" value={row.grade} />
+                  <DashboardInfo label="Parent" value={row.parent} />
+                </div>
+                <button className="w-full rounded-lg border border-violet-200 py-2 text-sm font-medium text-violet-600">View Details</button>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="rounded-xl bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Visitor Log — Today (12 visitors)</h2>
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 hidden overflow-x-auto lg:block">
             <table className="w-full min-w-[520px] text-left text-sm">
               <thead className="text-xs uppercase text-gray-400">
                 <tr>
@@ -1412,6 +1491,28 @@ export function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="mt-4 space-y-3 lg:hidden">
+            {visitors.map((row) => (
+              <div key={`${row.name}-${row.time}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-sm font-semibold text-violet-700">
+                      {row.name.split(" ").map((part) => part[0]).slice(0, 2).join("")}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{row.name}</div>
+                      <div className="text-xs text-gray-500">{row.purpose}</div>
+                    </div>
+                  </div>
+                  <StatusBadge className={row.badge}>{row.status}</StatusBadge>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <DashboardInfo label="Time In" value={row.time} />
+                  <DashboardInfo label="Purpose" value={row.purpose} />
+                </div>
+              </div>
+            ))}
           </div>
           <div className="mt-4 text-right">
             <Button variant="outline" className="rounded-full border-violet-200 text-violet-600 hover:bg-violet-50 hover:text-violet-700">

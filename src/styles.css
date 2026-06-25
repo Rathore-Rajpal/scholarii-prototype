@@ -411,6 +411,52 @@ html, body {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  .dark body.admin-portal-active .bg-white,
+  .dark body.admin-portal-active .bg-gray-50 {
+    background-color: var(--color-card);
+  }
+  .dark body.admin-portal-active .bg-gray-100 {
+    background-color: var(--color-muted);
+  }
+  .dark body.admin-portal-active .text-gray-950,
+  .dark body.admin-portal-active .text-gray-900,
+  .dark body.admin-portal-active .text-gray-800,
+  .dark body.admin-portal-active .text-gray-700 {
+    color: var(--color-foreground);
+  }
+  .dark body.admin-portal-active .text-gray-600,
+  .dark body.admin-portal-active .text-gray-500,
+  .dark body.admin-portal-active .text-gray-400 {
+    color: var(--color-muted-foreground);
+  }
+  .dark body.admin-portal-active .border-gray-50,
+  .dark body.admin-portal-active .border-gray-100,
+  .dark body.admin-portal-active .border-gray-200,
+  .dark body.admin-portal-active .border-gray-300 {
+    border-color: var(--color-border);
+  }
+  .dark body.admin-portal-active .ring-gray-100 {
+    --tw-ring-color: var(--color-border);
+  }
+  .dark body.admin-portal-active .divide-gray-50 > :not(:last-child),
+  .dark body.admin-portal-active .divide-gray-100 > :not(:last-child) {
+    border-color: var(--color-border);
+  }
+  .dark body.admin-portal-active input,
+  .dark body.admin-portal-active select,
+  .dark body.admin-portal-active textarea {
+    background-color: var(--color-card);
+    border-color: var(--color-border);
+    color: var(--color-foreground);
+  }
+  .dark body.admin-portal-active input::placeholder,
+  .dark body.admin-portal-active textarea::placeholder {
+    color: var(--color-muted-foreground);
+  }
+  .dark body.admin-portal-active .hover\:bg-gray-50:hover,
+  .dark body.admin-portal-active .hover\:bg-gray-100:hover {
+    background-color: var(--color-muted);
+  }
   @keyframes in-up {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
