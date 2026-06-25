@@ -134,29 +134,31 @@ function MessagesPage() {
   return (
     <div className="flex h-screen flex-col bg-background">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-border/40 bg-background/80 px-4 py-2.5 backdrop-blur-xl">
-        <div className="flex min-w-0 items-center gap-3">
-          <button onClick={() => setMobileView("list")} className="shrink-0 rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden">
+      <header className="flex items-center justify-between border-b border-border/40 bg-background/80 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-2.5">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <button onClick={() => setMobileView("list")} className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground sm:p-2 lg:hidden">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
-            <MessageCircle className="h-4 w-4 text-white" />
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 sm:h-8 sm:w-8">
+            <MessageCircle className="h-3.5 w-3.5 text-white sm:h-4 sm:w-4" />
           </div>
-          <span className="shrink-0 text-sm font-bold text-foreground">Messages</span>
           {selected && (
-            <span className="min-w-0 truncate text-sm text-muted-foreground">
-              / {selected.type === "channel" ? `# ${selected.name}` : selected.name}
+            <span className="min-w-0 truncate text-sm font-medium text-foreground">
+              {selected.type === "channel" ? `# ${selected.name}` : selected.name}
             </span>
           )}
+          {!selected && (
+            <span className="text-sm font-bold text-foreground">Messages</span>
+          )}
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative shrink-0">
+          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:left-3" />
           <input
             type="text"
-            placeholder="Search people, channels..."
+            placeholder="Search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-48 rounded-xl border border-border/50 bg-muted/30 py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 sm:max-w-64"
+            className="w-[120px] rounded-xl border border-border/50 bg-muted/30 py-1.5 pl-8 pr-2.5 text-[16px] sm:text-sm sm:w-auto sm:max-w-64 sm:py-2 sm:pl-10 sm:pr-3 text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
       </header>
@@ -164,7 +166,7 @@ function MessagesPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Conversations */}
         <aside
-          className={`${mobileView === "list" ? "flex" : "hidden"} max-lg:!w-full flex-col border-r border-border/40 bg-background/95 transition-[width] duration-200 lg:flex`}
+          className={`${mobileView === "list" ? "flex" : "hidden"} max-lg:!w-full z-20 flex-col border-r border-border/40 bg-background/95 transition-[width] duration-200 lg:flex`}
           style={{ width: panelCollapsed ? 68 : panelWidth }}
         >
           {/* Panel Toolbar */}
@@ -186,7 +188,7 @@ function MessagesPage() {
             )}
             <button
               onClick={() => setPanelCollapsed(!panelCollapsed)}
-              className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground shrink-0"
+              className="hidden rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground shrink-0 lg:block"
               title={panelCollapsed ? "Expand panel" : "Collapse panel"}
             >
               {panelCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
@@ -315,31 +317,32 @@ function MessagesPage() {
 
               {/* Input */}
               {!selected.readOnly ? (
-                <div className="border-t border-border/40 bg-background/80 px-3 py-3 backdrop-blur-xl sm:px-4">
-                  <div className="flex items-end gap-2">
-                    <div className="flex gap-1">
+                <div className="border-t border-border/40 bg-background/80 px-3 py-2.5 backdrop-blur-xl safe-area-bottom sm:px-4 sm:py-3">
+                  <div className="flex items-end gap-1.5 sm:gap-2">
+                    <div className="hidden shrink-0 gap-1 sm:flex">
                       <Button variant="ghost" size="icon" className="h-9 w-9"><Paperclip className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" className="h-9 w-9"><Smile className="h-4 w-4" /></Button>
                     </div>
-                    <div className="relative flex-1">
+                    <div className="flex flex-1 items-end rounded-2xl border border-border/50 bg-muted/30 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20">
                       <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSend()}
                         placeholder={`Message ${selected.type === "channel" ? "#" + selected.name : selected.name}...`}
-                        className="w-full rounded-xl border border-border/50 bg-muted/30 px-4 py-2.5 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="min-h-[36px] flex-1 bg-transparent px-3 py-2 text-[16px] sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none sm:min-h-[40px] sm:px-4"
                       />
                       <Button
                         size="icon"
-                        className="absolute right-2 top-1/2 h-7 w-7 -translate-y-1/2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md hover:from-blue-600 hover:to-indigo-700"
+                        className="mr-1 h-7 w-7 shrink-0 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md hover:from-blue-600 hover:to-indigo-700 sm:h-8 sm:w-8 sm:mr-1.5"
                         onClick={handleSend}
                         disabled={!input.trim()}
                       >
                         <Send className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-9 w-9"><Mic className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 sm:hidden"><Paperclip className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 sm:hidden"><Mic className="h-4 w-4" /></Button>
                   </div>
                 </div>
               ) : (

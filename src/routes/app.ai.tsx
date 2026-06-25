@@ -161,9 +161,9 @@ function AiStudyAssistant() {
   const [resourcePickerOpen, setResourcePickerOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [mobileRightSheetOpen, setMobileRightSheetOpen] = useState(false);
   const [queriesUsed, setQueriesUsed] = useState(2);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
-  const [skillDropdownOpen, setSkillDropdownOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeConv = conversations.find((c) => c.id === activeConvId);
@@ -418,31 +418,30 @@ function AiStudyAssistant() {
   return (
     <div className="flex h-screen flex-col bg-background">
       {/* Top Bar */}
-      <header className="flex items-center justify-between border-b border-border/40 bg-background/80 px-4 py-2.5 backdrop-blur-xl">
-        <div className="flex items-center gap-3">
+      <header className="flex items-center justify-between border-b border-border/40 bg-background/80 px-2.5 sm:px-4 py-2 sm:py-2.5 backdrop-blur-xl">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
+            className="rounded-lg p-1.5 sm:p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600">
-              <Sparkles className="h-4 w-4 text-white" />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600">
+              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
             </div>
-            <span className="text-sm font-bold text-foreground hidden sm:inline">
+            <span className="text-xs sm:text-sm font-bold text-foreground hidden sm:inline">
               {assistantTitle}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
           {/* Model Selector */}
           <div className="relative">
             <button
               onClick={() => {
                 setModelDropdownOpen(!modelDropdownOpen);
-                setSkillDropdownOpen(false);
               }}
               className="flex items-center gap-1.5 rounded-lg border border-border/40 bg-muted/30 px-2 sm:px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
             >
@@ -467,41 +466,6 @@ function AiStudyAssistant() {
                   >
                     <span>{m.icon}</span>
                     <span>{m.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Skill Selector */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setSkillDropdownOpen(!skillDropdownOpen);
-                setModelDropdownOpen(false);
-              }}
-              className="flex items-center gap-1.5 rounded-lg border border-border/40 bg-muted/30 px-2 sm:px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              <span className="hidden sm:inline">{selectedSkill.name}</span>
-              <span className="sm:hidden">Skill</span>
-              <ChevronDown className="h-3 w-3 text-muted-foreground" />
-            </button>
-            {skillDropdownOpen && (
-              <div className="absolute right-0 top-full z-50 mt-1 w-52 rounded-xl border border-border/40 bg-card p-1 shadow-xl max-h-80 overflow-y-auto">
-                {AI_SKILLS_TO_USE.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => {
-                      setSelectedSkill(s);
-                      setSkillDropdownOpen(false);
-                    }}
-                    className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
-                      selectedSkill.id === s.id
-                        ? "bg-primary/10 text-primary"
-                        : "text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {s.name}
                   </button>
                 ))}
               </div>
@@ -545,8 +509,14 @@ function AiStudyAssistant() {
           </div>
 
           <button
-            onClick={() => setRightPanelOpen(!rightPanelOpen)}
-            className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground hidden lg:flex"
+            onClick={() => {
+              if (window.innerWidth < 1024) {
+                setMobileRightSheetOpen(true);
+              } else {
+                setRightPanelOpen(!rightPanelOpen);
+              }
+            }}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             {rightPanelOpen ? (
               <PanelRightClose className="h-5 w-5" />
@@ -557,7 +527,7 @@ function AiStudyAssistant() {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left Sidebar - Chat History */}
         <aside
           className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 w-64 border-r border-border/40 bg-background/95 backdrop-blur-xl transition-transform lg:relative lg:translate-x-0`}
@@ -615,20 +585,20 @@ function AiStudyAssistant() {
         )}
 
         {/* Main Chat Area */}
-        <main className="flex flex-1 flex-col overflow-hidden">
+        <main className="flex flex-1 flex-col min-h-0">
           {activeConv && activeConv.messages.length > 0 ? (
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto min-h-0">
               <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
                 {activeConv.messages.map((msg) => (
                   <MessageBubble key={msg.id} message={msg} />
                 ))}
                 {isTyping && (
-                  <div className="flex gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
-                      <Sparkles className="h-4 w-4 text-white" />
+                  <div className="flex gap-2 sm:gap-3">
+                    <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
+                      <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                     </div>
-                    <div className="flex items-center gap-2 rounded-2xl bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" /> Thinking...
+                    <div className="flex items-center gap-1.5 sm:gap-2 rounded-2xl bg-muted/60 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-muted-foreground">
+                      <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> Thinking...
                     </div>
                   </div>
                 )}
@@ -644,19 +614,19 @@ function AiStudyAssistant() {
             />
           )}
 
-          {/* Composer */}
-          <div className="border-t border-border/40 bg-background/80 p-3 sm:p-4 backdrop-blur-xl">
-            <div className="mx-auto max-w-3xl space-y-3">
+          {/* Composer — always pinned to bottom */}
+          <div className="shrink-0 border-t border-border/40 bg-background/80 backdrop-blur-xl safe-area-bottom">
+            <div className="mx-auto max-w-3xl px-3 sm:px-4 py-3 sm:py-4 space-y-2 sm:space-y-3">
               {/* Preset Prompts */}
               {!activeConv || activeConv.messages.length === 0 ? (
-                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                   {QUICK_ACTIONS_TO_USE.map((action) => (
                     <button
                       key={action.label}
                       onClick={() => handleSend(action.label)}
-                      className="flex shrink-0 items-center gap-1.5 rounded-full border border-border/40 bg-muted/30 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-foreground"
+                      className="flex shrink-0 items-center gap-1 sm:gap-1.5 rounded-full border border-border/40 bg-muted/30 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-foreground"
                     >
-                      <span>{action.icon}</span> {action.label}
+                      <span className="text-xs sm:text-sm">{action.icon}</span> <span className="whitespace-nowrap">{action.label}</span>
                     </button>
                   ))}
                 </div>
@@ -664,20 +634,17 @@ function AiStudyAssistant() {
 
               {/* Attached Resource */}
               {attachedResource && (
-                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/5 px-3 py-2">
-                  <BookOpen className="h-4 w-4 text-violet-400" />
-                  <span className="text-sm font-medium text-foreground truncate">
+                <div className="flex items-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/5 px-2.5 sm:px-3 py-1.5 sm:py-2">
+                  <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-violet-400 shrink-0" />
+                  <span className="text-[11px] sm:text-sm font-medium text-foreground truncate">
                     {attachedResource.title}
                   </span>
-                  <Badge variant="outline" className="text-[10px] hidden sm:inline-flex">
+                  <Badge variant="outline" className="text-[9px] sm:text-[10px] hidden sm:inline-flex">
                     {attachedResource.subject}
                   </Badge>
-                  <span className="text-[10px] text-muted-foreground hidden sm:inline">
-                    Attached
-                  </span>
                   <button
                     onClick={() => setAttachedResource(null)}
-                    className="ml-auto text-muted-foreground hover:text-foreground"
+                    className="ml-auto shrink-0 text-muted-foreground hover:text-foreground"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -685,23 +652,23 @@ function AiStudyAssistant() {
               )}
 
               {/* Input Area */}
-              <div className="flex items-end gap-2 sm:gap-3">
-                <div className="flex gap-1">
+              <div className="flex items-end gap-1.5 sm:gap-3">
+                <div className="flex items-center gap-0 sm:gap-0.5 pb-0.5 sm:pb-1">
                   <button
                     onClick={() => setResourcePickerOpen(true)}
-                    className="rounded-xl p-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    className="rounded-lg sm:rounded-xl p-1.5 sm:p-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     title="Attach Resource"
                   >
-                    <Paperclip className="h-5 w-5" />
+                    <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                   <button
-                    className="rounded-xl p-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    className="rounded-lg sm:rounded-xl p-1.5 sm:p-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     title="Voice Input (Coming Soon)"
                   >
-                    <Mic className="h-5 w-5" />
+                    <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                 </div>
-                <div className="relative flex-1">
+                <div className="flex flex-1 items-end gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl border border-border/50 bg-muted/30 pl-2.5 pr-1.5 py-1 sm:px-3 sm:py-2 focus-within:border-primary/50 focus-within:bg-background focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                   <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -713,29 +680,28 @@ function AiStudyAssistant() {
                     }}
                     placeholder={
                       quotaExhausted
-                        ? "Daily AI limit reached. Resets tomorrow."
+                        ? "Daily AI limit reached."
                         : isParent
-                          ? "Ask about your child's progress..."
-                          : `Ask anything about ${selectedSkill.name.toLowerCase()}...`
+                          ? "Ask about your child..."
+                          : `Ask about ${selectedSkill.name.toLowerCase()}...`
                     }
                     disabled={quotaExhausted}
                     rows={1}
-                    className="w-full resize-none rounded-xl border border-border/50 bg-muted/30 px-3 sm:px-4 py-3 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="min-h-[32px] max-h-[120px] flex-1 resize-none bg-transparent py-1 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                   />
-                  <Button
-                    size="icon"
-                    className="absolute right-2 bottom-2 h-8 w-8 rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/25 hover:from-violet-600 hover:to-purple-700"
+                  <button
                     onClick={() => handleSend()}
                     disabled={!input.trim() || quotaExhausted || isTyping}
+                    className="flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md shadow-violet-500/20 transition-all hover:from-violet-600 hover:to-purple-700 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed"
                   >
-                    <Send className="h-4 w-4" />
-                  </Button>
+                    <Send className="h-3.5 w-3.5 sm:h-[18px] sm:w-[18px]" />
+                  </button>
                 </div>
               </div>
 
               {quotaExhausted && (
-                <p className="text-center text-xs text-red-400">
-                  Daily AI Limit Reached. Your quota will reset tomorrow.
+                <p className="text-center text-[10px] sm:text-xs text-red-400">
+                  Daily AI Limit Reached. Resets tomorrow.
                 </p>
               )}
             </div>
@@ -754,6 +720,20 @@ function AiStudyAssistant() {
           </aside>
         )}
       </div>
+
+      {/* Mobile Right Panel Bottom Sheet */}
+      <Sheet open={mobileRightSheetOpen} onOpenChange={setMobileRightSheetOpen}>
+        <SheetContent side="bottom" className="sm:max-h-[80vh] overflow-y-auto p-0">
+          <div className="p-4">
+            <RightSidebar
+              skill={selectedSkill}
+              resource={attachedResource}
+              conversation={activeConv}
+              isParent={isParent}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Resource Picker */}
       <Sheet open={resourcePickerOpen} onOpenChange={setResourcePickerOpen}>
@@ -838,22 +818,22 @@ function ChatSection({
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
   return (
-    <div className={`flex gap-3 ${isUser ? "justify-end" : ""}`}>
+    <div className={`flex gap-2 sm:gap-3 ${isUser ? "justify-end" : ""}`}>
       {!isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
-          <Sparkles className="h-4 w-4 text-white" />
+        <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
+          <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
         </div>
       )}
-      <div className={`max-w-[85%] sm:max-w-[80%] space-y-1 ${isUser ? "text-right" : ""}`}>
+      <div className={`max-w-[88%] sm:max-w-[80%] space-y-0.5 sm:space-y-1 ${isUser ? "text-right" : ""}`}>
         {message.attachedResource && (
           <div
-            className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[10px] ${isUser ? "bg-primary/10 text-primary" : "bg-violet-500/10 text-violet-400"}`}
+            className={`inline-flex items-center gap-1 sm:gap-1.5 rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] ${isUser ? "bg-primary/10 text-primary" : "bg-violet-500/10 text-violet-400"}`}
           >
-            <BookOpen className="h-3 w-3" /> {message.attachedResource}
+            <BookOpen className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> {message.attachedResource}
           </div>
         )}
         <div
-          className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+          className={`rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-[13px] sm:text-sm leading-relaxed ${
             isUser
               ? "bg-primary text-primary-foreground rounded-br-md"
               : "bg-muted/60 text-foreground rounded-bl-md"
@@ -861,11 +841,11 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         >
           <pre className="whitespace-pre-wrap font-sans">{message.content}</pre>
         </div>
-        <p className="text-[10px] text-muted-foreground">{message.timestamp}</p>
+        <p className="text-[9px] sm:text-[10px] text-muted-foreground">{message.timestamp}</p>
       </div>
       {isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20">
-          <span className="text-xs font-bold text-primary">U</span>
+        <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-primary/20">
+          <span className="text-[10px] sm:text-xs font-bold text-primary">U</span>
         </div>
       )}
     </div>
@@ -886,21 +866,21 @@ function EmptyState({
   const prompts = isParent ? PARENT_SUGGESTED_PROMPTS : SUGGESTED_PROMPTS;
 
   return (
-    <div className="flex flex-1 items-center justify-center p-8">
-      <div className="max-w-lg text-center space-y-6 px-4 sm:px-0">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-600/20">
-          <BrainCircuit className="h-10 w-10 text-violet-400" />
+    <div className="flex flex-1 items-center justify-center p-4 sm:p-8">
+      <div className="max-w-lg text-center space-y-4 sm:space-y-6 px-2 sm:px-4">
+        <div className="mx-auto flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-600/20">
+          <BrainCircuit className="h-7 w-7 sm:h-10 sm:w-10 text-violet-400" />
         </div>
-        <div className="space-y-2">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground">{title}</h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">{description}</p>
+        <div className="space-y-1.5 sm:space-y-2">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">{title}</h2>
+          <p className="text-[11px] sm:text-xs lg:text-sm text-muted-foreground leading-relaxed">{description}</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
           {prompts.map((prompt) => (
             <button
               key={prompt}
               onClick={() => onSend(prompt)}
-              className="rounded-xl border border-border/40 bg-muted/30 p-2.5 sm:p-3 text-left text-xs sm:text-sm text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-foreground"
+              className="rounded-xl border border-border/40 bg-muted/30 p-2 sm:p-2.5 text-left text-[11px] sm:text-xs text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-foreground"
             >
               {prompt}
             </button>

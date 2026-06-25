@@ -762,7 +762,7 @@ function StudentsPage() {
       <Sheet open={!!selectedStudentId} onOpenChange={(open) => !open && setSelectedStudentId(null)}>
         <SheetContent
           side="right"
-          className="!w-full !max-w-full sm:!w-[500px] sm:!min-w-[420px] sm:!max-w-[980px] p-0 overflow-y-auto"
+          className="!w-full !max-w-full sm:!w-[500px] sm:!min-w-[420px] sm:!max-w-[980px] p-0 overflow-y-auto [&>button:first-of-type]:hidden sm:[&>button:first-of-type]:block"
           style={{ width: isMobile ? undefined : drawerWidth }}
         >
           {!isMobile && (

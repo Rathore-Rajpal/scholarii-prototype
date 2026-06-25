@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState, type ChangeEvent, type ReactNode, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode, type RefObject } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/scholarii/AppShell";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,7 @@ import {
   Database,
   Settings,
   Activity,
+  X,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/brain")({ component: SchoolBrainPage });
@@ -123,17 +124,17 @@ const studentRecords: RecordItem[] = [
 
 function KpiCard({ label, value, icon: Icon, note }: { label: string; value: string; icon: typeof FileText; note: string }) {
   return (
-    <Card className="p-3 sm:p-4">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="size-9 sm:size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
-          <Icon className="size-4 sm:size-5 text-violet-500" />
+    <Card className="p-3">
+      <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+        <div className="size-8 sm:size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
+          <Icon className="size-3.5 sm:size-5 text-violet-500" />
         </div>
-        <div>
-          <div className="text-[11px] text-muted-foreground">{label}</div>
-          <div className="text-base sm:text-lg font-semibold">{value}</div>
+        <div className="min-w-0">
+          <div className="text-[10px] sm:text-[11px] text-muted-foreground truncate">{label}</div>
+          <div className="text-sm sm:text-lg font-semibold truncate">{value}</div>
         </div>
       </div>
-      <p className="text-[11px] text-muted-foreground">{note}</p>
+      <p className="text-[10px] sm:text-[11px] text-muted-foreground line-clamp-2">{note}</p>
     </Card>
   );
 }
@@ -150,15 +151,15 @@ function SectionCard({
   action?: ReactNode;
 }) {
   return (
-    <Card className="p-4 sm:p-6">
-      <div className="flex items-start justify-between gap-3">
+    <Card className="p-3 sm:p-6">
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div>
-          <p className="text-[11px] text-muted-foreground mb-1">{subtitle}</p>
-          <h3 className="text-base sm:text-lg font-semibold">{title}</h3>
+          <p className="text-[10px] sm:text-[11px] text-muted-foreground mb-0.5 sm:mb-1">{subtitle}</p>
+          <h3 className="text-sm sm:text-lg font-semibold">{title}</h3>
         </div>
         {action}
       </div>
-      <div className="mt-4">{children}</div>
+      <div className="mt-3 sm:mt-4">{children}</div>
     </Card>
   );
 }
@@ -171,6 +172,7 @@ function SchoolBrainPage() {
   const [editingField, setEditingField] = useState<KnowledgeField | null>(null);
   const [draftValue, setDraftValue] = useState("");
   const [activeTab, setActiveTab] = useState("school");
+  const tabsListRef = useRef<HTMLDivElement | null>(null);
   const [staffSheetOpen, setStaffSheetOpen] = useState(false);
   const [studentSheetOpen, setStudentSheetOpen] = useState(false);
   const schoolSectionRef = useRef<HTMLDivElement | null>(null);
@@ -181,6 +183,14 @@ function SchoolBrainPage() {
     () => accessControls.filter((item) => item.enabled).map((item) => item.label.toLowerCase()),
     [accessControls]
   );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const el = document.getElementById(`brain-tab-${activeTab}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
 
   const schoolBrainSummary = useMemo(() => {
     const enabled = enabledAccessLabels.join(", ");
@@ -235,17 +245,18 @@ function SchoolBrainPage() {
         title="School Brain"
         subtitle="Control what Scholarii AI knows about your school in one simple place."
         action={
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="gap-1.5">
-              <BrainCircuit className="size-3" />
-              Knowledge control center
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Badge variant="outline" className="gap-1 sm:gap-1.5 text-[10px] sm:text-xs">
+              <BrainCircuit className="size-2.5 sm:size-3" />
+              <span className="hidden sm:inline">Knowledge control center</span>
+              <span className="sm:hidden">Brain</span>
             </Badge>
-            <Badge variant="outline">{lastUpdated}</Badge>
+            <Badge variant="outline" className="text-[10px] sm:text-xs">{lastUpdated}</Badge>
           </div>
         }
       />
 
-      <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <KpiCard label="Knowledge Sources" value="248 Sources" icon={FileText} note="Connected to Scholarii AI" />
         <KpiCard label="Documents Connected" value="1,284 Documents" icon={BookOpen} note="School and compliance files" />
         <KpiCard label="Staff Profiles" value="68 Profiles" icon={Users} note="Staff knowledge records" />
@@ -254,15 +265,17 @@ function SchoolBrainPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-3 sm:p-4 mb-8">
-          <TabsList className="h-11 overflow-x-auto scrollbar-hide">
-            <TabsTrigger value="school" className="text-sm gap-2 px-5 shrink-0"><Database className="size-4" /> School Knowledge</TabsTrigger>
-            <TabsTrigger value="staff" className="text-sm gap-2 px-5 shrink-0"><Users className="size-4" /> Staff Knowledge</TabsTrigger>
-            <TabsTrigger value="student" className="text-sm gap-2 px-5 shrink-0"><GraduationCap className="size-4" /> Student Knowledge</TabsTrigger>
-            <TabsTrigger value="updates" className="text-sm gap-2 px-5 shrink-0"><Activity className="size-4" /> Recent Updates</TabsTrigger>
-            <TabsTrigger value="sources" className="text-sm gap-2 px-5 shrink-0"><BookOpen className="size-4" /> AI Knowledge Sources</TabsTrigger>
-            <TabsTrigger value="access" className="text-sm gap-2 px-5 shrink-0"><Settings className="size-4" /> AI Access Control</TabsTrigger>
+        <Card className="p-2 sm:p-4 mb-6 sm:mb-8">
+          <div className="overflow-x-auto scrollbar-hide">
+            <TabsList ref={tabsListRef} className="h-9 sm:h-11 w-max min-w-full inline-flex sm:justify-start gap-1">
+            <TabsTrigger value="school" id="brain-tab-school" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5 shrink-0"><Database className="size-3.5 sm:size-4" /> School</TabsTrigger>
+            <TabsTrigger value="staff" id="brain-tab-staff" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5 shrink-0"><Users className="size-3.5 sm:size-4" /> Staff</TabsTrigger>
+            <TabsTrigger value="student" id="brain-tab-student" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5 shrink-0"><GraduationCap className="size-3.5 sm:size-4" /> Students</TabsTrigger>
+            <TabsTrigger value="updates" id="brain-tab-updates" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5 shrink-0"><Activity className="size-3.5 sm:size-4" /> Updates</TabsTrigger>
+            <TabsTrigger value="sources" id="brain-tab-sources" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5 shrink-0"><BookOpen className="size-3.5 sm:size-4" /> Sources</TabsTrigger>
+            <TabsTrigger value="access" id="brain-tab-access" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5 shrink-0"><Settings className="size-3.5 sm:size-4" /> Access</TabsTrigger>
           </TabsList>
+          </div>
         </Card>
 
         {activeTab === "school" && (
@@ -272,17 +285,17 @@ function SchoolBrainPage() {
               subtitle="School Brain Overview"
               action={<Badge variant="outline">Editable</Badge>}
             >
-              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+              <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2">
                 {schoolKnowledge.map((field) => (
-                  <div key={field.key} className="rounded-xl border border-border/60 p-3 sm:p-4">
-                    <div className="flex items-start justify-between gap-3">
+                  <div key={field.key} className="rounded-xl border border-border/60 p-2.5 sm:p-4">
+                    <div className="flex items-start justify-between gap-2 sm:gap-3">
                       <div className="min-w-0">
                         <div className="text-xs font-semibold">{field.label}</div>
-                        <p className="mt-1.5 text-xs text-muted-foreground leading-5">{field.value}</p>
+                        <p className="mt-1 sm:mt-1.5 text-[11px] sm:text-xs text-muted-foreground leading-4 sm:leading-5 line-clamp-3">{field.value}</p>
                       </div>
-                      <Button type="button" variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full px-3 shrink-0" onClick={() => openEdit(field)}>
+                      <Button type="button" variant="ghost" size="sm" className="h-7 sm:h-8 gap-1 sm:gap-1.5 rounded-full px-2 sm:px-3 shrink-0" onClick={() => openEdit(field)}>
                         <Edit3 className="size-3" />
-                        Edit
+                        <span className="hidden sm:inline">Edit</span>
                       </Button>
                     </div>
                   </div>
@@ -303,31 +316,31 @@ function SchoolBrainPage() {
                 </Button>
               }
             >
-              <div className="rounded-xl border border-border/60 bg-slate-50/60 p-4 sm:p-5 mb-4">
-                <div className="text-base sm:text-lg font-semibold">68 Staff Profiles Available</div>
-                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-border/60 bg-slate-50/60 p-3 sm:p-5 mb-3 sm:mb-4">
+                <div className="text-sm sm:text-lg font-semibold">68 Staff Profiles Available</div>
+                <div className="mt-2 sm:mt-3 grid gap-2 sm:gap-3 grid-cols-3 sm:grid-cols-3">
                   {[
                     { label: "Teachers", value: "48", hint: "Subject allocation and roles" },
                     { label: "Admin", value: "12", hint: "Front office and coordination" },
                     { label: "Support", value: "8", hint: "Transport and campus support" },
                   ].map((item) => (
-                    <div key={item.label} className="rounded-xl border border-border/60 bg-white p-3">
-                      <div className="text-[11px] text-muted-foreground">{item.label}</div>
-                      <div className="text-lg font-semibold">{item.value}</div>
-                      <div className="text-[10px] text-muted-foreground">{item.hint}</div>
+                    <div key={item.label} className="rounded-xl border border-border/60 bg-white p-2 sm:p-3">
+                      <div className="text-[10px] sm:text-[11px] text-muted-foreground">{item.label}</div>
+                      <div className="text-base sm:text-lg font-semibold">{item.value}</div>
+                      <div className="text-[9px] sm:text-[10px] text-muted-foreground hidden sm:block">{item.hint}</div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+              <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2">
                 {staffRecords.map((item) => (
-                  <div key={item.label} className="rounded-xl border border-border/60 p-3 sm:p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
+                  <div key={item.label} className="rounded-xl border border-border/60 p-2.5 sm:p-4">
+                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                      <div className="min-w-0">
                         <div className="text-xs font-semibold">{item.label}</div>
-                        <p className="mt-1 text-[11px] text-muted-foreground leading-5">{item.note}</p>
+                        <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-muted-foreground leading-4 sm:leading-5 line-clamp-2">{item.note}</p>
                       </div>
-                      <Badge variant="outline" className="text-[10px] shrink-0">{item.value}</Badge>
+                      <Badge variant="outline" className="text-[9px] sm:text-[10px] shrink-0">{item.value}</Badge>
                     </div>
                   </div>
                 ))}
@@ -347,32 +360,32 @@ function SchoolBrainPage() {
                 </Button>
               }
             >
-              <div className="rounded-xl border border-border/60 bg-slate-50/60 p-4 sm:p-5 mb-4">
-                <div className="text-base sm:text-lg font-semibold">1,320 Student Records Available</div>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-border/60 bg-slate-50/60 p-3 sm:p-5 mb-3 sm:mb-4">
+                <div className="text-sm sm:text-lg font-semibold">1,320 Student Records Available</div>
+                <div className="mt-2 sm:mt-3 grid gap-2 sm:gap-3 grid-cols-2 sm:grid-cols-2">
                   {[
                     { label: "Students", value: "1,320", hint: "Class and section details" },
                     { label: "Parents", value: "1,186", hint: "Parent contacts and links" },
                     { label: "Classes", value: "42", hint: "Class summaries" },
                     { label: "Sections", value: "21", hint: "Organized sections" },
                   ].map((item) => (
-                    <div key={item.label} className="rounded-xl border border-border/60 bg-white p-3">
-                      <div className="text-[11px] text-muted-foreground">{item.label}</div>
-                      <div className="text-lg font-semibold">{item.value}</div>
-                      <div className="text-[10px] text-muted-foreground">{item.hint}</div>
+                    <div key={item.label} className="rounded-xl border border-border/60 bg-white p-2 sm:p-3">
+                      <div className="text-[10px] sm:text-[11px] text-muted-foreground">{item.label}</div>
+                      <div className="text-base sm:text-lg font-semibold">{item.value}</div>
+                      <div className="text-[9px] sm:text-[10px] text-muted-foreground hidden sm:block">{item.hint}</div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+              <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2">
                 {studentRecords.map((item) => (
-                  <div key={item.label} className="rounded-xl border border-border/60 p-3 sm:p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
+                  <div key={item.label} className="rounded-xl border border-border/60 p-2.5 sm:p-4">
+                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                      <div className="min-w-0">
                         <div className="text-xs font-semibold">{item.label}</div>
-                        <p className="mt-1 text-[11px] text-muted-foreground leading-5">{item.note}</p>
+                        <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-muted-foreground leading-4 sm:leading-5 line-clamp-2">{item.note}</p>
                       </div>
-                      <Badge variant="outline" className="text-[10px] shrink-0">{item.value}</Badge>
+                      <Badge variant="outline" className="text-[9px] sm:text-[10px] shrink-0">{item.value}</Badge>
                     </div>
                   </div>
                 ))}
@@ -388,30 +401,30 @@ function SchoolBrainPage() {
               subtitle="Recent knowledge activity"
               action={<Badge variant="outline">{updates.length} updates</Badge>}
             >
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {updates.map((item, index) => (
-                  <div key={`${item.title}-${index}`} className="rounded-xl border border-border/60 p-3 sm:p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
+                  <div key={`${item.title}-${index}`} className="rounded-xl border border-border/60 p-2.5 sm:p-4">
+                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                      <div className="min-w-0">
                         <div className="text-xs font-semibold">{item.title}</div>
-                        <p className="mt-1 text-[11px] text-muted-foreground leading-5">{item.note}</p>
+                        <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-muted-foreground leading-4 sm:leading-5 line-clamp-2">{item.note}</p>
                       </div>
-                      <Badge variant="outline" className="text-[10px] shrink-0">{item.time}</Badge>
+                      <Badge variant="outline" className="text-[9px] sm:text-[10px] shrink-0">{item.time}</Badge>
                     </div>
                   </div>
                 ))}
               </div>
             </SectionCard>
-            <div className="mt-4">
-              <Card className="p-4 sm:p-5 bg-slate-900 text-white border-border/50">
-                <div className="flex items-start gap-3">
-                  <div className="size-10 rounded-xl bg-white/10 grid place-items-center shrink-0">
-                    <School className="size-5" />
+            <div className="mt-3 sm:mt-4">
+              <Card className="p-3 sm:p-5 bg-slate-900 text-white border-border/50">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="size-8 sm:size-10 rounded-xl bg-white/10 grid place-items-center shrink-0">
+                    <School className="size-4 sm:size-5" />
                   </div>
                   <div>
-                    <div className="text-[11px] text-white/60">Scholarii AI Summary</div>
-                    <h3 className="mt-1 text-sm font-semibold">School Brain Status</h3>
-                    <p className="mt-2 text-xs text-white/70 leading-5">{schoolBrainSummary}</p>
+                    <div className="text-[10px] sm:text-[11px] text-white/60">Scholarii AI Summary</div>
+                    <h3 className="mt-0.5 sm:mt-1 text-xs sm:text-sm font-semibold">School Brain Status</h3>
+                    <p className="mt-1 sm:mt-2 text-[11px] sm:text-xs text-white/70 leading-4 sm:leading-5">{schoolBrainSummary}</p>
                   </div>
                 </div>
               </Card>
@@ -426,21 +439,21 @@ function SchoolBrainPage() {
               subtitle="What Scholarii AI learns from"
               action={<Badge variant="outline">Visibility</Badge>}
             >
-              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {knowledgeSources.map((source) => {
                   const Icon = source.icon;
                   return (
-                    <div key={source.label} className="flex items-center justify-between gap-3 rounded-xl border border-border/60 p-3 sm:p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
-                          <Icon className="size-5 text-violet-500" />
+                    <div key={source.label} className="flex items-center justify-between gap-2 sm:gap-3 rounded-xl border border-border/60 p-2.5 sm:p-4">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="size-8 sm:size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
+                          <Icon className="size-4 sm:size-5 text-violet-500" />
                         </div>
-                        <div>
-                          <div className="text-xs font-semibold">{source.label}</div>
-                          <div className="text-[11px] text-muted-foreground">{source.count}</div>
+                        <div className="min-w-0">
+                          <div className="text-[11px] sm:text-xs font-semibold truncate">{source.label}</div>
+                          <div className="text-[10px] sm:text-[11px] text-muted-foreground truncate">{source.count}</div>
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-0">{source.status}</Badge>
+                      <Badge variant="outline" className="text-[9px] sm:text-[10px] bg-emerald-500/10 text-emerald-600 border-0 shrink-0">{source.status}</Badge>
                     </div>
                   );
                 })}
@@ -456,16 +469,16 @@ function SchoolBrainPage() {
               subtitle="What Scholarii AI can use"
               action={<Badge variant="outline">Simple toggles</Badge>}
             >
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {accessControls.map((item) => (
-                  <div key={item.key} className="rounded-xl border border-border/60 p-4">
-                    <div className="flex items-center justify-between gap-3 sm:gap-4">
+                  <div key={item.key} className="rounded-xl border border-border/60 p-3 sm:p-4">
+                    <div className="flex items-center justify-between gap-2 sm:gap-3 sm:gap-4">
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-semibold">{item.label}</div>
-                        <p className="mt-1 text-[11px] text-muted-foreground leading-5">{item.description}</p>
+                        <div className="text-xs sm:text-xs font-semibold">{item.label}</div>
+                        <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-muted-foreground leading-4 sm:leading-5 line-clamp-2">{item.description}</p>
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                        <Badge variant="outline" className={cn("text-[10px]", item.enabled && "border-emerald-200 bg-emerald-500/10 text-emerald-600")}>
+                      <div className="flex items-center gap-1.5 sm:gap-2 sm:gap-3 shrink-0">
+                        <Badge variant="outline" className={cn("text-[9px] sm:text-[10px]", item.enabled && "border-emerald-200 bg-emerald-500/10 text-emerald-600")}>
                           {item.enabled ? "Enabled" : "Disabled"}
                         </Badge>
                         <Switch
@@ -486,22 +499,22 @@ function SchoolBrainPage() {
         )}
       </Tabs>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-3 mt-8">
-        <Button type="button" variant="outline" className="h-10 justify-start gap-2 text-xs" onClick={() => scrollToSection(schoolSectionRef)}>
-          <Edit3 className="size-3.5" />
-          Update School Information
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-3 mt-6 sm:mt-8">
+        <Button type="button" variant="outline" className="h-9 sm:h-10 justify-start gap-1.5 sm:gap-2 text-xs" onClick={() => scrollToSection(schoolSectionRef)}>
+          <Edit3 className="size-3 sm:size-3.5" />
+          Update School Info
         </Button>
-        <Button type="button" variant="outline" className="h-10 justify-start gap-2 text-xs" onClick={handleUploadKnowledge}>
-          <Upload className="size-3.5" />
-          Upload Knowledge Source
+        <Button type="button" variant="outline" className="h-9 sm:h-10 justify-start gap-1.5 sm:gap-2 text-xs" onClick={handleUploadKnowledge}>
+          <Upload className="size-3 sm:size-3.5" />
+          Upload Source
         </Button>
-        <Button type="button" variant="outline" className="h-10 justify-start gap-2 text-xs" onClick={() => scrollToSection(accessSectionRef)}>
-          <ShieldCheck className="size-3.5" />
+        <Button type="button" variant="outline" className="h-9 sm:h-10 justify-start gap-1.5 sm:gap-2 text-xs" onClick={() => scrollToSection(accessSectionRef)}>
+          <ShieldCheck className="size-3 sm:size-3.5" />
           Manage AI Access
         </Button>
-        <Button type="button" className="h-10 justify-start gap-2 text-xs bg-violet-600 hover:bg-violet-700" onClick={handleRefresh}>
-          <RefreshCw className="size-3.5" />
-          Refresh School Brain
+        <Button type="button" className="h-9 sm:h-10 justify-start gap-1.5 sm:gap-2 text-xs bg-violet-600 hover:bg-violet-700" onClick={handleRefresh}>
+          <RefreshCw className="size-3 sm:size-3.5" />
+          Refresh Brain
         </Button>
       </div>
 
@@ -515,23 +528,23 @@ function SchoolBrainPage() {
       >
         <DialogContent className="max-w-[95vw] sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit School Knowledge</DialogTitle>
-            <DialogDescription>Update the information Scholarii AI should always know about the school.</DialogDescription>
+            <DialogTitle className="text-base sm:text-lg">Edit School Knowledge</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">Update the information Scholarii AI should always know about the school.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
-            <div className="text-sm font-medium text-foreground">{editingField?.label}</div>
+          <div className="space-y-2 sm:space-y-3">
+            <div className="text-xs sm:text-sm font-medium text-foreground">{editingField?.label}</div>
             <Textarea
               value={draftValue}
               onChange={(event) => setDraftValue(event.target.value)}
-              className="min-h-[180px]"
+              className="min-h-[120px] sm:min-h-[180px]"
               placeholder="Enter the updated school information"
             />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setEditingField(null)}>
+            <Button type="button" variant="outline" className="h-9 sm:h-10 text-xs" onClick={() => setEditingField(null)}>
               Cancel
             </Button>
-            <Button type="button" className="bg-violet-600 hover:bg-violet-700" onClick={saveEdit}>
+            <Button type="button" className="h-9 sm:h-10 text-xs bg-violet-600 hover:bg-violet-700" onClick={saveEdit}>
               Save Changes
             </Button>
           </DialogFooter>
@@ -539,8 +552,14 @@ function SchoolBrainPage() {
       </Dialog>
 
       <Sheet open={staffSheetOpen} onOpenChange={setStaffSheetOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-lg">
-          <SheetHeader>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <div className="flex items-center justify-between sm:hidden mb-4">
+            <SheetTitle className="text-lg">Staff Knowledge</SheetTitle>
+            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setStaffSheetOpen(false)}>
+              <X className="size-4" />
+            </Button>
+          </div>
+          <SheetHeader className="hidden sm:block">
             <SheetTitle>Staff Knowledge</SheetTitle>
             <SheetDescription>Simple staff knowledge records available to Scholarii AI.</SheetDescription>
           </SheetHeader>
@@ -561,8 +580,14 @@ function SchoolBrainPage() {
       </Sheet>
 
       <Sheet open={studentSheetOpen} onOpenChange={setStudentSheetOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-lg">
-          <SheetHeader>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <div className="flex items-center justify-between sm:hidden mb-4">
+            <SheetTitle className="text-lg">Student Knowledge</SheetTitle>
+            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setStudentSheetOpen(false)}>
+              <X className="size-4" />
+            </Button>
+          </div>
+          <SheetHeader className="hidden sm:block">
             <SheetTitle>Student Knowledge</SheetTitle>
             <SheetDescription>Simple student and parent knowledge records available to Scholarii AI.</SheetDescription>
           </SheetHeader>
