@@ -21,6 +21,7 @@ import {
   LayoutGrid,
   List,
   Filter,
+  SlidersHorizontal,
 } from "lucide-react";
 import { loadData } from "@/lib/scholarii/mock";
 import { useEffect, useMemo, useState } from "react";
@@ -61,6 +62,15 @@ function StudentsPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [drawerWidth, setDrawerWidth] = useState(720);
   const [isResizing, setIsResizing] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const derivedStudents = useMemo(() => {
     return data.students.map((student, index) => {
@@ -158,6 +168,18 @@ function StudentsPage() {
   const newAdmissions = 18;
   const transferRequests = derivedStudents.filter((s) => s.transferStatus === "Transfer Pending").length;
 
+  const activeFilterCount = [
+    grade !== "all",
+    section !== "all",
+    gender !== "all",
+    status !== "all",
+    feeStatus !== "all",
+    attendanceBand !== "all",
+    academicBand !== "all",
+    admissionYear !== "all",
+    riskLevel !== "all",
+  ].filter(Boolean).length;
+
   const clearFilters = () => {
     setQ("");
     setGrade("all");
@@ -173,7 +195,7 @@ function StudentsPage() {
   };
 
   useEffect(() => {
-    if (!isResizing) return;
+    if (!isResizing || isMobile) return;
 
     const handleMove = (event: MouseEvent) => {
       const nextWidth = Math.max(420, Math.min(980, window.innerWidth - event.clientX));
@@ -190,7 +212,121 @@ function StudentsPage() {
       window.removeEventListener("mousemove", handleMove);
       window.removeEventListener("mouseup", handleUp);
     };
-  }, [isResizing]);
+  }, [isResizing, isMobile]);
+
+  const filterContent = (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Class</label>
+          <Select value={grade} onValueChange={(v) => { setGrade(v); setPage(1); }}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="All classes" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All classes</SelectItem>
+              {Array.from({ length: 10 }).map((_, i) => (
+                <SelectItem key={i} value={String(i + 1)}>Grade {i + 1}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Section</label>
+          <Select value={section} onValueChange={(v) => { setSection(v); setPage(1); }}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="All sections" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All sections</SelectItem>
+              {["A", "B", "C"].map((value) => (
+                <SelectItem key={value} value={value}>Section {value}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Gender</label>
+          <Select value={gender} onValueChange={(v) => { setGender(v); setPage(1); }}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="All" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="M">Male</SelectItem>
+              <SelectItem value="F">Female</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Status</label>
+          <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="All status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All status</SelectItem>
+              <SelectItem value="Active">Active</SelectItem>
+              <SelectItem value="Transfer Pending">Transfer Pending</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Attendance</label>
+          <Select value={attendanceBand} onValueChange={(v: AttendanceBand) => { setAttendanceBand(v); setPage(1); }}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="All attendance" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All attendance</SelectItem>
+              <SelectItem value="90+">90% and above</SelectItem>
+              <SelectItem value="75-89">75% to 89%</SelectItem>
+              <SelectItem value="below-75">Below 75%</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Academic Performance</label>
+          <Select value={academicBand} onValueChange={(v: AcademicBand) => { setAcademicBand(v); setPage(1); }}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="All performance" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All performance</SelectItem>
+              <SelectItem value="80+">80% and above</SelectItem>
+              <SelectItem value="65-79">65% to 79%</SelectItem>
+              <SelectItem value="below-65">Below 65%</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Fee Status</label>
+          <Select value={feeStatus} onValueChange={(v) => { setFeeStatus(v); setPage(1); }}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="All fees" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All fees</SelectItem>
+              <SelectItem value="Paid">Paid</SelectItem>
+              <SelectItem value="Partial">Partial</SelectItem>
+              <SelectItem value="Overdue">Overdue</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Admission Year</label>
+          <Select value={admissionYear} onValueChange={(v) => { setAdmissionYear(v); setPage(1); }}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="All years" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All years</SelectItem>
+              {Array.from({ length: 4 }).map((_, i) => {
+                const year = 2021 + i;
+                return <SelectItem key={year} value={String(year)}>{year}</SelectItem>;
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Risk Level</label>
+          <Select value={riskLevel} onValueChange={(v: RiskLevel) => { setRiskLevel(v); setPage(1); }}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="All risk" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All risk</SelectItem>
+              <SelectItem value="Healthy">Healthy</SelectItem>
+              <SelectItem value="Needs Attention">Needs Attention</SelectItem>
+              <SelectItem value="At Risk">At Risk</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div>
@@ -257,8 +393,9 @@ function StudentsPage() {
           </div>
 
           <Card className="p-3 sm:p-4">
-            <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
-              <div className="relative flex-1 min-w-0 sm:min-w-64">
+            {/* Desktop: inline filters */}
+            <div className="hidden sm:flex flex-wrap gap-2 sm:gap-3 items-center">
+              <div className="relative flex-1 min-w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   className="pl-9"
@@ -370,11 +507,68 @@ function StudentsPage() {
                 </Button>
               </div>
             </div>
+
+            {/* Mobile: search + filter button */}
+            <div className="sm:hidden space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  className="pl-9"
+                  placeholder="Search name, admission number, parent, phone..."
+                  value={q}
+                  onChange={(e) => {
+                    setQ(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFilterSheetOpen(true)}
+                  className="flex-1"
+                >
+                  <SlidersHorizontal className="size-4 mr-2" />
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <Badge variant="secondary" className="ml-2 h-5 min-w-5 px-1 text-[10px]">
+                      {activeFilterCount}
+                    </Badge>
+                  )}
+                </Button>
+                {activeFilterCount > 0 && (
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs text-muted-foreground">
+                    Clear
+                  </Button>
+                )}
+                <div className="flex items-center gap-1 ml-auto">
+                  <Button
+                    variant={viewMode === "table" ? "secondary" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("table")}
+                    className="px-2"
+                  >
+                    <List className="size-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === "card" ? "secondary" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("card")}
+                    className="px-2"
+                  >
+                    <LayoutGrid className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
           </Card>
 
           <Card className="overflow-hidden">
             {viewMode === "table" ? (
-              <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+              <>
+                {/* Desktop table */}
+                <div className="overflow-x-auto table-mobile-scroll hidden sm:block">
                 <Table className="min-w-[800px]">
                 <TableHeader>
                   <TableRow>
@@ -433,22 +627,69 @@ function StudentsPage() {
                   )}
                 </TableBody>
                 </Table>
-              </div>
+                </div>
+
+                {/* Mobile card list */}
+                <div className="sm:hidden p-3 space-y-2">
+                  {rows.map((student) => (
+                    <div
+                      key={student.id}
+                      className="rounded-xl border border-border/60 p-3 active:bg-muted/20 transition-colors cursor-pointer"
+                      onClick={() => setSelectedStudentId(student.id)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="size-10 shrink-0">
+                          <AvatarFallback style={{ backgroundColor: student.avatarColor, color: "white" }}>
+                            {student.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold truncate">{student.name}</div>
+                          <div className="text-[11px] text-muted-foreground">Grade {student.grade}-{student.section} • {student.roll}</div>
+                        </div>
+                        <Badge className={`shrink-0 text-[10px] ${riskStyles[student.risk]}`}>{student.risk}</Badge>
+                      </div>
+                      <div className="mt-2.5 grid grid-cols-3 gap-2 text-[11px]">
+                        <div>
+                          <p className="text-muted-foreground">Attendance</p>
+                          <p className={`font-semibold ${student.attendance >= 90 ? "text-emerald-600" : student.attendance >= 75 ? "text-amber-600" : "text-red-600"}`}>{student.attendance}%</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Academic</p>
+                          <p className={`font-semibold ${student.academicScore >= 80 ? "text-emerald-600" : student.academicScore >= 65 ? "text-amber-600" : "text-red-600"}`}>{student.academicScore || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Fees</p>
+                          <p className="font-semibold">{student.feeLabel}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {!rows.length && (
+                    <Card className="p-6 text-center text-muted-foreground">
+                      No students match the selected filters.
+                      <div className="mt-3">
+                        <Button size="sm" variant="outline" onClick={clearFilters}>Clear Filters</Button>
+                      </div>
+                    </Card>
+                  )}
+                </div>
+              </>
             ) : (
               <div className="p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                 {rows.map((student) => (
                   <Card key={student.id} className="p-3 sm:p-4 cursor-pointer hover:shadow-md transition" onClick={() => setSelectedStudentId(student.id)}>
                     <div className="flex items-center gap-3">
-                      <Avatar className="size-10">
+                      <Avatar className="size-10 shrink-0">
                         <AvatarFallback style={{ backgroundColor: student.avatarColor, color: "white" }}>
                           {student.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <div className="font-semibold text-sm sm:text-base">{student.name}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm sm:text-base truncate">{student.name}</div>
                         <div className="text-xs text-muted-foreground">Grade {student.grade}-{student.section} • {student.roll}</div>
                       </div>
-                      <Badge className={`ml-auto ${riskStyles[student.risk]}`}>{student.risk}</Badge>
+                      <Badge className={`ml-auto shrink-0 ${riskStyles[student.risk]}`}>{student.risk}</Badge>
                     </div>
                     <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
                       <div>
@@ -476,13 +717,13 @@ function StudentsPage() {
                 )}
               </div>
             )}
-            <div className="flex items-center justify-between p-4 border-t border-border text-sm">
-              <div className="text-muted-foreground">
+            <div className="flex items-center justify-between p-3 sm:p-4 border-t border-border text-sm">
+              <div className="text-muted-foreground text-xs sm:text-sm">
                 Showing {filtered.length === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, filtered.length)} of {filtered.length}
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Previous</Button>
-                <div className="px-3 py-1.5 rounded-md bg-muted">{page} / {pages}</div>
+                <div className="px-3 py-1.5 rounded-md bg-muted text-xs sm:text-sm">{page} / {pages}</div>
                 <Button variant="outline" size="sm" disabled={page === pages} onClick={() => setPage((p) => p + 1)}>Next</Button>
               </div>
             </div>
@@ -490,83 +731,125 @@ function StudentsPage() {
         </div>
       </div>
 
+      {/* Mobile Filter Sheet */}
+      <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
+          <SheetHeader className="mb-4">
+            <SheetTitle className="flex items-center justify-between">
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-5 px-1 text-[10px]">
+                  {activeFilterCount} active
+                </Badge>
+              )}
+            </SheetTitle>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(85vh-8rem)]">
+            {filterContent}
+          </ScrollArea>
+          <div className="flex gap-2 pt-4 border-t">
+            <Button variant="outline" className="flex-1" onClick={() => { clearFilters(); setFilterSheetOpen(false); }}>
+              Clear All
+            </Button>
+            <Button className="flex-1" onClick={() => setFilterSheetOpen(false)}>
+              Show {filtered.length} Results
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Student Profile Sheet */}
       <Sheet open={!!selectedStudentId} onOpenChange={(open) => !open && setSelectedStudentId(null)}>
         <SheetContent
           side="right"
-          className="w-full sm:w-[500px] sm:min-w-[420px] sm:max-w-[980px] max-w-[95vw] overflow-hidden"
-          style={{ width: typeof window !== 'undefined' && window.innerWidth < 640 ? undefined : drawerWidth }}
+          className="!w-full !max-w-full sm:!w-[500px] sm:!min-w-[420px] sm:!max-w-[980px] p-0 overflow-y-auto"
+          style={{ width: isMobile ? undefined : drawerWidth }}
         >
-          <div
-            className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize bg-transparent hover:bg-muted/60"
-            onMouseDown={() => setIsResizing(true)}
-          />
+          {!isMobile && (
+            <div
+              className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize bg-transparent hover:bg-muted/60 z-10"
+              onMouseDown={() => setIsResizing(true)}
+            />
+          )}
           {selectedStudent && (
-            <div className="h-full flex flex-col">
-              <SheetHeader>
+            <div className="min-h-full flex flex-col">
+              <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-border/40 sm:hidden shrink-0">
+                <h2 className="text-base font-semibold">Student Profile</h2>
+                <button onClick={() => setSelectedStudentId(null)} className="p-1.5 rounded-md hover:bg-muted/50">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <SheetHeader className="sm:block hidden shrink-0">
                 <SheetTitle>Student Profile</SheetTitle>
               </SheetHeader>
-              <ScrollArea className="h-full pr-3">
-                <div className="space-y-5">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   <Card className="p-3 sm:p-4">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="size-12">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-10 sm:size-12 shrink-0">
                         <AvatarFallback style={{ backgroundColor: selectedStudent.avatarColor, color: "white" }}>
                           {selectedStudent.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <div className="text-base sm:text-lg font-semibold">{selectedStudent.name}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm sm:text-lg font-semibold truncate">{selectedStudent.name}</div>
                         <div className="text-xs text-muted-foreground">Admission No: {selectedStudent.roll}</div>
                         <div className="text-xs text-muted-foreground">Grade {selectedStudent.grade}-{selectedStudent.section}</div>
                       </div>
-                      <div className="space-y-2 text-right">
-                        <Badge variant="secondary">{selectedStudent.transferStatus}</Badge>
-                        <Badge className={riskStyles[selectedStudent.risk]}>{selectedStudent.risk}</Badge>
+                      <div className="flex flex-col gap-1 text-right shrink-0">
+                        <Badge variant="secondary" className="text-[10px] sm:text-xs">{selectedStudent.transferStatus}</Badge>
+                        <Badge className={`${riskStyles[selectedStudent.risk]} text-[10px] sm:text-xs`}>{selectedStudent.risk}</Badge>
                       </div>
                     </div>
                   </Card>
 
                   <Card className="p-3 sm:p-4">
-                    <h4 className="text-sm font-semibold mb-2">AI Student Insights</h4>
+                    <h4 className="text-xs sm:text-sm font-semibold mb-2">AI Student Insights</h4>
                     <div className="space-y-2 text-xs text-muted-foreground">
                       {getInsights(selectedStudent).map((insight) => (
                         <div key={insight} className="flex items-start gap-2">
-                          <span className="mt-1 size-1.5 rounded-full bg-amber-500" />
-                          <span>{insight}</span>
+                          <span className="mt-1 size-1.5 rounded-full bg-amber-500 shrink-0" />
+                          <span className="break-words">{insight}</span>
                         </div>
                       ))}
                     </div>
                   </Card>
 
                   <Tabs defaultValue="overview" className="w-full">
-                    <div className="overflow-x-auto scrollbar-hide">
-                      <TabsList className="flex gap-2 h-auto min-w-max">
-                      <TabsTrigger value="overview">Overview</TabsTrigger>
-                      <TabsTrigger value="attendance">Attendance</TabsTrigger>
-                      <TabsTrigger value="academics">Academics</TabsTrigger>
-                      <TabsTrigger value="fees">Fees</TabsTrigger>
-                      <TabsTrigger value="documents">Documents</TabsTrigger>
-                      <TabsTrigger value="communication">Communication</TabsTrigger>
-                    </TabsList>
+                    <div className="overflow-x-auto -mx-1 px-1 scrollbar-hide">
+                      <TabsList className="inline-flex w-auto gap-1 sm:gap-2 h-9 sm:h-10 p-1">
+                        <TabsTrigger value="overview" className="text-xs sm:text-sm px-2.5 sm:px-4 whitespace-nowrap">Overview</TabsTrigger>
+                        <TabsTrigger value="attendance" className="text-xs sm:text-sm px-2.5 sm:px-4 whitespace-nowrap">Attendance</TabsTrigger>
+                        <TabsTrigger value="academics" className="text-xs sm:text-sm px-2.5 sm:px-4 whitespace-nowrap">Academics</TabsTrigger>
+                        <TabsTrigger value="fees" className="text-xs sm:text-sm px-2.5 sm:px-4 whitespace-nowrap">Fees</TabsTrigger>
+                        <TabsTrigger value="documents" className="text-xs sm:text-sm px-2.5 sm:px-4 whitespace-nowrap">Documents</TabsTrigger>
+                        <TabsTrigger value="communication" className="text-xs sm:text-sm px-2.5 sm:px-4 whitespace-nowrap">Communication</TabsTrigger>
+                      </TabsList>
                     </div>
 
+                    <div className="mt-3">
+
                     <TabsContent value="overview">
-                      <Card className="p-3 sm:p-4 grid grid-cols-2 gap-4 text-sm">
-                        <ProfileItem label="Age" value={`${14 + (Number(selectedStudent.roll) % 4)} years`} />
-                        <ProfileItem label="DOB" value={`200${Number(selectedStudent.roll) % 9}-0${(Number(selectedStudent.roll) % 9) + 1}-15`} />
-                        <ProfileItem label="Gender" value={selectedStudent.gender === "M" ? "Male" : "Female"} />
-                        <ProfileItem label="Blood Group" value={["A+", "B+", "O+", "AB+"][Number(selectedStudent.roll) % 4]} />
-                        <ProfileItem label="Address" value={`${selectedStudent.grade} Park Street, Bengaluru`} />
-                        <ProfileItem label="Parent" value={`${selectedStudent.parent} • ${selectedStudent.parentPhone}`} />
-                        <ProfileItem label="Emergency Contact" value={selectedStudent.parentPhone} />
-                        <ProfileItem label="Admission Date" value={`202${Number(selectedStudent.roll) % 3}-06-15`} />
+                      <Card className="p-3 sm:p-4">
+                        <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+                          <ProfileItem label="Age" value={`${14 + (Number(selectedStudent.roll) % 4)} years`} />
+                          <ProfileItem label="DOB" value={`200${Number(selectedStudent.roll) % 9}-0${(Number(selectedStudent.roll) % 9) + 1}-15`} />
+                          <ProfileItem label="Gender" value={selectedStudent.gender === "M" ? "Male" : "Female"} />
+                          <ProfileItem label="Blood Group" value={["A+", "B+", "O+", "AB+"][Number(selectedStudent.roll) % 4]} />
+                          <div className="col-span-2">
+                            <ProfileItem label="Address" value={`${selectedStudent.grade} Park Street, Bengaluru`} />
+                          </div>
+                          <ProfileItem label="Parent" value={selectedStudent.parent} />
+                          <ProfileItem label="Phone" value={selectedStudent.parentPhone} />
+                          <ProfileItem label="Emergency" value={selectedStudent.parentPhone} />
+                          <ProfileItem label="Admission" value={`202${Number(selectedStudent.roll) % 3}-06-15`} />
+                        </div>
                       </Card>
                     </TabsContent>
 
                     <TabsContent value="attendance">
-                      <Card className="p-3 sm:p-4 space-y-4">
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <ProfileItem label="Current Attendance" value={`${selectedStudent.attendance}%`} />
+                      <Card className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm">
+                          <ProfileItem label="Attendance" value={`${selectedStudent.attendance}%`} />
                           <ProfileItem label="Days Present" value={`${Math.round(180 * selectedStudent.attendance / 100)}`} />
                           <ProfileItem label="Days Absent" value={`${180 - Math.round(180 * selectedStudent.attendance / 100)}`} />
                         </div>
@@ -581,11 +864,13 @@ function StudentsPage() {
                     </TabsContent>
 
                     <TabsContent value="academics">
-                      <Card className="p-3 sm:p-4 space-y-4">
-                        <div className="grid grid-cols-3 gap-4 text-sm">
+                      <Card className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm">
                           <ProfileItem label="Overall Score" value={`${selectedStudent.academicScore || "-"}%`} />
-                          <ProfileItem label="Class Rank" value={`${(Number(selectedStudent.roll) % 25) + 1}`} />
-                          <ProfileItem label="Strength" value={getTopSubjects(selectedStudent).join(", ") || "-"} />
+                          <ProfileItem label="Class Rank" value={`#${(Number(selectedStudent.roll) % 25) + 1}`} />
+                          <div className="col-span-2 sm:col-span-1">
+                            <ProfileItem label="Strength" value={getTopSubjects(selectedStudent).join(", ") || "-"} />
+                          </div>
                         </div>
                         <div className="space-y-2 text-xs">
                           {selectedStudent.testScores ? Object.entries(selectedStudent.testScores).map(([subject, score]) => (
@@ -600,7 +885,7 @@ function StudentsPage() {
                     </TabsContent>
 
                     <TabsContent value="fees">
-                      <Card className="p-3 sm:p-4 space-y-4 text-sm">
+                      <Card className="p-3 sm:p-4 space-y-3 text-xs sm:text-sm">
                         <ProfileItem label="Fee Status" value={selectedStudent.feeLabel} />
                         <ProfileItem label="Total Paid" value={selectedStudent.feeStatusDisplay === "Paid" ? "INR 48,000" : "INR 32,000"} />
                         <ProfileItem label="Pending Amount" value={selectedStudent.feeStatusDisplay === "Overdue" ? "INR 16,000" : selectedStudent.feeStatusDisplay === "Pending" ? "INR 8,000" : "INR 0"} />
@@ -610,7 +895,7 @@ function StudentsPage() {
                     </TabsContent>
 
                     <TabsContent value="documents">
-                      <Card className="p-3 sm:p-4 space-y-3">
+                      <Card className="p-3 sm:p-4 space-y-2.5 sm:space-y-3">
                         {[
                           "Birth Certificate",
                           "Aadhaar",
@@ -619,16 +904,16 @@ function StudentsPage() {
                           "Report Cards",
                           "Student ID",
                         ].map((doc) => (
-                          <div key={doc} className="flex items-center justify-between">
-                            <span className="text-sm">{doc}</span>
-                            <Button size="sm" variant="outline">Download</Button>
+                          <div key={doc} className="flex items-center justify-between gap-2">
+                            <span className="text-xs sm:text-sm">{doc}</span>
+                            <Button size="sm" variant="outline" className="text-xs shrink-0">Download</Button>
                           </div>
                         ))}
                       </Card>
                     </TabsContent>
 
                     <TabsContent value="communication">
-                      <Card className="p-3 sm:p-4 space-y-3 text-sm">
+                      <Card className="p-3 sm:p-4 space-y-3 text-xs sm:text-sm">
                         <div>
                           <p className="font-medium">Recent Notices</p>
                           <p className="text-xs text-muted-foreground">2 notices sent in the last 30 days.</p>
@@ -643,9 +928,9 @@ function StudentsPage() {
                         </div>
                       </Card>
                     </TabsContent>
+                    </div>
                   </Tabs>
-                </div>
-              </ScrollArea>
+              </div>
             </div>
           )}
         </SheetContent>
