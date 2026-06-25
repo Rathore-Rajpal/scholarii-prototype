@@ -35,6 +35,7 @@ import {
   SALARY_STATS,
 } from "@/lib/scholarii/teacher-salary-mock-data";
 import { toast } from "sonner";
+import { ScrollableTabs } from "@/components/scholarii/ScrollableTabs";
 
 export const Route = createFileRoute("/app/salary")({
   component: () => (
@@ -51,6 +52,12 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
+
+const tabItems = TABS.map((tab) => ({
+  id: tab.id,
+  label: tab.label,
+  icon: <tab.icon className="size-4" />,
+}));
 
 function SalaryPage() {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
@@ -135,23 +142,11 @@ function SalaryPage() {
 
       {/* Tabs */}
       <Card className="p-4 mb-6">
-        <div className="flex gap-1">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
-                activeTab === tab.id
-                  ? "bg-violet-500/10 text-violet-600 shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              <tab.icon className="size-4" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <ScrollableTabs
+          tabs={tabItems}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
       </Card>
 
       {/* Overview Tab */}
