@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { PageHeader } from "@/components/scholarii/AppShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import {
   User,
   CheckCircle2,
   AlertTriangle,
+  ChevronLeft,
   ChevronRight,
   CalendarDays,
   GraduationCap,
@@ -39,7 +40,13 @@ import {
   Award,
   Sun,
 } from "lucide-react";
-import { getTimetableData, type TimetableData, type Period, type EventCategory, type AcademicEvent } from "@/lib/scholarii/timetable-mock-data";
+import {
+  getTimetableData,
+  type TimetableData,
+  type Period,
+  type EventCategory,
+  type AcademicEvent,
+} from "@/lib/scholarii/timetable-mock-data";
 
 export const Route = createFileRoute("/app/timetable")({
   component: TimetablePage,
@@ -61,7 +68,15 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-function EmptyState({ icon: Icon, title, description }: { icon: React.ComponentType<{ className?: string }>; title: string; description: string }) {
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="rounded-2xl bg-muted p-4 mb-4">
@@ -117,35 +132,8 @@ function MetricCard({
 function TodayTab({ data }: { data: TimetableData }) {
   const [selectedPeriod, setSelectedPeriod] = useState<(Period & { status: string }) | null>(null);
 
-  const today = new Date();
-  const dateStr = today.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
   return (
     <div className="space-y-6">
-      <Card className="p-5">
-        <div className="flex items-center gap-3 mb-1">
-          <div className="rounded-xl bg-violet-500/10 p-2">
-            <CalendarDays className="size-5 text-violet-600" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold">{dateStr}</h2>
-            <p className="text-sm text-muted-foreground">Today's schedule at a glance</p>
-          </div>
-        </div>
-      </Card>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <MetricCard icon={BookOpen} label="Total Classes" value={`${data.todaySchedule.length}`} tone="default" />
-        <MetricCard icon={Timer} label="Remaining" value={`${data.remainingCount}`} tone="info" />
-        <MetricCard icon={Sun} label="Free Periods" value={`${data.freePeriods}`} tone="success" />
-        <MetricCard icon={Clock} label="Study Hours" value={`${data.totalHours}h`} tone="warning" />
-      </div>
-
       {data.substitutions.length > 0 && (
         <Card className="p-4 border-amber-500/20 bg-amber-500/5">
           <div className="flex items-start gap-3">
@@ -153,10 +141,14 @@ function TodayTab({ data }: { data: TimetableData }) {
               <AlertTriangle className="size-4 text-amber-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-sm text-amber-700 dark:text-amber-500">Substitution Alert</h3>
+              <h3 className="font-semibold text-sm text-amber-700 dark:text-amber-500">
+                Substitution Alert
+              </h3>
               {data.substitutions.map((sub, i) => (
                 <p key={i} className="text-sm text-muted-foreground mt-1">
-                  {sub.originalSubject} replaced by <span className="font-medium text-foreground">{sub.replacementSubject}</span>. Teacher: {sub.teacher} · Period {sub.period}
+                  {sub.originalSubject} replaced by{" "}
+                  <span className="font-medium text-foreground">{sub.replacementSubject}</span>.
+                  Teacher: {sub.teacher} · Period {sub.period}
                 </p>
               ))}
             </div>
@@ -167,12 +159,12 @@ function TodayTab({ data }: { data: TimetableData }) {
       <div>
         <h3 className="font-semibold mb-4">Today's Classes</h3>
         <div className="relative">
-          <div className="absolute left-[52px] top-0 bottom-0 w-px bg-border" />
+          <div className="absolute left-9 top-0 bottom-0 w-px bg-border sm:left-[52px]" />
           <div className="space-y-1">
             {data.todaySchedule.map((cls, i) => (
               <div
                 key={i}
-                className={`relative flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
+                className={`relative flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 sm:gap-4 ${
                   cls.status === "ongoing"
                     ? "bg-violet-500/5 border border-violet-500/20 shadow-sm"
                     : cls.status === "completed"
@@ -192,18 +184,24 @@ function TodayTab({ data }: { data: TimetableData }) {
                     }`}
                   />
                 </div>
-                <div className="w-28 text-xs text-muted-foreground font-medium">
+                <div className="w-20 text-[11px] text-muted-foreground font-medium sm:w-28 sm:text-xs">
                   {cls.time} - {cls.endTime}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={`font-medium ${cls.status === "ongoing" ? "text-violet-600" : ""}`}>
+                    <span
+                      className={`font-medium ${cls.status === "ongoing" ? "text-violet-600" : ""}`}
+                    >
                       {cls.subject}
                     </span>
                     {cls.status === "ongoing" && (
-                      <Badge className="bg-violet-500/10 text-violet-600 border-0 text-xs">Ongoing</Badge>
+                      <Badge className="bg-violet-500/10 text-violet-600 border-0 text-xs">
+                        Ongoing
+                      </Badge>
                     )}
-                    {cls.status === "completed" && <CheckCircle2 className="size-3.5 text-emerald-500" />}
+                    {cls.status === "completed" && (
+                      <CheckCircle2 className="size-3.5 text-emerald-500" />
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {cls.teacher} · {cls.room}
@@ -216,14 +214,14 @@ function TodayTab({ data }: { data: TimetableData }) {
         </div>
       </div>
 
-      <div className="flex gap-3">
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {}}>
+      <div className="tabs-mobile-scroll flex gap-3 overflow-x-auto scrollbar-none">
+        <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => {}}>
           <Calendar className="size-3.5" /> View Full Week
         </Button>
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {}}>
+        <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => {}}>
           <GraduationCap className="size-3.5" /> Exam Schedule
         </Button>
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {}}>
+        <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => {}}>
           <Bell className="size-3.5" /> Add Reminder
         </Button>
       </div>
@@ -241,7 +239,9 @@ function TodayTab({ data }: { data: TimetableData }) {
                   <Clock className="size-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Time</p>
-                    <p className="text-sm font-medium">{selectedPeriod.time} - {selectedPeriod.endTime}</p>
+                    <p className="text-sm font-medium">
+                      {selectedPeriod.time} - {selectedPeriod.endTime}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50">
@@ -313,7 +313,10 @@ function WeeklyTab({ data }: { data: TimetableData }) {
 
             {allPeriods.map((pi) => (
               <>
-                <div key={`period-${pi}`} className="bg-card p-3 text-xs font-medium text-muted-foreground">
+                <div
+                  key={`period-${pi}`}
+                  className="bg-card p-3 text-xs font-medium text-muted-foreground"
+                >
                   P{pi + 1}
                 </div>
                 {days.map((d) => {
@@ -366,7 +369,12 @@ function WeeklyTab({ data }: { data: TimetableData }) {
               <XAxis dataKey="subject" tick={{ fontSize: 9 }} className="text-muted-foreground" />
               <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="periods" fill="var(--color-periods)" radius={[4, 4, 0, 0]} barSize={30} />
+              <Bar
+                dataKey="periods"
+                fill="var(--color-periods)"
+                radius={[4, 4, 0, 0]}
+                barSize={30}
+              />
             </BarChart>
           </ChartContainer>
         </Card>
@@ -384,7 +392,9 @@ function WeeklyTab({ data }: { data: TimetableData }) {
                 <Clock className="size-4 text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground">Time</p>
-                  <p className="text-sm font-medium">{selectedCell.time} - {selectedCell.endTime}</p>
+                  <p className="text-sm font-medium">
+                    {selectedCell.time} - {selectedCell.endTime}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50">
@@ -423,14 +433,42 @@ function ExamsTab({ data }: { data: TimetableData }) {
     return "outline" as const;
   };
 
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-3">
-        <MetricCard icon={GraduationCap} label="Upcoming Exams" value={`${data.upcomingExams.length}`} tone="default" />
-        <MetricCard icon={CalendarDays} label="This Month" value={`${data.examsThisMonth.length}`} tone="info" />
-        <MetricCard icon={Timer} label="Next Exam" value={`In ${data.nextExamDays} Days`} tone="warning" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <MetricCard
+          icon={GraduationCap}
+          label="Upcoming Exams"
+          value={`${data.upcomingExams.length}`}
+          tone="default"
+        />
+        <MetricCard
+          icon={CalendarDays}
+          label="This Month"
+          value={`${data.examsThisMonth.length}`}
+          tone="info"
+        />
+        <MetricCard
+          icon={Timer}
+          label="Next Exam"
+          value={`In ${data.nextExamDays} Days`}
+          tone="warning"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -443,7 +481,10 @@ function ExamsTab({ data }: { data: TimetableData }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="font-semibold text-sm">{exam.name}</h4>
-                  <Badge variant="outline" className={`text-[10px] border ${typeStyles[exam.type]}`}>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] border ${typeStyles[exam.type]}`}
+                  >
                     {exam.type.charAt(0).toUpperCase() + exam.type.slice(1)}
                   </Badge>
                 </div>
@@ -451,7 +492,11 @@ function ExamsTab({ data }: { data: TimetableData }) {
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="size-3" />
-                    {new Date(exam.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    {new Date(exam.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="size-3" />
@@ -465,7 +510,10 @@ function ExamsTab({ data }: { data: TimetableData }) {
               </div>
               <div className="text-right shrink-0">
                 <p className="text-xs text-muted-foreground mb-1">
-                  {new Date(exam.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {new Date(exam.date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </p>
                 <Badge variant={getDaysBadge(exam.daysLeft)} className="text-xs">
                   {exam.daysLeft} Days
@@ -486,7 +534,9 @@ function ExamsTab({ data }: { data: TimetableData }) {
           ))}
           {Array.from({ length: 30 }, (_, i) => {
             const day = i + 1;
-            const examOnDay = data.exams.find((e) => new Date(e.date).getDate() === day && new Date(e.date).getMonth() === 6);
+            const examOnDay = data.exams.find(
+              (e) => new Date(e.date).getDate() === day && new Date(e.date).getMonth() === 6,
+            );
             return (
               <div
                 key={day}
@@ -534,15 +584,69 @@ function CalendarTab({ data }: { data: TimetableData }) {
     { month: 2, year: 2027, label: "Mar 2027" },
   ];
 
-  const EVENT_CATEGORIES: { key: EventCategory | "all"; label: string; color: string; dot: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { key: "all", label: "All", color: "bg-foreground text-background", dot: "bg-foreground", icon: CalendarDays },
-    { key: "exam", label: "Exams", color: "bg-red-500/10 text-red-600 border-red-500/20", dot: "bg-red-500", icon: GraduationCap },
-    { key: "holiday", label: "Holidays", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", dot: "bg-emerald-500", icon: Sun },
-    { key: "event", label: "Events", color: "bg-violet-500/10 text-violet-600 border-violet-500/20", dot: "bg-violet-500", icon: PartyPopper },
-    { key: "ptm", label: "PTM", color: "bg-amber-500/10 text-amber-600 border-amber-500/20", dot: "bg-amber-500", icon: User },
-    { key: "result", label: "Results", color: "bg-blue-500/10 text-blue-600 border-blue-500/20", dot: "bg-blue-500", icon: Award },
-    { key: "competition", label: "Competitions", color: "bg-orange-500/10 text-orange-600 border-orange-500/20", dot: "bg-orange-500", icon: Trophy },
-    { key: "deadline", label: "Deadlines", color: "bg-slate-500/10 text-slate-600 border-slate-500/20", dot: "bg-slate-600", icon: Timer },
+  const EVENT_CATEGORIES: {
+    key: EventCategory | "all";
+    label: string;
+    color: string;
+    dot: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }[] = [
+    {
+      key: "all",
+      label: "All",
+      color: "bg-foreground text-background",
+      dot: "bg-foreground",
+      icon: CalendarDays,
+    },
+    {
+      key: "exam",
+      label: "Exams",
+      color: "bg-red-500/10 text-red-600 border-red-500/20",
+      dot: "bg-red-500",
+      icon: GraduationCap,
+    },
+    {
+      key: "holiday",
+      label: "Holidays",
+      color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      dot: "bg-emerald-500",
+      icon: Sun,
+    },
+    {
+      key: "event",
+      label: "Events",
+      color: "bg-violet-500/10 text-violet-600 border-violet-500/20",
+      dot: "bg-violet-500",
+      icon: PartyPopper,
+    },
+    {
+      key: "ptm",
+      label: "PTM",
+      color: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+      dot: "bg-amber-500",
+      icon: User,
+    },
+    {
+      key: "result",
+      label: "Results",
+      color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+      dot: "bg-blue-500",
+      icon: Award,
+    },
+    {
+      key: "competition",
+      label: "Competitions",
+      color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+      dot: "bg-orange-500",
+      icon: Trophy,
+    },
+    {
+      key: "deadline",
+      label: "Deadlines",
+      color: "bg-slate-500/10 text-slate-600 border-slate-500/20",
+      dot: "bg-slate-600",
+      icon: Timer,
+    },
   ];
 
   const DOT_COLORS: Record<EventCategory, string> = {
@@ -595,10 +699,30 @@ function CalendarTab({ data }: { data: TimetableData }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <MetricCard icon={Sun} label="Total Holidays" value={`${data.totalHolidays}`} tone="success" />
-        <MetricCard icon={GraduationCap} label="Total Exams" value={`${data.totalExams}`} tone="default" />
-        <MetricCard icon={PartyPopper} label="Total Events" value={`${data.totalEvents + data.totalCompetitions}`} tone="info" />
-        <MetricCard icon={Timer} label="Days Left (Term 2)" value={`${data.daysRemainingInTerm}`} tone="warning" />
+        <MetricCard
+          icon={Sun}
+          label="Total Holidays"
+          value={`${data.totalHolidays}`}
+          tone="success"
+        />
+        <MetricCard
+          icon={GraduationCap}
+          label="Total Exams"
+          value={`${data.totalExams}`}
+          tone="default"
+        />
+        <MetricCard
+          icon={PartyPopper}
+          label="Total Events"
+          value={`${data.totalEvents + data.totalCompetitions}`}
+          tone="info"
+        />
+        <MetricCard
+          icon={Timer}
+          label="Days Left (Term 2)"
+          value={`${data.daysRemainingInTerm}`}
+          tone="warning"
+        />
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -677,9 +801,14 @@ function CalendarTab({ data }: { data: TimetableData }) {
                           {hasEvent && !isToday && (
                             <div className="flex justify-center gap-px mt-px">
                               {events.slice(0, 2).map((ev, ei) => (
-                                <div key={ei} className={`size-1 rounded-full ${DOT_COLORS[ev.type]}`} />
+                                <div
+                                  key={ei}
+                                  className={`size-1 rounded-full ${DOT_COLORS[ev.type]}`}
+                                />
                               ))}
-                              {events.length > 2 && <div className="size-1 rounded-full bg-muted-foreground" />}
+                              {events.length > 2 && (
+                                <div className="size-1 rounded-full bg-muted-foreground" />
+                              )}
                             </div>
                           )}
                         </button>
@@ -695,68 +824,84 @@ function CalendarTab({ data }: { data: TimetableData }) {
             {ACADEMIC_MONTHS.filter((m) => {
               const now = new Date();
               return m.month === now.getMonth() && m.year === now.getFullYear();
-            }).concat(ACADEMIC_MONTHS.filter((m) => {
-              const now = new Date();
-              return !(m.month === now.getMonth() && m.year === now.getFullYear());
-            })).slice(0, 3).map((m) => {
-              const daysInMonth = new Date(m.year, m.month + 1, 0).getDate();
-              const firstDayOfWeek = new Date(m.year, m.month, 1).getDay();
-              const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-              const paddedDays = [...Array(firstDayOfWeek).fill(null), ...daysArray];
+            })
+              .concat(
+                ACADEMIC_MONTHS.filter((m) => {
+                  const now = new Date();
+                  return !(m.month === now.getMonth() && m.year === now.getFullYear());
+                }),
+              )
+              .slice(0, 3)
+              .map((m) => {
+                const daysInMonth = new Date(m.year, m.month + 1, 0).getDate();
+                const firstDayOfWeek = new Date(m.year, m.month, 1).getDay();
+                const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+                const paddedDays = [...Array(firstDayOfWeek).fill(null), ...daysArray];
 
-              return (
-                <Card key={`mobile-${m.year}-${m.month}`} className="p-3">
-                  <h4 className="text-xs font-semibold mb-2">{m.label}</h4>
-                  <div className="grid grid-cols-7 gap-px text-center">
-                    {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-                      <div key={i} className="text-[9px] font-medium text-muted-foreground py-0.5">
-                        {d}
-                      </div>
-                    ))}
-                    {paddedDays.map((day, i) => {
-                      if (day === null) return <div key={`empty-${i}`} />;
-                      const dateObj = new Date(m.year, m.month, day);
-                      const dateStr = `${m.year}-${String(m.month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-                      const events = getEventsForDate(dateObj);
-                      const isToday = dateStr === todayStr;
-                      const isSelected = selectedDate?.getTime() === dateObj.getTime();
-                      const hasEvent = events.length > 0;
-
-                      return (
-                        <button
-                          key={`mobile-${m.year}-${m.month}-${day}`}
-                          onClick={() => setSelectedDate(dateObj)}
-                          className={`relative p-0.5 rounded text-[10px] transition-all duration-150 ${
-                            isToday
-                              ? "bg-violet-500 text-white font-bold"
-                              : isSelected
-                                ? "bg-violet-500/10 text-violet-600 font-semibold"
-                                : hasEvent
-                                  ? "hover:bg-muted/80 font-medium"
-                                  : "hover:bg-muted/50 text-muted-foreground"
-                          }`}
+                return (
+                  <Card key={`mobile-${m.year}-${m.month}`} className="p-3">
+                    <h4 className="text-xs font-semibold mb-2">{m.label}</h4>
+                    <div className="grid grid-cols-7 gap-px text-center">
+                      {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+                        <div
+                          key={i}
+                          className="text-[9px] font-medium text-muted-foreground py-0.5"
                         >
-                          {day}
-                          {hasEvent && !isToday && (
-                            <div className="flex justify-center gap-px mt-px">
-                              {events.slice(0, 2).map((ev, ei) => (
-                                <div key={ei} className={`size-1 rounded-full ${DOT_COLORS[ev.type]}`} />
-                              ))}
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </Card>
-              );
-            })}
+                          {d}
+                        </div>
+                      ))}
+                      {paddedDays.map((day, i) => {
+                        if (day === null) return <div key={`empty-${i}`} />;
+                        const dateObj = new Date(m.year, m.month, day);
+                        const dateStr = `${m.year}-${String(m.month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                        const events = getEventsForDate(dateObj);
+                        const isToday = dateStr === todayStr;
+                        const isSelected = selectedDate?.getTime() === dateObj.getTime();
+                        const hasEvent = events.length > 0;
+
+                        return (
+                          <button
+                            key={`mobile-${m.year}-${m.month}-${day}`}
+                            onClick={() => setSelectedDate(dateObj)}
+                            className={`relative p-0.5 rounded text-[10px] transition-all duration-150 ${
+                              isToday
+                                ? "bg-violet-500 text-white font-bold"
+                                : isSelected
+                                  ? "bg-violet-500/10 text-violet-600 font-semibold"
+                                  : hasEvent
+                                    ? "hover:bg-muted/80 font-medium"
+                                    : "hover:bg-muted/50 text-muted-foreground"
+                            }`}
+                          >
+                            {day}
+                            {hasEvent && !isToday && (
+                              <div className="flex justify-center gap-px mt-px">
+                                {events.slice(0, 2).map((ev, ei) => (
+                                  <div
+                                    key={ei}
+                                    className={`size-1 rounded-full ${DOT_COLORS[ev.type]}`}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </Card>
+                );
+              })}
           </div>
 
           {selectedDate && selectedDateEvents.length > 0 && (
             <Card className="p-4 mt-4 lg:hidden">
               <h4 className="font-semibold text-sm mb-3">
-                {selectedDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                {selectedDate.toLocaleDateString("en-US", {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
               </h4>
               <div className="space-y-2">
                 {selectedDateEvents.map((event) => {
@@ -793,13 +938,18 @@ function CalendarTab({ data }: { data: TimetableData }) {
                     onClick={() => setSelectedEvent(event)}
                     className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                   >
-                    <div className={`rounded-lg p-1.5 shrink-0 ${EVENT_CATEGORIES.find((c) => c.key === event.type)?.color ?? "bg-muted"}`}>
+                    <div
+                      className={`rounded-lg p-1.5 shrink-0 ${EVENT_CATEGORIES.find((c) => c.key === event.type)?.color ?? "bg-muted"}`}
+                    >
                       <Icon className="size-3" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{event.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        {new Date(event.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
                         {event.time && ` · ${event.time}`}
                       </p>
                     </div>
@@ -834,12 +984,16 @@ function CalendarTab({ data }: { data: TimetableData }) {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Competitions</span>
-                <span className="text-sm font-semibold text-orange-600">{data.totalCompetitions}</span>
+                <span className="text-sm font-semibold text-orange-600">
+                  {data.totalCompetitions}
+                </span>
               </div>
               <Separator className="my-2" />
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium">Term 2 Ends</span>
-                <span className="text-xs font-semibold text-muted-foreground">{data.daysRemainingInTerm} days</span>
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {data.daysRemainingInTerm} days
+                </span>
               </div>
             </div>
           </Card>
@@ -856,7 +1010,9 @@ function CalendarTab({ data }: { data: TimetableData }) {
               className={`${phase.color} relative group flex items-center justify-center cursor-default`}
               style={{ flex: i === 1 || i === 3 ? 0.5 : i === 4 ? 1.5 : 2 }}
             >
-              <span className="text-[10px] font-semibold text-white drop-shadow-sm whitespace-nowrap">{phase.label}</span>
+              <span className="text-[10px] font-semibold text-white drop-shadow-sm whitespace-nowrap">
+                {phase.label}
+              </span>
               <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-muted-foreground whitespace-nowrap bg-popover border rounded px-2 py-1 shadow-md z-10">
                 {phase.start} — {phase.end}
               </div>
@@ -865,7 +1021,11 @@ function CalendarTab({ data }: { data: TimetableData }) {
         </div>
         <div className="mt-8 flex gap-1">
           {timelinePhases.map((phase, i) => (
-            <div key={i} style={{ flex: i === 1 || i === 3 ? 0.5 : i === 4 ? 1.5 : 2 }} className="text-center">
+            <div
+              key={i}
+              style={{ flex: i === 1 || i === 3 ? 0.5 : i === 4 ? 1.5 : 2 }}
+              className="text-center"
+            >
               <span className="text-[9px] text-muted-foreground">{phase.start}</span>
             </div>
           ))}
@@ -880,7 +1040,9 @@ function CalendarTab({ data }: { data: TimetableData }) {
           <DialogHeader>
             <div className="flex items-center gap-2">
               {selectedEvent && (
-                <div className={`rounded-lg p-1.5 ${EVENT_CATEGORIES.find((c) => c.key === selectedEvent.type)?.color ?? "bg-muted"}`}>
+                <div
+                  className={`rounded-lg p-1.5 ${EVENT_CATEGORIES.find((c) => c.key === selectedEvent.type)?.color ?? "bg-muted"}`}
+                >
                   {(() => {
                     const Icon = TYPE_ICONS[selectedEvent.type] ?? Calendar;
                     return <Icon className="size-4" />;
@@ -901,9 +1063,20 @@ function CalendarTab({ data }: { data: TimetableData }) {
                   <div>
                     <p className="text-xs text-muted-foreground">Date</p>
                     <p className="text-sm font-medium">
-                      {new Date(selectedEvent.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                      {new Date(selectedEvent.date).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                       {selectedEvent.endDate && (
-                        <> — {new Date(selectedEvent.endDate).toLocaleDateString("en-US", { month: "long", day: "numeric" })}</>
+                        <>
+                          {" "}
+                          —{" "}
+                          {new Date(selectedEvent.endDate).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </>
                       )}
                     </p>
                   </div>
@@ -941,6 +1114,35 @@ function CalendarTab({ data }: { data: TimetableData }) {
 export function TimetablePage() {
   const data = useMemo(() => getTimetableData(), []);
   const [activeTab, setActiveTab] = useState<TabId>("today");
+  const tabScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkTabScroll = useCallback(() => {
+    const el = tabScrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    checkTabScroll();
+    const el = tabScrollRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(checkTabScroll);
+    ro.observe(el);
+    el.addEventListener("scroll", checkTabScroll, { passive: true });
+    return () => {
+      ro.disconnect();
+      el.removeEventListener("scroll", checkTabScroll);
+    };
+  }, [checkTabScroll]);
+
+  const scrollTabs = useCallback((dir: "left" | "right") => {
+    const el = tabScrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" });
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -949,10 +1151,52 @@ export function TimetablePage() {
         subtitle="View your class schedule, upcoming periods, substitutions, and academic calendar."
       />
 
-      <div className="sticky top-0 z-30 -mx-1 px-1 pt-1 pb-3">
-        <div className="relative">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-xl rounded-2xl" />
-          <div className="relative flex gap-1 overflow-x-auto scrollbar-none rounded-2xl border border-border/60 bg-card p-1.5 shadow-sm">
+      <Card className="p-5">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="rounded-xl bg-violet-500/10 p-2">
+            <CalendarDays className="size-5 text-violet-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </h2>
+            <p className="text-sm text-muted-foreground">Today's schedule at a glance</p>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <MetricCard
+          icon={BookOpen}
+          label="Total Classes"
+          value={`${data.todaySchedule.length}`}
+          tone="default"
+        />
+        <MetricCard icon={Timer} label="Remaining" value={`${data.remainingCount}`} tone="info" />
+        <MetricCard icon={Sun} label="Free Periods" value={`${data.freePeriods}`} tone="success" />
+        <MetricCard icon={Clock} label="Study Hours" value={`${data.totalHours}h`} tone="warning" />
+      </div>
+
+      <Card className="p-4 mb-4 overflow-hidden sm:mb-6">
+        <div className="relative flex items-center">
+          {canScrollLeft && (
+            <button
+              onClick={() => scrollTabs("left")}
+              className="absolute left-0 z-20 flex h-full w-8 items-center justify-center bg-gradient-to-r from-background via-background/90 to-transparent"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="size-4 text-muted-foreground" />
+            </button>
+          )}
+          <div
+            ref={tabScrollRef}
+            className="tabs-mobile-scroll flex gap-1 overflow-x-auto scrollbar-none"
+          >
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -967,13 +1211,22 @@ export function TimetablePage() {
                   }`}
                 >
                   <Icon className="size-4 shrink-0" />
-                  <span className="hidden sm:inline">{tab.label}</span>
+                  {tab.label}
                 </button>
               );
             })}
           </div>
+          {canScrollRight && (
+            <button
+              onClick={() => scrollTabs("right")}
+              className="absolute right-0 z-20 flex h-full w-8 items-center justify-center bg-gradient-to-l from-background via-background/90 to-transparent"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </button>
+          )}
         </div>
-      </div>
+      </Card>
 
       <div className="min-h-[400px]">
         {activeTab === "today" && <TodayTab data={data} />}

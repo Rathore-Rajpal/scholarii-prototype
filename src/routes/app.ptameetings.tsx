@@ -38,10 +38,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parseISO, isPast } from "date-fns";
-import {
-  PTA_MEETINGS,
-  PTA_STATS,
-} from "@/lib/scholarii/teacher-ptameetings-mock-data";
+import { PTA_MEETINGS, PTA_STATS } from "@/lib/scholarii/teacher-ptameetings-mock-data";
 import type { MeetingStatus } from "@/lib/scholarii/teacher-ptameetings-mock-data";
 import { toast } from "sonner";
 
@@ -53,10 +50,7 @@ export const Route = createFileRoute("/app/ptameetings")({
   ),
 });
 
-const STATUS_META: Record<
-  MeetingStatus,
-  { label: string; color: string; bg: string }
-> = {
+const STATUS_META: Record<MeetingStatus, { label: string; color: string; bg: string }> = {
   upcoming: {
     label: "Upcoming",
     color: "text-violet-600",
@@ -100,7 +94,7 @@ function PTAMeetingsPage() {
         (m) =>
           m.title.toLowerCase().includes(q) ||
           m.className.toLowerCase().includes(q) ||
-          m.venue.toLowerCase().includes(q)
+          m.venue.toLowerCase().includes(q),
       );
     }
     return list;
@@ -202,7 +196,7 @@ function PTAMeetingsPage() {
                   "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
                   activeTab === tab.id
                     ? "bg-violet-500/10 text-violet-600 shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                 )}
               >
                 <tab.icon className="size-4" />
@@ -228,22 +222,18 @@ function PTAMeetingsPage() {
           const meta = STATUS_META[meeting.status];
           const attendancePct =
             meeting.attendeesExpected > 0
-              ? Math.round(
-                  (meeting.attendeesActual / meeting.attendeesExpected) * 100
-                )
+              ? Math.round((meeting.attendeesActual / meeting.attendeesExpected) * 100)
               : 0;
 
           return (
             <button
               key={meeting.id}
-              onClick={() =>
-                setSelectedId(meeting.id === selectedId ? null : meeting.id)
-              }
+              onClick={() => setSelectedId(meeting.id === selectedId ? null : meeting.id)}
               className={cn(
                 "w-full rounded-2xl border p-5 text-left transition-all",
                 selected?.id === meeting.id
                   ? "border-violet-500 bg-violet-500/5 shadow-sm ring-1 ring-violet-500/20"
-                  : "border-border/60 hover:border-border hover:bg-muted/20"
+                  : "border-border/60 hover:border-border hover:bg-muted/20",
               )}
             >
               <div className="flex items-start gap-4">
@@ -257,29 +247,22 @@ function PTAMeetingsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <h3 className="font-semibold">{meeting.title}</h3>
-                    <Badge
-                      className={cn(
-                        "border-0 text-[10px]",
-                        meta.bg,
-                        meta.color
-                      )}
-                    >
+                    <Badge className={cn("border-0 text-[10px]", meta.bg, meta.color)}>
                       {meta.label}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
                     <span className="flex items-center gap-1">
                       <CalendarClock className="size-3" />
-                      {format(parseISO(meeting.date), "dd MMM yyyy")} · {meeting.time} – {meeting.endTime}
+                      {format(parseISO(meeting.date), "dd MMM yyyy")} · {meeting.time} –{" "}
+                      {meeting.endTime}
                     </span>
                     <span className="flex items-center gap-1">
                       <MapPin className="size-3" />
                       {meeting.venue}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-1">
-                    {meeting.agenda[0]}
-                  </p>
+                  <p className="text-sm text-muted-foreground line-clamp-1">{meeting.agenda[0]}</p>
 
                   {/* Parent Responses */}
                   {meeting.status === "upcoming" && (
@@ -300,7 +283,8 @@ function PTAMeetingsPage() {
                   {meeting.status === "completed" && meeting.attendeesActual > 0 && (
                     <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                       <Users className="size-3" />
-                      {meeting.attendeesActual}/{meeting.attendeesExpected} attended ({attendancePct}%)
+                      {meeting.attendeesActual}/{meeting.attendeesExpected} attended (
+                      {attendancePct}%)
                     </div>
                   )}
                 </div>
@@ -317,10 +301,7 @@ function PTAMeetingsPage() {
                     </h4>
                     <div className="space-y-1.5">
                       {meeting.agenda.map((item, i) => (
-                        <div
-                          key={i}
-                          className="flex items-start gap-2 text-sm"
-                        >
+                        <div key={i} className="flex items-start gap-2 text-sm">
                           <span className="size-5 rounded-full bg-violet-500/10 text-violet-600 text-[10px] font-medium grid place-items-center shrink-0 mt-0.5">
                             {i + 1}
                           </span>
@@ -343,25 +324,21 @@ function PTAMeetingsPage() {
                   )}
 
                   {/* Follow-up Actions (completed only) */}
-                  {meeting.status === "completed" &&
-                    meeting.followUpActions.length > 0 && (
-                      <div>
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                          Follow-up Actions
-                        </h4>
-                        <div className="space-y-1.5">
-                          {meeting.followUpActions.map((action, i) => (
-                            <div
-                              key={i}
-                              className="flex items-start gap-2 text-sm"
-                            >
-                              <Sparkles className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
-                              {action}
-                            </div>
-                          ))}
-                        </div>
+                  {meeting.status === "completed" && meeting.followUpActions.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                        Follow-up Actions
+                      </h4>
+                      <div className="space-y-1.5">
+                        {meeting.followUpActions.map((action, i) => (
+                          <div key={i} className="flex items-start gap-2 text-sm">
+                            <Sparkles className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
+                            {action}
+                          </div>
+                        ))}
                       </div>
-                    )}
+                    </div>
+                  )}
 
                   {/* Quick Actions */}
                   <div className="flex gap-2">
@@ -461,16 +438,17 @@ function ScheduleMeetingForm() {
       </div>
       <div className="space-y-1.5">
         <Label>Agenda (one per line)</Label>
-        <Textarea rows={4} required placeholder="Topic 1&#10;Topic 2&#10;Topic 3" />
+        <Textarea
+          rows={4}
+          required
+          placeholder="Topic 1&#10;Topic 2&#10;Topic 3"
+        />
       </div>
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={() => setOpen(false)}>
           Cancel
         </Button>
-        <Button
-          type="submit"
-          className="bg-brand-gradient text-white border-0"
-        >
+        <Button type="submit" className="bg-brand-gradient text-white border-0">
           Schedule
         </Button>
       </div>

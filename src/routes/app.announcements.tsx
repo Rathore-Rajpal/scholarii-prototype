@@ -21,12 +21,12 @@ function AnnouncementsPage() {
   return (
     <div>
       <PageHeader title="Announcements" subtitle="School-wide notices and updates." action={<NewAnnouncement />} />
-      <div className="space-y-3">
+      <div className="space-y-3 sm:space-y-4">
         {data.announcements.map((a) => (
-          <Card key={a.id} className="p-5">
-            <div className="flex items-start gap-4">
-              <div className="size-10 rounded-xl bg-brand-gradient grid place-items-center text-white shrink-0">
-                <Megaphone className="size-5" />
+          <Card key={a.id} className="p-4 sm:p-5">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="size-9 rounded-xl bg-brand-gradient grid place-items-center text-white shrink-0 sm:size-10">
+                <Megaphone className="size-4 sm:size-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -35,7 +35,7 @@ function AnnouncementsPage() {
                   <Badge variant="outline">{a.audience}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">{a.message}</p>
-                <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="mt-2 flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-muted-foreground">
                   <span>{format(new Date(a.date), "PPP")}</span>
                   <span className="flex items-center gap-1"><Eye className="size-3" />{a.reads} of {a.recipients} read</span>
                 </div>
