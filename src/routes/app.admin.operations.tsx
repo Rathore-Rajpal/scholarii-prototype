@@ -263,7 +263,7 @@ function AdminOperationsPage() {
             <p className="mt-2 text-xs text-gray-400">3 lectures - short break - 3 lectures - lunch - 2 lectures</p>
           </div>
         </div>
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {periods.map((period) => period.type === "period" ? (
             <div key={`${period.label}-${period.time}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
@@ -285,13 +285,13 @@ function AdminOperationsPage() {
 
       <section className="mt-6">
         <SectionHeading title="Print & Export Center" subtitle="Generate and download documents for daily office use" />
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-3">
           {printCards.map((card) => (
-            <button key={card.title} type="button" onClick={() => setActiveModal(card.modal)} className="rounded-xl border border-gray-100 bg-white p-5 text-left shadow-sm transition hover:border-violet-300 hover:shadow-md">
+            <button key={card.title} type="button" onClick={() => setActiveModal(card.modal)} className="rounded-xl border border-gray-100 bg-white p-3 text-left shadow-sm transition hover:border-violet-300 hover:shadow-md lg:p-5">
               <IconBubble icon={card.icon} tone={card.tone} />
-              <h3 className="mt-4 font-semibold text-gray-900">{card.title}</h3>
-              <p className="mt-1 min-h-10 text-sm text-gray-500">{card.desc}</p>
-              <span className="mt-4 inline-flex rounded-full border border-violet-200 px-3 py-1.5 text-sm font-semibold text-violet-600">{card.button}</span>
+              <h3 className="mt-3 text-sm font-semibold text-gray-900 lg:mt-4 lg:text-base">{card.title}</h3>
+              <p className="mt-1 hidden min-h-10 text-sm text-gray-500 lg:block">{card.desc}</p>
+              <span className="mt-4 hidden rounded-full border border-violet-200 px-3 py-1.5 text-sm font-semibold text-violet-600 lg:inline-flex">{card.button}</span>
             </button>
           ))}
         </div>
@@ -503,14 +503,37 @@ function EventBadge({ status }: { status: string }) {
 function TableCard({ headers, rows }: { headers: string[]; rows: string[][] }) {
   return (
     <SectionCard>
-      <Table headers={headers}>
+      <div className="hidden lg:block">
+        <Table headers={headers}>
         {rows.map((row) => (
           <tr key={row[0]} className="border-t border-gray-100">
             {row.slice(0, -1).map((cell) => <td key={`${row[0]}-${cell}`} className="px-4 py-3 text-sm text-gray-600">{cell}</td>)}
             <td className="px-4 py-3"><StatusBadge className={statusClasses[row[row.length - 1]]}>{row[row.length - 1]}</StatusBadge></td>
           </tr>
         ))}
-      </Table>
+        </Table>
+      </div>
+      <div className="space-y-3 lg:hidden">
+        {rows.map((row) => (
+          <div key={`${row[0]}-mobile`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-medium text-gray-900">{row[0]}</div>
+                <div className="text-xs text-gray-500">{row[1]}</div>
+              </div>
+              <StatusBadge className={statusClasses[row[row.length - 1]]}>{row[row.length - 1]}</StatusBadge>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {row.slice(2, -1).map((cell, index) => (
+                <div key={`${row[0]}-${cell}`}>
+                  <div className="text-gray-400">{headers[index + 2]}</div>
+                  <div className="font-medium text-gray-900">{cell}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </SectionCard>
   );
 }
@@ -555,8 +578,9 @@ function ModalFrame({ title, children, onClose }: { title: string; children: Rea
   }, []);
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/60 p-4" onClick={onClose}>
-      <div className="relative max-h-[85vh] w-full max-w-[550px] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4" onClick={onClose}>
+      <div className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-h-[85vh] lg:max-w-[550px] lg:rounded-2xl lg:p-6" onClick={(event) => event.stopPropagation()}>
+        <div className="lg:hidden mb-3 flex justify-center"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
         <button type="button" aria-label="Close modal" className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600" onClick={onClose}>
           <X className="size-5" />
         </button>
@@ -696,9 +720,9 @@ function IssueModal({ issue, onClose }: { issue: MaintenanceIssue; onClose: () =
 
 function ModalActions({ onClose, submitLabel, onSubmit }: { onClose: () => void; submitLabel: string; onSubmit: () => void }) {
   return (
-    <div className="flex justify-end gap-2 pt-2">
-      <Button type="button" variant="outline" className="rounded-full" onClick={onClose}>Cancel</Button>
-      <Button type="button" className="rounded-full bg-violet-600 text-white hover:bg-violet-700" onClick={onSubmit}>{submitLabel}</Button>
+    <div className="grid grid-cols-2 gap-3 pt-2">
+      <Button type="button" variant="outline" className="w-full rounded-full py-2.5 text-sm font-medium" onClick={onClose}>Cancel</Button>
+      <Button type="button" className="w-full rounded-full bg-violet-600 py-2.5 text-sm font-medium text-white hover:bg-violet-700" onClick={onSubmit}>{submitLabel}</Button>
     </div>
   );
 }

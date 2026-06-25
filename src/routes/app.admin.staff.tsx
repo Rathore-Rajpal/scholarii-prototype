@@ -180,7 +180,7 @@ function AdminStaffPage() {
       <Card className="mt-6 overflow-hidden border-gray-100 bg-white shadow-sm">
         <Tabs defaultValue="directory">
           <div className="border-b border-gray-100 px-5 pt-5">
-            <TabsList className="h-auto rounded-none bg-transparent p-0">
+            <TabsList className="flex h-auto overflow-x-auto rounded-none bg-transparent p-0 scrollbar-hide border-b border-gray-200">
               <DirectoryTab value="directory">👥 Staff Directory</DirectoryTab>
               <DirectoryTab value="attendance">📅 Attendance & Leave</DirectoryTab>
               <DirectoryTab value="documents">📋 Records & Documents</DirectoryTab>
@@ -208,7 +208,7 @@ function AdminStaffPage() {
             <div className="grid gap-5 xl:grid-cols-[60fr_40fr]">
               <section className="rounded-xl border border-gray-100 bg-white p-4">
                 <SectionHeading title="Today's Attendance" subtitle="Mark attendance for all staff members." />
-                <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
+                <div className="mt-4 hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
                   <Table>
                     <TableHeader className="bg-gray-50">
                       <TableRow>
@@ -243,6 +243,29 @@ function AdminStaffPage() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+                <div className="mt-4 space-y-3 lg:hidden">
+                  {staff.map((member) => (
+                    <div key={member.employeeId} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <StaffIdentity member={member} />
+                        <StatusBadge status={attendance[member.employeeId]} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(["Present", "Absent", "Leave", "Half-day"] as AttendanceStatus[]).map((option) => (
+                          <Button
+                            key={option}
+                            size="sm"
+                            variant={attendance[member.employeeId] === option ? "secondary" : "outline"}
+                            className={cn("h-10 rounded-lg", attendance[member.employeeId] === option && "bg-violet-100 text-violet-700 hover:bg-violet-100")}
+                            onClick={() => setAttendance((current) => ({ ...current, [member.employeeId]: option }))}
+                          >
+                            {option}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <div className="mt-4 flex justify-end">
                   <Button className="bg-violet-600 text-white hover:bg-violet-700" onClick={() => toast.success("Attendance saved")}>
@@ -284,7 +307,7 @@ function AdminStaffPage() {
           <TabsContent value="documents" className="m-0 p-5">
             <section className="rounded-xl border border-gray-100 bg-white p-4">
               <SectionHeading title="Staff Documents" subtitle="Upload records and track principal-only verification." />
-              <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
+              <div className="mt-4 hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
                 <Table>
                   <TableHeader className="bg-gray-50">
                     <TableRow>
@@ -319,6 +342,27 @@ function AdminStaffPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+              <div className="mt-4 space-y-3 lg:hidden">
+                {documentRows.map((row) => (
+                  <div key={`${row.name}-${row.type}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{row.name}</div>
+                        <div className="text-xs text-gray-500">{row.type}</div>
+                      </div>
+                      <StatusBadge status={row.verified} />
+                    </div>
+                    <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+                      <Info label="Uploaded" value={row.uploaded} />
+                      <Info label="Expiry" value={row.expiry} />
+                    </div>
+                    <Button className="w-full border-violet-200 text-violet-600" size="sm" variant="outline" onClick={() => toast.info(`Upload selected for ${row.name}`)}>
+                      <Upload className="mr-1.5 size-4" />
+                      Upload
+                    </Button>
+                  </div>
+                ))}
               </div>
             </section>
           </TabsContent>
@@ -371,7 +415,7 @@ function DirectoryTab({ value, children }: { value: string; children: ReactNode 
   return (
     <TabsTrigger
       value={value}
-      className="rounded-none border-b-2 border-transparent px-4 py-3 shadow-none data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 data-[state=active]:shadow-none"
+      className="min-w-fit whitespace-nowrap rounded-none border-b-2 border-transparent px-3 py-2.5 text-xs shadow-none data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 data-[state=active]:shadow-none lg:px-5 lg:py-3 lg:text-sm"
     >
       {children}
     </TabsTrigger>
@@ -439,7 +483,8 @@ function FilterSelect({ value, onChange, label, children }: { value: string; onC
 
 function StaffDirectoryTable({ staff: rows, onView }: { staff: StaffRecord[]; onView: (member: StaffRecord) => void }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100">
+    <>
+    <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
       <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
@@ -469,6 +514,24 @@ function StaffDirectoryTable({ staff: rows, onView }: { staff: StaffRecord[]; on
         </TableBody>
       </Table>
     </div>
+    <div className="space-y-3 lg:hidden">
+      {rows.map((member) => (
+        <div key={member.employeeId} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <StaffIdentity member={member} />
+            <StatusBadge status={member.status} />
+          </div>
+          <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+            <Info label="Employee ID" value={member.employeeId} />
+            <Info label="Department" value={member.department} />
+            <Info label="Role" value={member.role} />
+            <Info label="Contact" value={member.contact} />
+          </div>
+          <Button className="w-full border-violet-200 text-violet-600" size="sm" variant="outline" onClick={() => onView(member)}>View Details</Button>
+        </div>
+      ))}
+    </div>
+    </>
   );
 }
 
@@ -499,11 +562,12 @@ function StaffDetailModal({ member, onClose }: { member: StaffRecord; onClose: (
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] grid place-items-center overflow-y-auto bg-black/60 p-4"
+      className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="my-6 w-full max-w-[860px] overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+      <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl lg:max-w-[860px] lg:rounded-2xl">
+        <div className="lg:hidden flex justify-center pt-3 pb-1"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4 lg:px-6">
           <div className="flex items-center gap-3">
             <Avatar className="size-12">
               <AvatarFallback style={{ backgroundColor: member.avatarColor, color: "white" }}>{initials(member.name)}</AvatarFallback>
@@ -513,14 +577,14 @@ function StaffDetailModal({ member, onClose }: { member: StaffRecord; onClose: (
               <p className="text-sm text-gray-500">{member.employeeId} | {member.designation}</p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="Close staff record">
+          <button type="button" onClick={onClose} className="absolute right-4 top-4 grid size-9 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="Close staff record">
             <X className="size-5" />
           </button>
         </div>
 
         <Tabs defaultValue="personal">
-          <div className="border-b border-gray-100 px-6 pt-3">
-            <TabsList className="h-auto flex-wrap bg-gray-50">
+          <div className="border-b border-gray-100 px-4 pt-3 lg:px-6">
+            <TabsList className="flex h-auto overflow-x-auto bg-gray-50 scrollbar-hide">
               <TabsTrigger value="personal">Personal Info</TabsTrigger>
               <TabsTrigger value="employment">Employment</TabsTrigger>
               <TabsTrigger value="attendance">Attendance</TabsTrigger>
@@ -528,7 +592,7 @@ function StaffDetailModal({ member, onClose }: { member: StaffRecord; onClose: (
               <TabsTrigger value="documents">Documents</TabsTrigger>
             </TabsList>
           </div>
-          <div className="max-h-[70vh] overflow-y-auto p-6">
+          <div className="p-4 lg:p-6">
             <TabsContent value="personal" className="mt-0">
               <DetailPanel editLabel="Edit Personal Info">
                 <Info label="Full Name" value={member.name} />

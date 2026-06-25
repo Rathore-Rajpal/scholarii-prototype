@@ -218,7 +218,7 @@ function AdminFeesPage() {
       <Card className="mt-6 overflow-hidden border-gray-100 bg-white shadow-sm">
         <Tabs defaultValue="collect">
           <div className="border-b border-gray-100 px-5 pt-5">
-            <TabsList className="h-auto flex-wrap rounded-none bg-transparent p-0">
+            <TabsList className="flex h-auto overflow-x-auto rounded-none bg-transparent p-0 scrollbar-hide border-b border-gray-200">
               <FeeTab value="collect">💳 Collect & Transactions</FeeTab>
               <FeeTab value="pending">⚠️ Pending & Overdue</FeeTab>
               <FeeTab value="structure">📊 Fee Structure</FeeTab>
@@ -266,7 +266,7 @@ function AdminFeesPage() {
                     Bulk Remind All
                   </Button>
                 </div>
-                <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
+                <div className="mt-4 hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
                   <Table>
                     <TableHeader className="bg-gray-50">
                       <TableRow>
@@ -300,6 +300,26 @@ function AdminFeesPage() {
                     </TableBody>
                   </Table>
                 </div>
+                <div className="mt-4 space-y-3 lg:hidden">
+                  {pendingRows.map((row, index) => (
+                    <div key={`${row[0]}-mobile-${index}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{row[0]}</div>
+                          <div className="text-xs text-gray-500">{row[1]}</div>
+                        </div>
+                        <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">Pending</span>
+                      </div>
+                      <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+                        <Info label="Fee Type" value={row[2]} />
+                        <Info label="Amount" value={row[3]} />
+                        <Info label="Due Since" value={row[4]} />
+                        <Info label="Days Overdue" value={row[5]} />
+                      </div>
+                      <Button className="w-full border-violet-200 text-violet-600" size="sm" variant="outline" onClick={() => toast.success("Reminder sent to parent")}>Send Reminder</Button>
+                    </div>
+                  ))}
+                </div>
                 <Pager page={pendingPage} pages={pendingPages} setPage={setPendingPage} />
               </SectionCard>
 
@@ -332,7 +352,7 @@ function AdminFeesPage() {
               amounts.
             </div>
             <SectionCard>
-              <div className="overflow-hidden rounded-xl border border-gray-100">
+              <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
                 <Table>
                   <TableHeader className="bg-gray-50">
                     <TableRow>
@@ -363,6 +383,22 @@ function AdminFeesPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+              <div className="space-y-3 lg:hidden">
+                {feeStructure.map((row) => (
+                  <div key={row.grade} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div className="text-sm font-medium text-gray-900">{row.grade}</div>
+                      <span className="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700">{row.annual}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <Info label="Tuition" value={row.tuition} />
+                      <Info label="Exam" value={row.exam} />
+                      <Info label="Transport" value={row.transport} />
+                      <Info label="Library" value={row.library} />
+                    </div>
+                  </div>
+                ))}
               </div>
             </SectionCard>
           </TabsContent>
@@ -459,7 +495,7 @@ function FeeTab({ value, children }: { value: string; children: ReactNode }) {
   return (
     <TabsTrigger
       value={value}
-      className="rounded-none border-b-2 border-transparent px-4 py-3 shadow-none data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 data-[state=active]:shadow-none"
+      className="min-w-fit whitespace-nowrap rounded-none border-b-2 border-transparent px-3 py-2.5 text-xs shadow-none data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 data-[state=active]:shadow-none lg:px-5 lg:py-3 lg:text-sm"
     >
       {children}
     </TabsTrigger>
@@ -480,7 +516,8 @@ function SectionHeading({ title }: { title: string }) {
 
 function TransactionsTable({ rows }: { rows: string[][] }) {
   return (
-    <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
+    <>
+    <div className="mt-4 hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
       <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
@@ -514,6 +551,27 @@ function TransactionsTable({ rows }: { rows: string[][] }) {
         </TableBody>
       </Table>
     </div>
+    <div className="mt-4 space-y-3 lg:hidden">
+      {rows.map((row) => (
+        <div key={row[6]} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-gray-900">{row[0]}</div>
+              <div className="text-xs text-gray-500">{row[1]}</div>
+            </div>
+            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">{row[4]}</span>
+          </div>
+          <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+            <Info label="Fee Type" value={row[2]} />
+            <Info label="Amount" value={row[3]} />
+            <Info label="Time" value={row[5]} />
+            <Info label="Receipt" value={row[6]} />
+          </div>
+          <Button className="w-full border-violet-200 text-violet-600" size="sm" variant="outline" onClick={() => toast.success("Receipt sent to printer")}>Reprint</Button>
+        </div>
+      ))}
+    </div>
+    </>
   );
 }
 
@@ -703,7 +761,8 @@ function SummaryRow({
 
 function ReceiptsTable({ rows }: { rows: string[][] }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100">
+    <>
+    <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
       <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
@@ -751,6 +810,27 @@ function ReceiptsTable({ rows }: { rows: string[][] }) {
         </TableBody>
       </Table>
     </div>
+    <div className="space-y-3 lg:hidden">
+      {rows.map((row) => (
+        <div key={row[0]} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-gray-900">{row[1]}</div>
+              <div className="text-xs text-gray-500">{row[0]}</div>
+            </div>
+            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">{row[7]}</span>
+          </div>
+          <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+            <Info label="Class" value={row[2]} />
+            <Info label="Amount" value={row[3]} />
+            <Info label="Type" value={row[4]} />
+            <Info label="Date" value={row[6]} />
+          </div>
+          <Button className="w-full border-violet-200 text-violet-600" size="sm" variant="outline" onClick={() => toast.success("Receipt sent to printer")}>Reprint</Button>
+        </div>
+      ))}
+    </div>
+    </>
   );
 }
 
@@ -805,10 +885,11 @@ function CollectFeeModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] grid place-items-center overflow-y-auto bg-black/60 p-4"
+      className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="my-6 w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-w-xl lg:rounded-2xl lg:p-6">
+        <div className="lg:hidden mb-3 flex justify-center"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-900">Collect Fee</h2>
           <button
@@ -829,10 +910,11 @@ function CollectFeeModal({
 function ReceiptPreviewModal({ draft, onClose }: { draft: ReceiptDraft; onClose: () => void }) {
   return createPortal(
     <div
-      className="fixed inset-0 z-[10000] grid place-items-center bg-black/60 p-4"
+      className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-w-md lg:rounded-2xl lg:p-6">
+        <div className="lg:hidden mb-3 flex justify-center"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Receipt Preview</h2>
@@ -856,7 +938,7 @@ function ReceiptPreviewModal({ draft, onClose }: { draft: ReceiptDraft; onClose:
           {draft.reference && <Info label="Reference" value={draft.reference} />}
           <Info label="Date" value={draft.date} />
         </div>
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-5 grid grid-cols-2 gap-3">
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
