@@ -119,70 +119,68 @@ function AnalyticsPage() {
         title="Analytics"
         subtitle="School Intelligence Center — trends, explanations, comparisons, and actionable insights."
         action={
-          <div className="flex items-center gap-2">
-            <Button size="sm" className="h-8 text-xs gap-1.5 bg-violet-600 hover:bg-violet-700">
-              <Download className="size-3" /> Export Report
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Button size="sm" className="h-7 sm:h-8 text-[11px] sm:text-xs gap-1 sm:gap-1.5 bg-violet-600 hover:bg-violet-700">
+              <Download className="size-3" /> <span className="hidden sm:inline">Export Report</span><span className="sm:hidden">Export</span>
             </Button>
-            <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5">
-              <FileText className="size-3" /> Executive Summary
+            <Button size="sm" variant="outline" className="h-7 sm:h-8 text-[11px] sm:text-xs gap-1 sm:gap-1.5">
+              <FileText className="size-3" /> <span className="hidden sm:inline">Executive Summary</span><span className="sm:hidden">Summary</span>
             </Button>
           </div>
         }
       />
 
       {/* Time Range Filter */}
-      <Card className="p-3 sm:p-4 mb-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+      <Card className="p-2.5 sm:p-4 mb-4 sm:mb-8">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold">Time Range</p>
-            <p className="text-[10px] text-muted-foreground">Select a period to review.</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
-              <SelectTrigger className="w-[200px] h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {timeRanges.map((range) => <SelectItem key={range} value={range}>{range}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Badge variant="outline" className="text-[9px]">{timeRange}</Badge>
-          </div>
+          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
+            <SelectTrigger className="w-[160px] sm:w-[200px] h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {timeRanges.map((range) => <SelectItem key={range} value={range}>{range}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </Card>
 
       {/* Summary */}
-      <Card className="p-4 sm:p-6 mb-8">
-        <div className="flex items-start gap-3">
-          <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
-            <BrainCircuit className="size-5 text-violet-500" />
+      <Card className="p-3 sm:p-6 mb-4 sm:mb-8">
+        <div className="flex items-start gap-2.5 sm:gap-3">
+          <div className="size-8 sm:size-10 rounded-xl bg-violet-500/10 grid place-items-center shrink-0">
+            <BrainCircuit className="size-4 sm:size-5 text-violet-500" />
           </div>
           <div>
-            <p className="text-sm font-semibold">School Intelligence Summary</p>
-            <p className="mt-1 text-xs text-muted-foreground leading-5">{summaryByRange[timeRange]}</p>
+            <p className="text-xs sm:text-sm font-semibold">School Intelligence Summary</p>
+            <p className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs text-muted-foreground leading-4 sm:leading-5">{summaryByRange[timeRange]}</p>
           </div>
         </div>
       </Card>
 
       {/* KPI Cards */}
-      <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-8">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           const trend = trendMeta(kpi.direction);
           const tones = { emerald: "bg-emerald-500/10 text-emerald-500", sky: "bg-sky-500/10 text-sky-500", amber: "bg-amber-500/10 text-amber-500", violet: "bg-violet-500/10 text-violet-500" };
           return (
-            <Card key={kpi.label} className="p-3 sm:p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className={cn("size-10 rounded-xl grid place-items-center shrink-0", tones[kpi.tone])}>
-                  <Icon className="size-5" />
+            <Card key={kpi.label} className="p-2 sm:p-3 lg:p-4">
+              <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                <div className={cn("size-7 sm:size-8 lg:size-10 rounded-lg sm:rounded-xl grid place-items-center shrink-0", tones[kpi.tone])}>
+                  <Icon className="size-3.5 sm:size-4 lg:size-5" />
                 </div>
-                <div>
-                  <p className="text-[11px] text-muted-foreground">{kpi.label}</p>
-                  <div className="text-lg font-semibold">{kpi.value}</div>
+                <div className="min-w-0">
+                  <p className="text-[9px] sm:text-[10px] lg:text-[11px] text-muted-foreground truncate">{kpi.label}</p>
+                  <div className="text-sm sm:text-base lg:text-lg font-semibold">{kpi.value}</div>
                 </div>
               </div>
-              <div className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium", trend.className)}>
-                {trend.icon} {kpi.change}
+              <div className="flex items-center gap-1.5">
+                <div className={cn("inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] sm:text-[10px] font-medium", trend.className)}>
+                  {trend.icon} {kpi.change}
+                </div>
+                <p className="text-[9px] sm:text-[10px] lg:text-[11px] text-muted-foreground truncate hidden sm:block">{kpi.hint}</p>
               </div>
-              <p className="mt-2 text-[11px] text-muted-foreground">{kpi.hint}</p>
             </Card>
           );
         })}
@@ -190,25 +188,27 @@ function AnalyticsPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-3 sm:p-4 mb-8">
-          <TabsList className="h-11 overflow-x-auto scrollbar-hide">
-            <TabsTrigger value="attendance" className="text-sm gap-2 px-5"><BarChart3 className="size-4" /> Attendance</TabsTrigger>
-            <TabsTrigger value="academic" className="text-sm gap-2 px-5"><GraduationCap className="size-4" /> Academic</TabsTrigger>
-            <TabsTrigger value="parent" className="text-sm gap-2 px-5"><Users className="size-4" /> Parent Engagement</TabsTrigger>
-            <TabsTrigger value="adoption" className="text-sm gap-2 px-5"><TrendingUp className="size-4" /> Scholarii Adoption</TabsTrigger>
-            <TabsTrigger value="insights" className="text-sm gap-2 px-5"><BrainCircuit className="size-4" /> AI Insights</TabsTrigger>
-          </TabsList>
+        <Card className="p-1.5 sm:p-3 lg:p-4 mb-4 sm:mb-8">
+          <div className="overflow-x-auto scrollbar-hide -mx-0.5 px-0.5">
+            <TabsList className="h-9 sm:h-10 lg:h-11 inline-flex w-auto gap-0.5 sm:gap-1 lg:gap-2 p-0.5 sm:p-1">
+              <TabsTrigger value="attendance" className="text-[11px] sm:text-xs lg:text-sm gap-1 sm:gap-1.5 lg:gap-2 px-2 sm:px-3 lg:px-5 whitespace-nowrap"><BarChart3 className="size-3 lg:size-4" /> Attendance</TabsTrigger>
+              <TabsTrigger value="academic" className="text-[11px] sm:text-xs lg:text-sm gap-1 sm:gap-1.5 lg:gap-2 px-2 sm:px-3 lg:px-5 whitespace-nowrap"><GraduationCap className="size-3 lg:size-4" /> Academic</TabsTrigger>
+              <TabsTrigger value="parent" className="text-[11px] sm:text-xs lg:text-sm gap-1 sm:gap-1.5 lg:gap-2 px-2 sm:px-3 lg:px-5 whitespace-nowrap"><Users className="size-3 lg:size-4" /> Parent</TabsTrigger>
+              <TabsTrigger value="adoption" className="text-[11px] sm:text-xs lg:text-sm gap-1 sm:gap-1.5 lg:gap-2 px-2 sm:px-3 lg:px-5 whitespace-nowrap"><TrendingUp className="size-3 lg:size-4" /> Adoption</TabsTrigger>
+              <TabsTrigger value="insights" className="text-[11px] sm:text-xs lg:text-sm gap-1 sm:gap-1.5 lg:gap-2 px-2 sm:px-3 lg:px-5 whitespace-nowrap"><BrainCircuit className="size-3 lg:size-4" /> AI Insights</TabsTrigger>
+            </TabsList>
+          </div>
         </Card>
 
         {/* ═══ ATTENDANCE ═══ */}
         <TabsContent value="attendance">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
               {attendanceMetrics.map((m) => (
-                <Card key={m.label} className="p-3 sm:p-4">
-                  <div className="text-[11px] text-muted-foreground mb-1">{m.label}</div>
-                  <div className="text-lg font-semibold">{m.value}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
+                <Card key={m.label} className="p-2.5 sm:p-3 lg:p-4">
+                  <div className="text-[10px] sm:text-[11px] text-muted-foreground mb-0.5 sm:mb-1">{m.label}</div>
+                  <div className="text-base sm:text-lg font-semibold">{m.value}</div>
+                  <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
                 </Card>
               ))}
             </div>
@@ -248,9 +248,9 @@ function AnalyticsPage() {
                 </div>
               </Card>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3">
               {["Grade 9 attendance declined by 4% this month.", "Monday attendance remains the lowest across the school.", "34 students remain below the attendance threshold."].map((item) => (
-                <Card key={item} className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
+                <Card key={item} className="p-2.5 sm:p-3"><p className="text-[11px] sm:text-xs text-muted-foreground">{item}</p></Card>
               ))}
             </div>
           </div>
@@ -258,18 +258,18 @@ function AnalyticsPage() {
 
         {/* ═══ ACADEMIC ═══ */}
         <TabsContent value="academic">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {academicMetrics.map((m) => (
-                <Card key={m.label} className="p-3 sm:p-4">
-                  <div className="text-[11px] text-muted-foreground mb-1">{m.label}</div>
-                  <div className="text-lg font-semibold">{m.value}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
+                <Card key={m.label} className="p-2.5 sm:p-3 lg:p-4">
+                  <div className="text-[10px] sm:text-[11px] text-muted-foreground mb-0.5 sm:mb-1">{m.label}</div>
+                  <div className="text-base sm:text-lg font-semibold">{m.value}</div>
+                  <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
                 </Card>
               ))}
             </div>
-            <Card className="p-4 sm:p-6">
-              <h4 className="text-base sm:text-lg font-semibold mb-3">Subject Performance Summary</h4>
+            <Card className="p-3 sm:p-4 lg:p-6">
+              <h4 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 sm:mb-3">Subject Performance Summary</h4>
               <div className="space-y-3">
                 {subjectSummary.map((s) => (
                   <div key={s.subject} className="rounded-xl border border-border/60 p-3">
@@ -287,9 +287,9 @@ function AnalyticsPage() {
                 ))}
               </div>
             </Card>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3">
               {["Mathematics remains the weakest subject.", "Class 8B requires intervention.", "Academic performance improved by 3% this term."].map((item) => (
-                <Card key={item} className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
+                <Card key={item} className="p-2.5 sm:p-3"><p className="text-[11px] sm:text-xs text-muted-foreground">{item}</p></Card>
               ))}
             </div>
           </div>
@@ -297,19 +297,19 @@ function AnalyticsPage() {
 
         {/* ═══ PARENT ENGAGEMENT ═══ */}
         <TabsContent value="parent">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {parentMetrics.map((m) => (
-                <Card key={m.label} className="p-3 sm:p-4">
-                  <div className="text-[11px] text-muted-foreground mb-1">{m.label}</div>
-                  <div className="text-lg font-semibold">{m.value}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
+                <Card key={m.label} className="p-2.5 sm:p-3 lg:p-4">
+                  <div className="text-[10px] sm:text-[11px] text-muted-foreground mb-0.5 sm:mb-1">{m.label}</div>
+                  <div className="text-base sm:text-lg font-semibold">{m.value}</div>
+                  <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
                 </Card>
               ))}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3">
               {["Grade 8 parent engagement is lowest.", "PTM participation improved by 9%.", "WhatsApp communication drives the highest engagement."].map((item) => (
-                <Card key={item} className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
+                <Card key={item} className="p-2.5 sm:p-3"><p className="text-[11px] sm:text-xs text-muted-foreground">{item}</p></Card>
               ))}
             </div>
           </div>
@@ -317,18 +317,18 @@ function AnalyticsPage() {
 
         {/* ═══ SCHOLARII ADOPTION ═══ */}
         <TabsContent value="adoption">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
               {adoptionMetrics.map((m) => (
-                <Card key={m.label} className="p-3 sm:p-4">
-                  <div className="text-[11px] text-muted-foreground mb-1">{m.label}</div>
-                  <div className="text-lg font-semibold">{m.value}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
+                <Card key={m.label} className="p-2.5 sm:p-3 lg:p-4">
+                  <div className="text-[10px] sm:text-[11px] text-muted-foreground mb-0.5 sm:mb-1">{m.label}</div>
+                  <div className="text-base sm:text-lg font-semibold">{m.value}</div>
+                  <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
                 </Card>
               ))}
             </div>
-            <Card className="p-4 sm:p-6">
-              <h4 className="text-base sm:text-lg font-semibold mb-3">Usage Trends</h4>
+            <Card className="p-3 sm:p-4 lg:p-6">
+              <h4 className="text-sm sm:text-base lg:text-lg font-semibold mb-2 sm:mb-3">Usage Trends</h4>
               <div className="space-y-2">
                 {adoptionGrowth.map((item) => (
                   <div key={item.label} className="rounded-xl border border-border/60 p-3">
@@ -343,9 +343,9 @@ function AnalyticsPage() {
                 ))}
               </div>
             </Card>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3">
               {["Teacher AI usage increased by 18%.", "Over 1,200 hours saved through automation.", "Staff adoption remains above 90%."].map((item) => (
-                <Card key={item} className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">{item}</p></Card>
+                <Card key={item} className="p-2.5 sm:p-3"><p className="text-[11px] sm:text-xs text-muted-foreground">{item}</p></Card>
               ))}
             </div>
           </div>
@@ -353,13 +353,13 @@ function AnalyticsPage() {
 
         {/* ═══ AI INSIGHTS ═══ */}
         <TabsContent value="insights">
-          <Card className="p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-4">AI Insights</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+          <Card className="p-3 sm:p-4 lg:p-6">
+            <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4">AI Insights</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
               {analyticsInsights.map((insight) => (
-                <Card key={insight.title} className="p-3 sm:p-4">
-                  <p className="text-xs font-medium">{insight.title}</p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">{insight.detail}</p>
+                <Card key={insight.title} className="p-2.5 sm:p-3 lg:p-4">
+                  <p className="text-[11px] sm:text-xs font-medium">{insight.title}</p>
+                  <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-muted-foreground">{insight.detail}</p>
                 </Card>
               ))}
             </div>

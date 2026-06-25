@@ -438,3 +438,8 @@ html, body {
     100% { left: 115%; opacity: 0; }
   }
 }
+
+/* Safe area for mobile keyboards */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
