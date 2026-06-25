@@ -38,6 +38,7 @@ import {
   DEFAULT_PRINCIPAL_NOTIFICATIONS, DEFAULT_PRINCIPAL_SECURITY, DEFAULT_PRINCIPAL_APPEARANCE,
 } from "@/lib/scholarii/principal-profile-mock-data";
 import type { PrincipalProfileTab } from "@/lib/scholarii/principal-profile-mock-data";
+import { ScrollableTabs } from "@/components/scholarii/ScrollableTabs";
 
 export const Route = createFileRoute("/app/profile")({ component: ProfilePage });
 
