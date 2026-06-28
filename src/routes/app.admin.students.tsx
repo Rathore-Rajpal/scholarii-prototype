@@ -227,11 +227,11 @@ function AdminStudentsPage() {
               <UserPlus className="mr-2 size-4" />
               Add Student
             </Button>
-            <Button className="hidden md:inline-flex" variant="ghost" onClick={() => toast.success("Student list exported")}>
+            <Button variant="ghost" onClick={() => toast.success("Student list exported")}>
               <Download className="mr-2 size-4" />
               Export List
             </Button>
-            <Button className="hidden md:inline-flex" variant="ghost" onClick={() => toast.info("Import students selected")}>
+            <Button variant="ghost" onClick={() => toast.info("Import students selected")}>
               <Upload className="mr-2 size-4" />
               Import Students
             </Button>
@@ -239,7 +239,7 @@ function AdminStudentsPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
         <KpiTile label="Total Students" value="430" icon={Users} />
         <KpiTile label="Present Today" value="392" hint="91.2%" icon={UserCheck} tone="green" />
         <KpiTile
@@ -258,7 +258,7 @@ function AdminStudentsPage() {
           <h2 className="text-lg font-semibold">Student Directory</h2>
           <p className="mt-1 text-sm text-gray-500">Search and manage all student records.</p>
           <Tabs defaultValue="all" className="mt-4">
-            <TabsList className="flex h-auto overflow-x-auto rounded-none bg-transparent p-0 scrollbar-hide">
+            <TabsList className="flex h-auto overflow-x-auto rounded-none bg-transparent p-0 scrollbar-hide border-b border-gray-200">
               <DirectoryTab value="all">
                 <ClipboardList className="mr-1.5 size-4" />
                 All Students
@@ -533,7 +533,7 @@ function StudentTable({
   onView: (student: Student) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100">
+    <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
       <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
@@ -602,11 +602,14 @@ function StudentCards({
   onView: (student: Student) => void;
 }) {
   return (
-    <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {students.map((student) => (
         <Card key={student.id} className="border-gray-100 p-4 shadow-sm">
-          <StudentIdentity student={student} />
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+          <div className="flex items-center justify-between gap-3">
+            <StudentIdentity student={student} />
+            <StatusPill status={student.risk} />
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
             <Info label="Admission No" value={student.admissionNo} />
             <Info label="Class" value={`${student.grade}-${student.section}`} />
             <Info label="Attendance" value={`${student.attendance}%`} />
@@ -657,8 +660,8 @@ function StatusPill({ status }: { status: Risk | FeeStatus }) {
 function RiskTable({ onView }: { onView: (name: string) => void }) {
   return (
     <>
-      <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
-        <Table>
+    <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
+      <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
             <TableHead>Student</TableHead>
@@ -700,30 +703,28 @@ function RiskTable({ onView }: { onView: (name: string) => void }) {
             </TableRow>
           ))}
         </TableBody>
-        </Table>
-      </div>
-      <div className="space-y-3 lg:hidden">
-        {atRiskStudents.map(([name, admissionNo, grade, attendance, feeStatus, reason]) => (
-          <div key={admissionNo} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-medium text-gray-900">{name}</div>
-                <div className="text-xs text-gray-500">{admissionNo}</div>
-              </div>
-              <StatusPill status="At Risk" />
+      </Table>
+    </div>
+    <div className="space-y-3 lg:hidden">
+      {atRiskStudents.map(([name, admissionNo, grade, attendance, feeStatus, reason]) => (
+        <div key={admissionNo} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-gray-900">{name}</div>
+              <div className="text-xs text-gray-500">{admissionNo}</div>
             </div>
-            <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
-              <Info label="Class" value={grade} />
-              <Info label="Attendance" value={`${attendance}%`} />
-              <Info label="Fee Status" value={feeStatus} />
-              <Info label="Reason" value={reason} />
-            </div>
-            <Button className="w-full border-violet-200 text-violet-600" variant="outline" onClick={() => onView(name)}>
-              View Details
-            </Button>
+            <StatusPill status="At Risk" />
           </div>
-        ))}
-      </div>
+          <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+            <Info label="Class" value={grade} />
+            <Info label="Attendance" value={`${attendance}%`} />
+            <Info label="Fee Status" value={feeStatus} />
+            <Info label="Reason" value={reason} />
+          </div>
+          <Button className="w-full border-violet-200 text-violet-600" size="sm" variant="outline" onClick={() => onView(name)}>View Details</Button>
+        </div>
+      ))}
+    </div>
     </>
   );
 }
@@ -769,13 +770,11 @@ function StudentDetailModal({ student, onClose }: { student: Student; onClose: (
   return createPortal(
     <>
       <div
-        className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
+      className="fixed inset-0 bg-black/60 z-[9999] flex items-end lg:items-center justify-center p-0 lg:p-4"
         onMouseDown={(event) => event.target === event.currentTarget && onClose()}
       >
-        <div className="relative max-h-[90vh] w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl lg:max-h-[85vh] lg:max-w-[700px] lg:rounded-2xl">
-          <div className="flex justify-center pb-1 pt-3 lg:hidden">
-            <div className="h-1 w-10 rounded-full bg-gray-300" />
-          </div>
+        <div className="bg-white w-full lg:max-w-[700px] rounded-t-2xl lg:rounded-2xl max-h-[90vh] lg:max-h-[85vh] overflow-y-auto relative shadow-2xl">
+          <div className="lg:hidden flex justify-center pt-3 pb-1"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4 lg:px-6">
             <div>
               <h2 className="text-lg font-semibold">{student.name} — Student Record</h2>
@@ -797,13 +796,13 @@ function StudentDetailModal({ student, onClose }: { student: Student; onClose: (
             <div className="border-b border-gray-100 px-4 pt-3 lg:px-6">
               <TabsList className="flex h-auto overflow-x-auto bg-gray-50 scrollbar-hide">
                 {["Profile", "Attendance", "Fees", "Documents", "Activity"].map((tab) => (
-                  <TabsTrigger key={tab} value={tab.toLowerCase()} className="min-w-fit whitespace-nowrap">
+                  <TabsTrigger key={tab} value={tab.toLowerCase()}>
                     {tab}
                   </TabsTrigger>
                 ))}
               </TabsList>
             </div>
-            <div className="max-h-[72vh] overflow-y-auto p-4 lg:p-6">
+            <div className="p-4 lg:p-6">
               <TabsContent value="profile" className="mt-0">
                 <ProfileTab student={student} />
               </TabsContent>
@@ -913,7 +912,7 @@ function AttendanceTab({ student }: { student: Student }) {
         <MiniStat label="Attendance %" value={`${student.attendance}%`} />
       </div>
       <SectionTitle>Last 30 Days</SectionTitle>
-      <div className="h-44 rounded-xl border border-gray-100 p-3 lg:h-56">
+      <div className="h-56 rounded-xl border border-gray-100 p-3">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={attendanceTrend}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
@@ -1036,10 +1035,8 @@ function CollectFeeModal({ student, onClose }: { student: Student; onClose: () =
       className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-h-[85vh] lg:max-w-md lg:rounded-2xl lg:p-6">
-        <div className="mb-2 flex justify-center lg:hidden">
-          <div className="h-1 w-10 rounded-full bg-gray-300" />
-        </div>
+      <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-w-md lg:rounded-2xl lg:p-6">
+        <div className="lg:hidden mb-3 flex justify-center"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold">Collect Fee</h3>
@@ -1124,9 +1121,8 @@ function CompactTable({
   rows: readonly (readonly string[])[];
 }) {
   return (
-    <>
-      <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
-        <Table>
+    <div className="overflow-hidden rounded-xl border border-gray-100">
+      <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
             {headers.map((header) => (
@@ -1143,20 +1139,8 @@ function CompactTable({
             </TableRow>
           ))}
         </TableBody>
-        </Table>
-      </div>
-      <div className="space-y-3 lg:hidden">
-        {rows.map((row, rowIndex) => (
-          <div key={`${row[0]}-${rowIndex}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {row.map((cell, cellIndex) => (
-                <Info key={`${cell}-${cellIndex}`} label={headers[cellIndex] ?? "Field"} value={cell} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
+      </Table>
+    </div>
   );
 }
 

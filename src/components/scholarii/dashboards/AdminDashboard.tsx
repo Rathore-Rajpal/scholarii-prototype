@@ -277,43 +277,11 @@ function StatusBadge({ children, className }: { children: string; className: str
   );
 }
 
-function DashboardMobileCard({
-  title,
-  subtitle,
-  status,
-  statusClass,
-  details,
-  actionLabel,
-}: {
-  title: string;
-  subtitle: string;
-  status: string;
-  statusClass: string;
-  details: [string, string][];
-  actionLabel?: string;
-}) {
+function DashboardInfo({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div>
-          <div className="text-sm font-medium text-gray-900">{title}</div>
-          <div className="text-xs text-gray-500">{subtitle}</div>
-        </div>
-        <StatusBadge className={statusClass}>{status}</StatusBadge>
-      </div>
-      <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
-        {details.map(([label, value]) => (
-          <div key={`${label}-${value}`}>
-            <div className="text-gray-400">{label}</div>
-            <div className="font-medium text-gray-900">{value}</div>
-          </div>
-        ))}
-      </div>
-      {actionLabel && (
-        <Button className="w-full border-violet-200 text-violet-600" variant="outline">
-          {actionLabel}
-        </Button>
-      )}
+    <div>
+      <div className="text-gray-400">{label}</div>
+      <div className="font-medium text-gray-900">{value}</div>
     </div>
   );
 }
@@ -590,9 +558,7 @@ function KpiModalDialog({ modal, onClose }: { modal: KpiModal; onClose: () => vo
         className="bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl w-full lg:max-w-[650px] max-h-[90vh] lg:max-h-[85vh] overflow-y-auto relative"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="lg:hidden flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        </div>
+        <div className="lg:hidden flex justify-center pt-3 pb-1"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
         <button aria-label="Close modal" className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600" onClick={onClose}>
           <X size={18} />
         </button>
@@ -638,22 +604,28 @@ function KpiModalDialog({ modal, onClose }: { modal: KpiModal; onClose: () => vo
           </div>
           <div className="space-y-3 lg:hidden">
             {modal.rows.map((row, rowIndex) => (
-              <div key={`${modal.tableTitle}-card-${rowIndex}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+              <div key={`${modal.tableTitle}-mobile-${rowIndex}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">{row[0]}</div>
-                    <div className="text-xs text-gray-500">{row[1]}</div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-sm font-semibold text-violet-700">
+                      {row[0].split(" ").map((part) => part[0]).slice(0, 2).join("")}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{row[0]}</div>
+                      <div className="text-xs text-gray-500">{row[1] ?? ""}</div>
+                    </div>
                   </div>
-                  {row[4] && <StatusBadge className="bg-violet-50 text-violet-700">{row[4]}</StatusBadge>}
+                  {row[4] && <ModalCell value={row[4]} />}
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {row.slice(2).map((cell, cellIndex) => (
-                    <div key={`${cell}-${cellIndex}`}>
-                      <div className="text-gray-400">{modal.columns[cellIndex + 2] ?? "Field"}</div>
-                      <div className="font-medium text-gray-900">{cell}</div>
+                <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+                  {row.slice(1, 5).map((cell, index) => (
+                    <div key={`${cell}-${index}`}>
+                      <div className="text-gray-400">{modal.columns[index + 1] ?? "Detail"}</div>
+                      <div className="font-medium text-gray-900"><ModalCell value={cell} /></div>
                     </div>
                   ))}
                 </div>
+                <button className="w-full rounded-lg border border-violet-200 py-2 text-sm font-medium text-violet-600">View Details</button>
               </div>
             ))}
           </div>
@@ -1136,9 +1108,7 @@ function QuickActionModal({ action, onClose }: { action: QuickActionTitle; onClo
         className="bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl w-full lg:max-w-[650px] max-h-[90vh] lg:max-h-[85vh] overflow-y-auto relative"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="lg:hidden flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        </div>
+        <div className="lg:hidden flex justify-center pt-3 pb-1"><div className="h-1 w-10 rounded-full bg-gray-300" /></div>
         <button aria-label="Close modal" className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600" onClick={onClose}>
           <X size={18} />
         </button>
@@ -1213,6 +1183,23 @@ export function AdminDashboard() {
       />
 
       <div className="relative pb-3">
+        <div className="grid grid-cols-2 gap-3 lg:hidden">
+          {kpiCards.map((card) => (
+            <button key={card.label} type="button" onClick={() => setSelectedKpiLabel(card.label)} className="text-left">
+              <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-xs font-medium text-gray-500">{card.label}</div>
+                  <span className={`mt-1 size-2 rounded-full ${toneClasses[card.dot].dot}`} />
+                </div>
+                <div className="mt-3 text-2xl font-bold tracking-tight text-gray-950">{card.value}</div>
+                <div className="mt-2 text-xs font-medium">
+                  <span className={card.deltaTone}>{card.delta}</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="hidden lg:block">
         <Button
           variant="ghost"
           size="icon"
@@ -1267,6 +1254,7 @@ export function AdminDashboard() {
         >
           <ChevronRight className="size-4" />
         </Button>
+        </div>
       </div>
 
       {selectedKpiModal && <KpiModalDialog modal={selectedKpiModal} onClose={() => setSelectedKpiLabel(null)} />}
@@ -1288,7 +1276,7 @@ export function AdminDashboard() {
               className={`rounded-xl border bg-white p-3 text-left shadow-sm transition hover:border-violet-400 hover:shadow-md lg:p-5 ${toneClasses[action.tone].border}`}
             >
               <IconBubble icon={action.icon} tone={action.tone} />
-              <div className="mt-3 text-sm font-semibold text-gray-950 lg:mt-4">{action.title}</div>
+              <div className="mt-3 text-sm font-semibold text-gray-950 lg:mt-4 lg:text-base">{action.title}</div>
               <div className="mt-1 hidden text-sm text-gray-500 lg:block">{action.desc}</div>
             </button>
           ))}
@@ -1455,18 +1443,25 @@ export function AdminDashboard() {
           </div>
           <div className="mt-4 space-y-3 lg:hidden">
             {admissions.map((row) => (
-              <DashboardMobileCard
-                key={row.student}
-                title={row.student}
-                subtitle={row.grade}
-                status={row.status}
-                statusClass={row.badge}
-                details={[
-                  ["Parent", row.parent],
-                  ["Grade", row.grade],
-                ]}
-                actionLabel="View Details"
-              />
+              <div key={row.student} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-sm font-semibold text-violet-700">
+                      {row.student.split(" ").map((part) => part[0]).slice(0, 2).join("")}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{row.student}</div>
+                      <div className="text-xs text-gray-500">{row.parent}</div>
+                    </div>
+                  </div>
+                  <StatusBadge className={row.badge}>{row.status}</StatusBadge>
+                </div>
+                <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+                  <DashboardInfo label="Grade" value={row.grade} />
+                  <DashboardInfo label="Parent" value={row.parent} />
+                </div>
+                <button className="w-full rounded-lg border border-violet-200 py-2 text-sm font-medium text-violet-600">View Details</button>
+              </div>
             ))}
           </div>
         </div>
@@ -1499,17 +1494,24 @@ export function AdminDashboard() {
           </div>
           <div className="mt-4 space-y-3 lg:hidden">
             {visitors.map((row) => (
-              <DashboardMobileCard
-                key={`${row.name}-${row.time}`}
-                title={row.name}
-                subtitle={row.purpose}
-                status={row.status}
-                statusClass={row.badge}
-                details={[
-                  ["Purpose", row.purpose],
-                  ["Time In", row.time],
-                ]}
-              />
+              <div key={`${row.name}-${row.time}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-sm font-semibold text-violet-700">
+                      {row.name.split(" ").map((part) => part[0]).slice(0, 2).join("")}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{row.name}</div>
+                      <div className="text-xs text-gray-500">{row.purpose}</div>
+                    </div>
+                  </div>
+                  <StatusBadge className={row.badge}>{row.status}</StatusBadge>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <DashboardInfo label="Time In" value={row.time} />
+                  <DashboardInfo label="Purpose" value={row.purpose} />
+                </div>
+              </div>
             ))}
           </div>
           <div className="mt-4 text-right">

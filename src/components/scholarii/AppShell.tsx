@@ -5,7 +5,7 @@ import {
   Home, Users, Briefcase, BookOpen, DollarSign, BarChart3, Settings,
   ClipboardCheck, ClipboardList, GraduationCap, CalendarClock, UserCircle, Building2,
   ShieldCheck, FileText, ScrollText, Calendar, Wallet, MessageSquare, Baby,
-  LogOut, Bell, Moon, Sun, Search, Menu, BookMarked, User as StudentIcon, Users as ParentIcon,
+  LogOut, Bell, Moon, Sun, Search, ArrowLeft, Menu, BookMarked, User as StudentIcon, Users as ParentIcon,
   BrainCircuit,
   CheckCircle2,
   ChevronLeft, ChevronRight, ChevronDown,
@@ -19,7 +19,6 @@ import {
   Calendar as LeaveIcon, Coins, GraduationCap as GradeIcon, Send as PaperPlaneIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -504,6 +503,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const nav = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
@@ -605,6 +605,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
   }, [chatMessages, chatThinking]);
+
+  useEffect(() => {
+    document.body.classList.toggle("admin-portal-active", user?.role === "admin");
+    return () => document.body.classList.remove("admin-portal-active");
+  }, [user?.role]);
 
   if (!user) return null;
   const isStudent = user.role === "student";
@@ -855,7 +860,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="sticky top-0 z-30 h-14 flex items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-4 lg:px-6 border-b border-border bg-background/80 backdrop-blur">
+        <header className="sticky top-0 z-30 h-14 flex items-center justify-between gap-2 px-4 sm:h-16 sm:gap-3 lg:px-6 border-b border-border bg-background/80 backdrop-blur">
           <Button
             variant="ghost"
             size="icon"
@@ -865,6 +870,36 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <Menu size={22} />
           </Button>
+
+          {!searchOpen && (
+            <button
+              type="button"
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Open search"
+            >
+              <Search size={20} />
+            </button>
+          )}
+
+          {searchOpen && (
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-[300] bg-white flex items-center gap-2 px-3 py-2 border-b border-gray-200 h-[56px]">
+              <button
+                type="button"
+                onClick={() => setSearchOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+                aria-label="Close search"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search students, teachers, classes..."
+                className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              />
+            </div>
+          )}
 
           <Button
             variant="ghost"
@@ -879,15 +914,16 @@ export function AppShell({ children }: { children: ReactNode }) {
               <ChevronRight className="size-5" />
             )}
           </Button>
-          <div className="flex-1 max-w-md hidden lg:flex">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input placeholder="Search students, teachers, classes..." className="pl-9 bg-muted/40 border-0" />
+          <div className="hidden lg:flex flex-1 justify-center px-6">
+            <div className="relative w-full max-w-[480px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search students, teachers, classes..."
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              />
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="sm:hidden" title="Search">
-            <Search className="size-5" />
-          </Button>
 
           {isStudent && (
             <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-border bg-muted/40 transition-all">
@@ -1261,10 +1297,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4 sm:mb-6">
+    <div className="mb-4 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-4 sm:mb-6">
       <div className="min-w-0">
-        <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">{title}</h1>
-        {subtitle && <p className="text-muted-foreground mt-0.5 text-sm sm:mt-1">{subtitle}</p>}
+        <h1 className="text-xl font-bold tracking-tight lg:text-2xl">{title}</h1>
+        {subtitle && <p className="text-gray-500 mt-0.5 text-sm sm:mt-1">{subtitle}</p>}
       </div>
       {action}
     </div>
