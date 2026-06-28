@@ -280,12 +280,12 @@ function WeeklyTab({ data }: { data: TimetableData }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
         {days.map((d) => (
           <button
             key={d.day}
             onClick={() => setSelectedDay(selectedDay === d.day ? null : d.day)}
-            className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+            className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 flex-shrink-0 ${
               selectedDay === d.day
                 ? "bg-violet-500/10 text-violet-600 shadow-sm"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -296,52 +296,54 @@ function WeeklyTab({ data }: { data: TimetableData }) {
         ))}
       </div>
 
-      <Card className="p-4 overflow-x-auto">
-        <div className="min-w-[700px]">
-          <div className="grid grid-cols-[100px_repeat(6,1fr)] gap-px bg-border/50 rounded-xl overflow-hidden">
-            <div className="bg-muted/50 p-3 text-xs font-medium text-muted-foreground">Period</div>
-            {days.map((d) => (
-              <div
-                key={d.day}
-                className={`bg-muted/50 p-3 text-xs font-medium text-center ${
-                  selectedDay === d.day ? "text-violet-600 bg-violet-500/5" : ""
-                }`}
-              >
-                {d.shortDay}
-              </div>
-            ))}
-
-            {allPeriods.map((pi) => (
-              <>
-                <div key={`period-${pi}`} className="bg-card p-3 text-xs font-medium text-muted-foreground">
-                  P{pi + 1}
+      <div className="-mx-4 px-4 md:mx-0 md:px-0">
+        <Card className="p-4 overflow-x-auto">
+          <div className="min-w-[700px]">
+            <div className="grid grid-cols-[100px_repeat(6,1fr)] gap-px bg-border/50 rounded-xl overflow-hidden">
+              <div className="bg-muted/50 p-3 text-xs font-medium text-muted-foreground sticky left-0 z-10">Period</div>
+              {days.map((d) => (
+                <div
+                  key={d.day}
+                  className={`bg-muted/50 p-3 text-xs font-medium text-center ${
+                    selectedDay === d.day ? "text-violet-600 bg-violet-500/5" : ""
+                  }`}
+                >
+                  {d.shortDay}
                 </div>
-                {days.map((d) => {
-                  const period = d.periods[pi];
-                  if (!period) return <div key={`${d.day}-${pi}`} className="bg-card p-2" />;
-                  return (
-                    <button
-                      key={`${d.day}-${pi}`}
-                      onClick={() => setSelectedCell({ ...period, day: d.day })}
-                      className="bg-card p-2 text-left hover:bg-muted/50 transition-colors group"
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <div
-                          className="size-2 rounded-full shrink-0"
-                          style={{ backgroundColor: data.getSubjectColor(period.subject) }}
-                        />
-                        <span className="text-xs font-medium truncate">{period.subject}</span>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground truncate">{period.teacher}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">{period.room}</p>
-                    </button>
-                  );
-                })}
-              </>
-            ))}
+              ))}
+
+              {allPeriods.map((pi) => (
+                <>
+                  <div key={`period-${pi}`} className="bg-card p-3 text-xs font-medium text-muted-foreground sticky left-0 z-10">
+                    P{pi + 1}
+                  </div>
+                  {days.map((d) => {
+                    const period = d.periods[pi];
+                    if (!period) return <div key={`${d.day}-${pi}`} className="bg-card p-2" />;
+                    return (
+                      <button
+                        key={`${d.day}-${pi}`}
+                        onClick={() => setSelectedCell({ ...period, day: d.day })}
+                        className="bg-card p-2 text-left hover:bg-muted/50 transition-colors group min-w-[100px] align-top"
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <div
+                            className="size-2 rounded-full shrink-0"
+                            style={{ backgroundColor: data.getSubjectColor(period.subject) }}
+                          />
+                          <span className="text-xs font-medium">{period.subject}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">{period.teacher}</p>
+                        <p className="text-[10px] text-muted-foreground">{period.room}</p>
+                      </button>
+                    );
+                  })}
+                </>
+              ))}
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="p-5">
@@ -601,7 +603,7 @@ function CalendarTab({ data }: { data: TimetableData }) {
         <MetricCard icon={Timer} label="Days Left (Term 2)" value={`${data.daysRemainingInTerm}`} tone="warning" />
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
         {EVENT_CATEGORIES.map((cat) => {
           const Icon = cat.icon;
           const isActive = activeFilter === cat.key;
@@ -609,7 +611,7 @@ function CalendarTab({ data }: { data: TimetableData }) {
             <button
               key={cat.key}
               onClick={() => setActiveFilter(cat.key)}
-              className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 border ${
+              className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 border flex-shrink-0 ${
                 isActive
                   ? `${cat.color} shadow-sm`
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent"
@@ -952,7 +954,7 @@ export function TimetablePage() {
       <div className="sticky top-0 z-30 -mx-1 px-1 pt-1 pb-3">
         <div className="relative">
           <div className="absolute inset-0 bg-background/80 backdrop-blur-xl rounded-2xl" />
-          <div className="relative flex gap-1 overflow-x-auto scrollbar-none rounded-2xl border border-border/60 bg-card p-1.5 shadow-sm">
+          <div className="relative flex gap-1 overflow-x-auto scrollbar-none flex-nowrap -mx-4 px-4 md:mx-0 md:px-0 rounded-2xl border border-border/60 bg-card p-1.5 shadow-sm">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -960,7 +962,7 @@ export function TimetablePage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  className={`relative flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 flex-shrink-0 ${
                     isActive
                       ? "bg-violet-500/10 text-violet-600 shadow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"

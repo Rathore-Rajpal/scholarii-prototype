@@ -300,7 +300,7 @@ function AssignmentsPage() {
             <ClipboardList className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
               Assignments
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -340,12 +340,12 @@ function AssignmentsPage() {
 
       {/* Filters & Search */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
           {FILTER_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setFilter(opt.value)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              className={`flex-shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 filter === opt.value
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -355,7 +355,7 @@ function AssignmentsPage() {
             </button>
           ))}
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
@@ -437,14 +437,14 @@ function MetricCard({
     <Card className="relative overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm">
       <CardContent className="p-4">
         <div className={`absolute -right-3 -top-3 h-16 w-16 rounded-full bg-gradient-to-br ${accent} opacity-10 blur-xl`} />
-        <div className="relative flex items-start justify-between">
+        <div className="flex items-center justify-between w-full">
           <div className="space-y-1">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {label}
             </p>
             <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
           </div>
-          <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${accent} shadow-lg`}>
+          <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${accent} shadow-lg flex-shrink-0`}>
             {icon}
           </div>
         </div>

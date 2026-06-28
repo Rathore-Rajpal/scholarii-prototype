@@ -227,11 +227,11 @@ function AdminStudentsPage() {
               <UserPlus className="mr-2 size-4" />
               Add Student
             </Button>
-            <Button variant="ghost" onClick={() => toast.success("Student list exported")}>
+            <Button className="hidden md:inline-flex" variant="ghost" onClick={() => toast.success("Student list exported")}>
               <Download className="mr-2 size-4" />
               Export List
             </Button>
-            <Button variant="ghost" onClick={() => toast.info("Import students selected")}>
+            <Button className="hidden md:inline-flex" variant="ghost" onClick={() => toast.info("Import students selected")}>
               <Upload className="mr-2 size-4" />
               Import Students
             </Button>
@@ -239,7 +239,7 @@ function AdminStudentsPage() {
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
         <KpiTile label="Total Students" value="430" icon={Users} />
         <KpiTile label="Present Today" value="392" hint="91.2%" icon={UserCheck} tone="green" />
         <KpiTile
@@ -258,7 +258,7 @@ function AdminStudentsPage() {
           <h2 className="text-lg font-semibold">Student Directory</h2>
           <p className="mt-1 text-sm text-gray-500">Search and manage all student records.</p>
           <Tabs defaultValue="all" className="mt-4">
-            <TabsList className="h-auto rounded-none bg-transparent p-0">
+            <TabsList className="flex h-auto overflow-x-auto rounded-none bg-transparent p-0 scrollbar-hide">
               <DirectoryTab value="all">
                 <ClipboardList className="mr-1.5 size-4" />
                 All Students
@@ -296,11 +296,16 @@ function AdminStudentsPage() {
                   setView={setView}
                 />
 
-                {view === "table" ? (
-                  <StudentTable students={visibleStudents} onView={setSelectedStudent} />
-                ) : (
+                <div className="lg:hidden">
                   <StudentCards students={visibleStudents} onView={setSelectedStudent} />
-                )}
+                </div>
+                <div className="hidden lg:block">
+                  {view === "table" ? (
+                    <StudentTable students={visibleStudents} onView={setSelectedStudent} />
+                  ) : (
+                    <StudentCards students={visibleStudents} onView={setSelectedStudent} />
+                  )}
+                </div>
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4 text-sm">
                   <span className="text-gray-500">
@@ -391,7 +396,7 @@ function DirectoryTab({ value, children }: { value: string; children: ReactNode 
   return (
     <TabsTrigger
       value={value}
-      className="rounded-none border-b-2 border-transparent px-4 py-3 shadow-none data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 data-[state=active]:shadow-none"
+      className="min-w-fit whitespace-nowrap rounded-none border-b-2 border-transparent px-3 py-2.5 text-xs shadow-none data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 data-[state=active]:shadow-none lg:px-5 lg:py-3 lg:text-sm"
     >
       {children}
     </TabsTrigger>
@@ -474,7 +479,7 @@ function Filters({
       <Button variant="ghost" size="sm" onClick={clear}>
         Clear Filters
       </Button>
-      <div className="ml-auto flex rounded-lg border border-gray-200 p-1">
+      <div className="ml-auto hidden rounded-lg border border-gray-200 p-1 lg:flex">
         <Button
           size="sm"
           variant={view === "table" ? "secondary" : "ghost"}
@@ -597,7 +602,7 @@ function StudentCards({
   onView: (student: Student) => void;
 }) {
   return (
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
       {students.map((student) => (
         <Card key={student.id} className="border-gray-100 p-4 shadow-sm">
           <StudentIdentity student={student} />
@@ -651,8 +656,9 @@ function StatusPill({ status }: { status: Risk | FeeStatus }) {
 
 function RiskTable({ onView }: { onView: (name: string) => void }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100">
-      <Table>
+    <>
+      <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
+        <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
             <TableHead>Student</TableHead>
@@ -694,8 +700,31 @@ function RiskTable({ onView }: { onView: (name: string) => void }) {
             </TableRow>
           ))}
         </TableBody>
-      </Table>
-    </div>
+        </Table>
+      </div>
+      <div className="space-y-3 lg:hidden">
+        {atRiskStudents.map(([name, admissionNo, grade, attendance, feeStatus, reason]) => (
+          <div key={admissionNo} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-medium text-gray-900">{name}</div>
+                <div className="text-xs text-gray-500">{admissionNo}</div>
+              </div>
+              <StatusPill status="At Risk" />
+            </div>
+            <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+              <Info label="Class" value={grade} />
+              <Info label="Attendance" value={`${attendance}%`} />
+              <Info label="Fee Status" value={feeStatus} />
+              <Info label="Reason" value={reason} />
+            </div>
+            <Button className="w-full border-violet-200 text-violet-600" variant="outline" onClick={() => onView(name)}>
+              View Details
+            </Button>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -740,11 +769,14 @@ function StudentDetailModal({ student, onClose }: { student: Student; onClose: (
   return createPortal(
     <>
       <div
-        className="fixed inset-0 z-[9999] grid place-items-center overflow-y-auto bg-black/60 p-4"
+        className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
         onMouseDown={(event) => event.target === event.currentTarget && onClose()}
       >
-        <div className="my-6 w-full max-w-[700px] overflow-hidden rounded-2xl bg-white shadow-2xl">
-          <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+        <div className="relative max-h-[90vh] w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl lg:max-h-[85vh] lg:max-w-[700px] lg:rounded-2xl">
+          <div className="flex justify-center pb-1 pt-3 lg:hidden">
+            <div className="h-1 w-10 rounded-full bg-gray-300" />
+          </div>
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4 lg:px-6">
             <div>
               <h2 className="text-lg font-semibold">{student.name} — Student Record</h2>
               <p className="text-sm text-gray-500">
@@ -754,7 +786,7 @@ function StudentDetailModal({ student, onClose }: { student: Student; onClose: (
             <button
               type="button"
               onClick={onClose}
-              className="grid size-9 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+              className="absolute right-4 top-4 grid size-9 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700"
               aria-label="Close student record"
             >
               <X className="size-5" />
@@ -762,16 +794,16 @@ function StudentDetailModal({ student, onClose }: { student: Student; onClose: (
           </div>
 
           <Tabs defaultValue="profile">
-            <div className="border-b border-gray-100 px-6 pt-3">
-              <TabsList className="h-auto bg-gray-50">
+            <div className="border-b border-gray-100 px-4 pt-3 lg:px-6">
+              <TabsList className="flex h-auto overflow-x-auto bg-gray-50 scrollbar-hide">
                 {["Profile", "Attendance", "Fees", "Documents", "Activity"].map((tab) => (
-                  <TabsTrigger key={tab} value={tab.toLowerCase()}>
+                  <TabsTrigger key={tab} value={tab.toLowerCase()} className="min-w-fit whitespace-nowrap">
                     {tab}
                   </TabsTrigger>
                 ))}
               </TabsList>
             </div>
-            <div className="max-h-[70vh] overflow-y-auto p-6">
+            <div className="max-h-[72vh] overflow-y-auto p-4 lg:p-6">
               <TabsContent value="profile" className="mt-0">
                 <ProfileTab student={student} />
               </TabsContent>
@@ -881,7 +913,7 @@ function AttendanceTab({ student }: { student: Student }) {
         <MiniStat label="Attendance %" value={`${student.attendance}%`} />
       </div>
       <SectionTitle>Last 30 Days</SectionTitle>
-      <div className="h-56 rounded-xl border border-gray-100 p-3">
+      <div className="h-44 rounded-xl border border-gray-100 p-3 lg:h-56">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={attendanceTrend}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
@@ -1001,10 +1033,13 @@ function ActivityTab({ student }: { student: Student }) {
 function CollectFeeModal({ student, onClose }: { student: Student; onClose: () => void }) {
   return createPortal(
     <div
-      className="fixed inset-0 z-[10000] grid place-items-center bg-black/60 p-4"
+      className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-h-[85vh] lg:max-w-md lg:rounded-2xl lg:p-6">
+        <div className="mb-2 flex justify-center lg:hidden">
+          <div className="h-1 w-10 rounded-full bg-gray-300" />
+        </div>
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold">Collect Fee</h3>
@@ -1021,7 +1056,7 @@ function CollectFeeModal({ student, onClose }: { student: Student; onClose: () =
         </div>
         <div className="mt-5 space-y-4">
           <FormField label="Fee Type">
-            <select className="h-10 w-full rounded-lg border border-gray-200 px-3 text-sm">
+            <select className="min-h-[44px] w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base lg:text-sm">
               <option>Tuition Fee</option>
               <option>Transport Fee</option>
               <option>Activity Fee</option>
@@ -1031,7 +1066,7 @@ function CollectFeeModal({ student, onClose }: { student: Student; onClose: () =
             <Input defaultValue="4800" type="number" />
           </FormField>
           <FormField label="Payment Mode">
-            <select className="h-10 w-full rounded-lg border border-gray-200 px-3 text-sm">
+            <select className="min-h-[44px] w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base lg:text-sm">
               <option>Cash</option>
               <option>UPI</option>
               <option>Card</option>
@@ -1039,7 +1074,7 @@ function CollectFeeModal({ student, onClose }: { student: Student; onClose: () =
             </select>
           </FormField>
         </div>
-        <div className="mt-6 flex justify-end gap-2">
+        <div className="mt-6 grid grid-cols-2 gap-3">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
@@ -1089,8 +1124,9 @@ function CompactTable({
   rows: readonly (readonly string[])[];
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100">
-      <Table>
+    <>
+      <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
+        <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
             {headers.map((header) => (
@@ -1107,8 +1143,20 @@ function CompactTable({
             </TableRow>
           ))}
         </TableBody>
-      </Table>
-    </div>
+        </Table>
+      </div>
+      <div className="space-y-3 lg:hidden">
+        {rows.map((row, rowIndex) => (
+          <div key={`${row[0]}-${rowIndex}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {row.map((cell, cellIndex) => (
+                <Info key={`${cell}-${cellIndex}`} label={headers[cellIndex] ?? "Field"} value={cell} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 

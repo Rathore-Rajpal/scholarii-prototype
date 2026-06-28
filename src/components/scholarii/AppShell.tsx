@@ -503,7 +503,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout, theme, toggleTheme, parentMode, setParentMode } = useAuth();
   const nav = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
@@ -748,7 +748,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                         <Link
                           key={child.to}
                           to={child.to}
-                          onClick={() => setMobileOpen(false)}
+                          onClick={() => setDrawerOpen(false)}
                           className={cn(
                             "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
                             active
@@ -783,7 +783,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={it_.to}
               to={it_.to}
-              onClick={() => setMobileOpen(false)}
+              onClick={() => setDrawerOpen(false)}
               className={cn(
                 "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
                 active
@@ -837,10 +837,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         {SidebarInner(sidebarOpen)}
       </aside>
 
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 h-full w-72 bg-sidebar border-r border-sidebar-border animate-in-up overflow-hidden">
+      {drawerOpen && (
+        <div className="fixed inset-0 z-[999] md:hidden">
+          <div className="fixed inset-0 bg-black/60" onClick={() => setDrawerOpen(false)} />
+          <aside className="fixed left-0 top-0 h-full w-64 bg-sidebar border-r border-sidebar-border overflow-hidden animate-in slide-in-from-left duration-300">
+            <button
+              onClick={() => setDrawerOpen(false)}
+              className="absolute top-4 right-4 z-20 size-8 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+              title="Close navigation"
+            >
+              <X className="size-5" />
+            </button>
             {SidebarInner(true)}
           </aside>
         </div>
@@ -852,11 +859,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
-            onClick={() => setMobileOpen(true)}
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+            onClick={() => setDrawerOpen(true)}
             title="Open navigation"
           >
-            <Menu className="size-5" />
+            <Menu size={22} />
           </Button>
 
           <Button
@@ -872,7 +879,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <ChevronRight className="size-5" />
             )}
           </Button>
-          <div className="flex-1 max-w-md hidden sm:block">
+          <div className="flex-1 max-w-md hidden lg:flex">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input placeholder="Search students, teachers, classes..." className="pl-9 bg-muted/40 border-0" />
@@ -950,7 +957,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main key={showParent ? "p" : "s"} className="flex-1 overflow-y-auto p-4 lg:p-8 animate-in-up transition-all duration-300">{children}</main>
+        <main key={showParent ? "p" : "s"} className="flex-1 overflow-y-auto px-4 pt-4 lg:p-8 animate-in-up transition-all duration-300">{children}</main>
       </div>
 
       {/* ─── Right Sidebar (shared content) ─── */}

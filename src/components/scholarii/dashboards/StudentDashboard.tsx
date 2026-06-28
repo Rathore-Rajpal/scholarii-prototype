@@ -120,30 +120,30 @@ function MetricCard({
   };
 
   return (
-    <Card className="relative overflow-hidden p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+    <Card className="relative overflow-hidden p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between min-h-[130px] md:min-h-[120px]">
       <div className={`absolute inset-0 bg-gradient-to-br ${toneStyles[tone]} opacity-50`} />
       <div className="relative flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">{label}</p>
-          <p className="text-3xl font-bold tracking-tight">{value}</p>
-          <div className="flex items-center gap-1.5">
-            {trend === "up" && <TrendingUp className="size-3.5 text-emerald-500" />}
-            {trend === "down" && <TrendingDown className="size-3.5 text-red-500" />}
-            <span
-              className={`text-xs font-medium ${
-                trend === "up"
-                  ? "text-emerald-600"
-                  : trend === "down"
-                    ? "text-red-500"
-                    : "text-muted-foreground"
-              }`}
-            >
-              {trendLabel}
-            </span>
-          </div>
+        <p className="text-xs font-medium text-muted-foreground leading-tight max-w-[70%]">{label}</p>
+        <div className={`rounded-xl p-2 ${iconBg[tone]} flex-shrink-0 ml-2`}>
+          <Icon className="size-4" />
         </div>
-        <div className={`rounded-xl p-2.5 ${iconBg[tone]}`}>
-          <Icon className="size-5" />
+      </div>
+      <div className="relative mt-2">
+        <p className="text-3xl font-bold text-foreground leading-tight break-words">{value}</p>
+        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+          {trend === "up" && <TrendingUp className="size-3 text-emerald-500 shrink-0" />}
+          {trend === "down" && <TrendingDown className="size-3 text-red-500 shrink-0" />}
+          <span
+            className={`text-xs font-medium ${
+              trend === "up"
+                ? "text-emerald-600"
+                : trend === "down"
+                  ? "text-red-500"
+                  : "text-muted-foreground"
+            }`}
+          >
+            {trendLabel}
+          </span>
         </div>
       </div>
     </Card>
@@ -174,7 +174,7 @@ function SectionHeader({ title, action }: { title: string; action?: React.ReactN
 function AcademicHealthOverview({ data }: { data: StudentDashboardData }) {
   return (
     <section>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricCard
           icon={ClipboardCheck}
           label="Attendance"
@@ -216,11 +216,11 @@ function PerformanceAnalytics({ data }: { data: StudentDashboardData }) {
   return (
     <section>
       <SectionHeader title="Performance Analytics" />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="p-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="p-5 w-full">
           <h3 className="font-semibold mb-1">Academic Performance Trend</h3>
           <p className="text-sm text-muted-foreground mb-4">Average marks over the last 6 months</p>
-          <ChartContainer config={performanceChartConfig} className="h-[240px] w-full">
+          <ChartContainer config={performanceChartConfig} className="h-[200px] sm:h-[240px] w-full">
             <LineChart data={data.monthlyPerformance} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} className="text-muted-foreground" />
@@ -238,10 +238,10 @@ function PerformanceAnalytics({ data }: { data: StudentDashboardData }) {
           </ChartContainer>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-5 w-full">
           <h3 className="font-semibold mb-1">Subject Performance</h3>
           <p className="text-sm text-muted-foreground mb-4">Marks percentage by subject</p>
-          <ChartContainer config={subjectChartConfig} className="h-[240px] w-full">
+          <ChartContainer config={subjectChartConfig} className="h-[200px] sm:h-[240px] w-full">
             <BarChart data={data.subjectScores} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" vertical={false} />
               <XAxis dataKey="subject" tick={{ fontSize: 11 }} className="text-muted-foreground" />
@@ -685,15 +685,18 @@ export function StudentDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             {getGreeting()}, {firstName} 👋
           </h1>
-          <p className="text-muted-foreground mt-1">Ready for another productive day?</p>
+          <p className="text-sm text-muted-foreground">Ready for another productive day?</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {dateStr} · Grade {data.student.grade} · Section {data.student.section} · Roll {data.student.roll}
+          </p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right hidden sm:block">
+        <div className="hidden md:flex items-center gap-4">
+          <div className="text-right">
             <p className="text-sm font-medium">{dateStr}</p>
             <p className="text-xs text-muted-foreground">
               Grade {data.student.grade} · Section {data.student.section} · Roll {data.student.roll}
@@ -712,7 +715,7 @@ export function StudentDashboard() {
       <div className="sticky top-0 z-30 -mx-1 px-1 pt-1 pb-3">
         <div className="relative">
           <div className="absolute inset-0 bg-background/80 backdrop-blur-xl rounded-2xl" />
-          <div className="relative flex gap-1 overflow-x-auto scrollbar-none rounded-2xl border border-border/60 bg-card p-1.5 shadow-sm">
+          <div className="relative flex gap-1 overflow-x-auto scrollbar-none flex-nowrap -mx-4 px-4 md:mx-0 md:px-0 rounded-2xl border border-border/60 bg-card p-1.5 shadow-sm">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -720,7 +723,7 @@ export function StudentDashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  className={`relative flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 flex-shrink-0 ${
                     isActive
                       ? "bg-violet-500/10 text-violet-600 shadow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"

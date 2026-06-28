@@ -35,15 +35,15 @@ function KPICardComponent({ kpi, onClick }: KPICardProps) {
     <Card
       onClick={() => onClick(kpi.id)}
       className={cn(
-        "min-w-80 p-5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-2",
+        "min-w-0 lg:min-w-80 p-3 lg:p-5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-2",
         statusColors[kpi.status]
       )}
     >
-      <div className="space-y-4">
+      <div className="space-y-3 lg:space-y-4">
         {/* Header: Title + Status */}
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="text-sm font-medium text-muted-foreground">{kpi.title}</h3>
+            <h3 className="text-xs lg:text-sm font-medium text-muted-foreground">{kpi.title}</h3>
           </div>
           <div className={cn("size-2.5 rounded-full", statusIndicatorColors[kpi.status])} />
         </div>
@@ -51,11 +51,11 @@ function KPICardComponent({ kpi, onClick }: KPICardProps) {
         {/* Main Value + Percentage */}
         <div className="space-y-1">
           <div className="text-2xl font-bold tracking-tight">{kpi.value}</div>
-          <div className="text-sm text-muted-foreground">{kpi.percentageLabel}</div>
+          <div className="text-xs lg:text-sm text-muted-foreground">{kpi.percentageLabel}</div>
         </div>
 
         {/* Trend Indicator */}
-        <div className={cn("flex items-center gap-1.5 text-sm font-medium", trendColor)}>
+        <div className={cn("flex items-center gap-1.5 text-xs lg:text-sm font-medium", trendColor)}>
           {kpi.trend.direction === "up" ? (
             <TrendingUp className="size-4" />
           ) : kpi.trend.direction === "down" ? (
@@ -71,7 +71,7 @@ function KPICardComponent({ kpi, onClick }: KPICardProps) {
 
         {/* Mini Sparkline */}
         {sparklineDataForChart.length > 0 && (
-          <div className="h-12 -mx-2">
+          <div className="hidden h-12 -mx-2 lg:block">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={sparklineDataForChart}>
                 <defs>
@@ -127,10 +127,16 @@ export function KPICarousel({ kpis, onKPIClick }: KPICarouselProps) {
 
   return (
     <div className="relative group">
+      <div className="grid grid-cols-2 gap-3 lg:hidden">
+        {kpis.map((kpi) => (
+          <KPICardComponent key={kpi.id} kpi={kpi} onClick={onKPIClick} />
+        ))}
+      </div>
+
       {/* Carousel Container with scrollbar hidden */}
       <div
         ref={containerRef}
-        className="flex gap-4 overflow-x-auto scroll-smooth"
+        className="hidden lg:flex gap-4 overflow-x-auto scroll-smooth"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -158,7 +164,7 @@ export function KPICarousel({ kpis, onKPIClick }: KPICarouselProps) {
         <Button
           variant="outline"
           size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 rounded-full shadow-lg bg-background"
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 hidden rounded-full shadow-lg bg-background lg:inline-flex"
           onClick={() => scroll("left")}
         >
           <ChevronLeft className="size-4" />
@@ -170,7 +176,7 @@ export function KPICarousel({ kpis, onKPIClick }: KPICarouselProps) {
         <Button
           variant="outline"
           size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 rounded-full shadow-lg bg-background"
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 hidden rounded-full shadow-lg bg-background lg:inline-flex"
           onClick={() => scroll("right")}
         >
           <ChevronRight className="size-4" />

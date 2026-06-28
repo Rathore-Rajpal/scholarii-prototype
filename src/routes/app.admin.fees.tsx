@@ -191,17 +191,17 @@ function AdminFeesPage() {
             >
               💰 Collect Fee
             </Button>
-            <Button variant="ghost" onClick={() => toast.info("Fee report opened")}>
+            <Button className="hidden md:inline-flex" variant="ghost" onClick={() => toast.info("Fee report opened")}>
               📊 Fee Report
             </Button>
-            <Button variant="ghost" onClick={() => toast.info("Import dues selected")}>
+            <Button className="hidden md:inline-flex" variant="ghost" onClick={() => toast.info("Import dues selected")}>
               📥 Import Dues
             </Button>
           </div>
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
         <KpiTile
           label="Total Collected (Month)"
           value="Rs 4,82,000"
@@ -218,7 +218,7 @@ function AdminFeesPage() {
       <Card className="mt-6 overflow-hidden border-gray-100 bg-white shadow-sm">
         <Tabs defaultValue="collect">
           <div className="border-b border-gray-100 px-5 pt-5">
-            <TabsList className="h-auto flex-wrap rounded-none bg-transparent p-0">
+            <TabsList className="flex h-auto overflow-x-auto rounded-none bg-transparent p-0 scrollbar-hide">
               <FeeTab value="collect">💳 Collect & Transactions</FeeTab>
               <FeeTab value="pending">⚠️ Pending & Overdue</FeeTab>
               <FeeTab value="structure">📊 Fee Structure</FeeTab>
@@ -227,7 +227,7 @@ function AdminFeesPage() {
           </div>
 
           <TabsContent value="collect" className="m-0 p-5">
-            <div className="grid gap-5 xl:grid-cols-[65fr_35fr]">
+            <div className="flex flex-col gap-5 xl:grid xl:grid-cols-[65fr_35fr]">
               <SectionCard>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <SectionHeading title="Today's Transactions" />
@@ -255,7 +255,7 @@ function AdminFeesPage() {
           </TabsContent>
 
           <TabsContent value="pending" className="m-0 p-5">
-            <div className="grid gap-5 xl:grid-cols-[60fr_40fr]">
+            <div className="flex flex-col gap-5 xl:grid xl:grid-cols-[60fr_40fr]">
               <SectionCard>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <SectionHeading title="All Pending Fees" />
@@ -266,7 +266,7 @@ function AdminFeesPage() {
                     Bulk Remind All
                   </Button>
                 </div>
-                <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
+                <div className="mt-4 hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
                   <Table>
                     <TableHeader className="bg-gray-50">
                       <TableRow>
@@ -300,6 +300,24 @@ function AdminFeesPage() {
                     </TableBody>
                   </Table>
                 </div>
+                <div className="mt-4 space-y-3 lg:hidden">
+                  {pendingRows.map((row, index) => (
+                    <MobileRowCard
+                      key={`${row[0]}-${index}`}
+                      title={row[0]}
+                      subtitle={row[1]}
+                      status={row[5]}
+                      details={[
+                        ["Fee Type", row[2]],
+                        ["Amount", row[3]],
+                        ["Due Since", row[4]],
+                        ["Overdue", row[5]],
+                      ]}
+                      actionLabel="Send Reminder"
+                      onAction={() => toast.success("Reminder sent to parent")}
+                    />
+                  ))}
+                </div>
                 <Pager page={pendingPage} pages={pendingPages} setPage={setPendingPage} />
               </SectionCard>
 
@@ -311,7 +329,7 @@ function AdminFeesPage() {
                   <SummaryRow label="15-30 days" value="Rs 54,000 (14 students)" tone="amber" />
                   <SummaryRow label="0-15 days" value="Rs 42,000 (12 students)" tone="yellow" />
                 </div>
-                <div className="mt-6 h-72 rounded-xl border border-gray-100 p-3">
+                <div className="mt-6 h-44 rounded-xl border border-gray-100 p-3 lg:h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={gradePending}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
@@ -332,7 +350,7 @@ function AdminFeesPage() {
               amounts.
             </div>
             <SectionCard>
-              <div className="overflow-hidden rounded-xl border border-gray-100">
+              <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
                 <Table>
                   <TableHeader className="bg-gray-50">
                     <TableRow>
@@ -363,6 +381,24 @@ function AdminFeesPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+              <div className="space-y-3 lg:hidden">
+                {feeStructure.map((row) => (
+                  <MobileRowCard
+                    key={row.grade}
+                    title={row.grade}
+                    subtitle={row.annual}
+                    status="Active"
+                    details={[
+                      ["Tuition", row.tuition],
+                      ["Exam", row.exam],
+                      ["Transport", row.transport],
+                      ["Library", row.library],
+                      ["Sports", row.sports],
+                      ["Annual", row.annual],
+                    ]}
+                  />
+                ))}
               </div>
             </SectionCard>
           </TabsContent>
@@ -459,7 +495,7 @@ function FeeTab({ value, children }: { value: string; children: ReactNode }) {
   return (
     <TabsTrigger
       value={value}
-      className="rounded-none border-b-2 border-transparent px-4 py-3 shadow-none data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 data-[state=active]:shadow-none"
+      className="min-w-fit whitespace-nowrap rounded-none border-b-2 border-transparent px-3 py-2.5 text-xs shadow-none data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 data-[state=active]:shadow-none lg:px-5 lg:py-3 lg:text-sm"
     >
       {children}
     </TabsTrigger>
@@ -480,8 +516,9 @@ function SectionHeading({ title }: { title: string }) {
 
 function TransactionsTable({ rows }: { rows: string[][] }) {
   return (
-    <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
-      <Table>
+    <>
+      <div className="mt-4 hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
+        <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
             {["Student", "Class", "Fee Type", "Amount", "Mode", "Time", "Receipt", "Action"].map(
@@ -512,8 +549,27 @@ function TransactionsTable({ rows }: { rows: string[][] }) {
             </TableRow>
           ))}
         </TableBody>
-      </Table>
-    </div>
+        </Table>
+      </div>
+      <div className="mt-4 space-y-3 lg:hidden">
+        {rows.map((row) => (
+          <MobileRowCard
+            key={row[6]}
+            title={row[0]}
+            subtitle={row[1]}
+            status={row[4]}
+            details={[
+              ["Fee Type", row[2]],
+              ["Amount", row[3]],
+              ["Time", row[5]],
+              ["Receipt", row[6]],
+            ]}
+            actionLabel="Reprint"
+            onAction={() => toast.success("Receipt sent to printer")}
+          />
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -659,7 +715,7 @@ function FeeForm({
         <textarea
           value={draft.remarks}
           onChange={(event) => setField("remarks", event.target.value)}
-          className="min-h-20 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100"
+          className="min-h-20 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100 lg:text-sm"
         />
       </Field>
       <Button type="submit" className="w-full bg-violet-600 text-white hover:bg-violet-700">
@@ -703,8 +759,9 @@ function SummaryRow({
 
 function ReceiptsTable({ rows }: { rows: string[][] }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100">
-      <Table>
+    <>
+      <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
+        <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
             {[
@@ -749,8 +806,28 @@ function ReceiptsTable({ rows }: { rows: string[][] }) {
             </TableRow>
           ))}
         </TableBody>
-      </Table>
-    </div>
+        </Table>
+      </div>
+      <div className="space-y-3 lg:hidden">
+        {rows.map((row) => (
+          <MobileRowCard
+            key={row[0]}
+            title={row[1]}
+            subtitle={row[0]}
+            status={row[7]}
+            details={[
+              ["Class", row[2]],
+              ["Amount", row[3]],
+              ["Type", row[4]],
+              ["Mode", row[5]],
+              ["Date", row[6]],
+            ]}
+            actionLabel="Download PDF"
+            onAction={() => toast.success("PDF downloaded")}
+          />
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -805,10 +882,13 @@ function CollectFeeModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] grid place-items-center overflow-y-auto bg-black/60 p-4"
+      className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="my-6 w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-h-[85vh] lg:max-w-xl lg:rounded-2xl lg:p-6">
+        <div className="mb-2 flex justify-center lg:hidden">
+          <div className="h-1 w-10 rounded-full bg-gray-300" />
+        </div>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-900">Collect Fee</h2>
           <button
@@ -829,10 +909,13 @@ function CollectFeeModal({
 function ReceiptPreviewModal({ draft, onClose }: { draft: ReceiptDraft; onClose: () => void }) {
   return createPortal(
     <div
-      className="fixed inset-0 z-[10000] grid place-items-center bg-black/60 p-4"
+      className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-h-[85vh] lg:max-w-md lg:rounded-2xl lg:p-6">
+        <div className="mb-2 flex justify-center lg:hidden">
+          <div className="h-1 w-10 rounded-full bg-gray-300" />
+        </div>
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Receipt Preview</h2>
@@ -856,12 +939,12 @@ function ReceiptPreviewModal({ draft, onClose }: { draft: ReceiptDraft; onClose:
           {draft.reference && <Info label="Reference" value={draft.reference} />}
           <Info label="Date" value={draft.date} />
         </div>
-        <div className="mt-5 flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <Button className="w-full" variant="outline" onClick={onClose}>
             Close
           </Button>
           <Button
-            className="bg-violet-600 text-white hover:bg-violet-700"
+            className="w-full bg-violet-600 text-white hover:bg-violet-700"
             onClick={() => toast.success("Receipt sent to printer")}
           >
             <Download className="mr-2 size-4" />
@@ -879,6 +962,49 @@ function Info({ label, value }: { label: string; value: string }) {
     <div className="mb-2 flex justify-between gap-4">
       <span className="text-gray-500">{label}</span>
       <span className="font-medium text-gray-900">{value}</span>
+    </div>
+  );
+}
+
+function MobileRowCard({
+  title,
+  subtitle,
+  status,
+  details,
+  actionLabel,
+  onAction,
+}: {
+  title: string;
+  subtitle: string;
+  status: string;
+  details: [string, string][];
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-medium text-gray-900">{title}</div>
+          <div className="text-xs text-gray-500">{subtitle}</div>
+        </div>
+        <span className="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700">
+          {status}
+        </span>
+      </div>
+      <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+        {details.map(([label, value]) => (
+          <div key={`${label}-${value}`}>
+            <div className="text-gray-400">{label}</div>
+            <div className="font-medium text-gray-900">{value}</div>
+          </div>
+        ))}
+      </div>
+      {actionLabel && (
+        <Button className="w-full border-violet-200 text-violet-600" variant="outline" onClick={onAction}>
+          {actionLabel}
+        </Button>
+      )}
     </div>
   );
 }

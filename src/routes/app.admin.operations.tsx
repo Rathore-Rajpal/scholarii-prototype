@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/admin/operations")({
   component: AdminOperationsPage,
@@ -39,7 +40,7 @@ type MaintenanceIssue = {
 };
 
 const fieldClass =
-  "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100";
+  "min-h-[44px] w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-base text-gray-700 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100 lg:text-sm";
 
 const classes = Array.from({ length: 10 }, (_, grade) => [`Class ${grade + 1}A`, `Class ${grade + 1}B`]).flat();
 
@@ -212,7 +213,7 @@ function AdminOperationsPage() {
         subtitle="Manage schedules, print documents, exams, transport, inventory and maintenance"
         action={
           <div className="flex flex-wrap gap-2">
-            <GhostButton icon={Printer}>Print Timetable</GhostButton>
+            <GhostButton icon={Printer} primary>Print Timetable</GhostButton>
             <GhostButton icon={FileText}>Export Attendance Sheet</GhostButton>
             <GhostButton icon={ClipboardList}>Daily Report</GhostButton>
           </div>
@@ -285,13 +286,13 @@ function AdminOperationsPage() {
 
       <section className="mt-6">
         <SectionHeading title="Print & Export Center" subtitle="Generate and download documents for daily office use" />
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-3">
           {printCards.map((card) => (
             <button key={card.title} type="button" onClick={() => setActiveModal(card.modal)} className="rounded-xl border border-gray-100 bg-white p-5 text-left shadow-sm transition hover:border-violet-300 hover:shadow-md">
               <IconBubble icon={card.icon} tone={card.tone} />
               <h3 className="mt-4 font-semibold text-gray-900">{card.title}</h3>
-              <p className="mt-1 min-h-10 text-sm text-gray-500">{card.desc}</p>
-              <span className="mt-4 inline-flex rounded-full border border-violet-200 px-3 py-1.5 text-sm font-semibold text-violet-600">{card.button}</span>
+              <p className="mt-1 hidden min-h-10 text-sm text-gray-500 lg:block">{card.desc}</p>
+              <span className="mt-4 hidden rounded-full border border-violet-200 px-3 py-1.5 text-sm font-semibold text-violet-600 lg:inline-flex">{card.button}</span>
             </button>
           ))}
         </div>
@@ -367,7 +368,7 @@ function AdminOperationsPage() {
       <section className="mt-6">
         <SectionHeading title="Transport Coordination" subtitle="Today's bus routes and driver status" />
         <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[65fr_35fr]">
-          <TableCard headers={["Route No", "Areas Covered", "Driver", "Capacity", "Status"]} rows={routes} />
+            <TableCard headers={["Route No", "Areas Covered", "Driver", "Capacity", "Status"]} rows={routes} />
           <SectionCard>
             <h3 className="font-semibold text-gray-900">Driver Attendance Today</h3>
             <div className="mt-4 space-y-3">
@@ -404,6 +405,22 @@ function AdminOperationsPage() {
                 </tr>
               ))}
             </Table>
+            <div className="space-y-3 lg:hidden">
+              {stock.map((row) => (
+                <MobileRowCard
+                  key={row[0]}
+                  title={row[0]}
+                  subtitle={row[1]}
+                  status={row[4]}
+                  details={[
+                    ["Current", row[2]],
+                    ["Minimum", row[3]],
+                  ]}
+                  actionLabel={row[5] === "Reorder" ? "Reorder" : undefined}
+                  onAction={() => setReorderItem({ name: row[0] })}
+                />
+              ))}
+            </div>
           </SectionCard>
           <SectionCard>
             <h3 className="font-semibold text-gray-900">Pending Requisitions</h3>
@@ -440,6 +457,24 @@ function AdminOperationsPage() {
                 </tr>
               ))}
             </Table>
+            <div className="space-y-3 lg:hidden">
+              {maintenanceIssues.map((row) => (
+                <MobileRowCard
+                  key={`${row.issue}-${row.location}`}
+                  title={row.issue}
+                  subtitle={row.location}
+                  status={row.status}
+                  details={[
+                    ["Reported By", row.reportedBy],
+                    ["Date", row.date],
+                    ["Priority", row.priority],
+                    ["Status", row.status],
+                  ]}
+                  actionLabel="View Details"
+                  onAction={() => setSelectedIssue(row)}
+                />
+              ))}
+            </div>
           </SectionCard>
           <SectionCard>
             <h3 className="font-semibold text-gray-900">Log New Maintenance Request</h3>
@@ -474,9 +509,9 @@ function SectionCard({ children, className = "" }: { children: ReactNode; classN
   return <section className={`rounded-xl border border-gray-100 bg-white p-5 shadow-sm ${className}`}>{children}</section>;
 }
 
-function GhostButton({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
+function GhostButton({ icon: Icon, children, primary = false }: { icon: LucideIcon; children: ReactNode; primary?: boolean }) {
   return (
-    <Button variant="outline" className="rounded-full border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
+    <Button variant="outline" className={cn("rounded-full border-gray-200 bg-white text-gray-700 hover:bg-gray-50", !primary && "hidden md:inline-flex")}>
       <Icon className="mr-2 size-4" />
       {children}
     </Button>
@@ -511,19 +546,73 @@ function TableCard({ headers, rows }: { headers: string[]; rows: string[][] }) {
           </tr>
         ))}
       </Table>
+      <div className="space-y-3 lg:hidden">
+        {rows.map((row) => (
+          <MobileRowCard
+            key={row[0]}
+            title={row[0]}
+            subtitle={row[1]}
+            status={row[row.length - 1]}
+            details={headers.slice(2, -1).map((header, index) => [header, row[index + 2]] as [string, string])}
+          />
+        ))}
+      </div>
     </SectionCard>
   );
 }
 
 function Table({ headers, children }: { headers: string[]; children: ReactNode }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="hidden overflow-x-auto lg:block">
       <table className="w-full min-w-[760px] text-left">
         <thead className="text-xs uppercase text-gray-400">
           <tr>{headers.map((header) => <th key={header} className="px-4 py-3 font-semibold">{header}</th>)}</tr>
         </thead>
         <tbody>{children}</tbody>
       </table>
+    </div>
+  );
+}
+
+function MobileRowCard({
+  title,
+  subtitle,
+  status,
+  details,
+  actionLabel,
+  onAction,
+}: {
+  title: string;
+  subtitle: string;
+  status: string;
+  details: [string, string][];
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-medium text-gray-900">{title}</div>
+          <div className="text-xs text-gray-500">{subtitle}</div>
+        </div>
+        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClasses[status] ?? "bg-gray-100 text-gray-600"}`}>
+          {status}
+        </span>
+      </div>
+      <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+        {details.map(([label, value]) => (
+          <div key={`${label}-${value}`}>
+            <div className="text-gray-400">{label}</div>
+            <div className="font-medium text-gray-900">{value}</div>
+          </div>
+        ))}
+      </div>
+      {actionLabel && (
+        <Button className="w-full border-violet-200 text-violet-600" variant="outline" onClick={onAction}>
+          {actionLabel}
+        </Button>
+      )}
     </div>
   );
 }
@@ -555,8 +644,11 @@ function ModalFrame({ title, children, onClose }: { title: string; children: Rea
   }, []);
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/60 p-4" onClick={onClose}>
-      <div className="relative max-h-[85vh] w-full max-w-[550px] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center overflow-y-auto bg-black/60 p-0 lg:items-center lg:p-4" onClick={onClose}>
+      <div className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-h-[85vh] lg:max-w-[550px] lg:rounded-2xl lg:p-6" onClick={(event) => event.stopPropagation()}>
+        <div className="mb-2 flex justify-center lg:hidden">
+          <div className="h-1 w-10 rounded-full bg-gray-300" />
+        </div>
         <button type="button" aria-label="Close modal" className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600" onClick={onClose}>
           <X className="size-5" />
         </button>
@@ -696,9 +788,9 @@ function IssueModal({ issue, onClose }: { issue: MaintenanceIssue; onClose: () =
 
 function ModalActions({ onClose, submitLabel, onSubmit }: { onClose: () => void; submitLabel: string; onSubmit: () => void }) {
   return (
-    <div className="flex justify-end gap-2 pt-2">
-      <Button type="button" variant="outline" className="rounded-full" onClick={onClose}>Cancel</Button>
-      <Button type="button" className="rounded-full bg-violet-600 text-white hover:bg-violet-700" onClick={onSubmit}>{submitLabel}</Button>
+    <div className="grid grid-cols-2 gap-3 pt-2">
+      <Button type="button" variant="outline" className="w-full rounded-full" onClick={onClose}>Cancel</Button>
+      <Button type="button" className="w-full rounded-full bg-violet-600 text-white hover:bg-violet-700" onClick={onSubmit}>{submitLabel}</Button>
     </div>
   );
 }

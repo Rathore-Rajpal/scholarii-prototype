@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 const grades = Array.from({ length: 10 }, (_, index) => `Grade ${index + 1}`);
 const controlClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500";
+  "min-h-[44px] w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 lg:text-sm";
 
 export function NewAdmissionModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
@@ -28,13 +28,16 @@ export function NewAdmissionModal({ onClose }: { onClose: () => void }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/60 p-4"
+      className="fixed inset-0 z-[9999] flex items-end justify-center overflow-y-auto bg-black/60 p-0 lg:items-center lg:p-4"
       onClick={onClose}
     >
       <div
-        className="relative my-auto max-h-[85vh] w-full max-w-[650px] overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl lg:max-h-[85vh] lg:max-w-[650px] lg:rounded-2xl"
         onClick={(event) => event.stopPropagation()}
       >
+        <div className="flex justify-center pb-1 pt-3 lg:hidden">
+          <div className="h-1 w-10 rounded-full bg-gray-300" />
+        </div>
         <button
           aria-label="Close modal"
           className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
@@ -42,7 +45,7 @@ export function NewAdmissionModal({ onClose }: { onClose: () => void }) {
         >
           <X size={18} />
         </button>
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           <h2 className="mb-1 pr-10 text-xl font-semibold text-gray-900">New Student Admission</h2>
           <p className="mb-6 text-sm text-gray-500">Register a new student application</p>
           <Divider>Student Details</Divider>
@@ -126,14 +129,14 @@ export function NewAdmissionModal({ onClose }: { onClose: () => void }) {
           <div className="mt-6 grid grid-cols-2 gap-3">
             <button
               type="button"
-              className="rounded-lg border border-gray-200 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="w-full rounded-lg border border-gray-200 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
               onClick={onClose}
             >
               Cancel
             </button>
             <button
               type="button"
-              className="w-full rounded-lg bg-violet-600 px-6 py-2 text-sm font-medium text-white hover:bg-violet-700"
+              className="w-full rounded-lg bg-violet-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-violet-700"
               onClick={submit}
             >
               Submit Application
