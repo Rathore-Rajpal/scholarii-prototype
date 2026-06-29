@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   PieChart, Pie, Cell, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -14,7 +15,7 @@ import {
   DollarSign, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
   Search, Sparkles, Wallet, Users, CreditCard, ArrowUpRight, ArrowDownRight,
   BarChart3, Receipt, Bus, BookOpen, FileText, Building2, Zap, Calendar,
-  Wrench, Monitor, Palette, MoreHorizontal, Info, Trophy, Target,
+  Wrench, Monitor, Palette, MoreHorizontal, Info, Trophy, Target, SlidersHorizontal,
 } from "lucide-react";
 import { PageHeader } from "@/components/scholarii/AppShell";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,18 @@ export default function PrincipalFinancePage() {
   const [selectedQuarter, setSelectedQuarter] = useState("all");
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [sortBy, setSortBy] = useState<"amount" | "overdue" | "class">("amount");
+  const [isMobile, setIsMobile] = useState(false);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [mobileAcademicYear, setMobileAcademicYear] = useState("2025-26");
+  const [mobileMonth, setMobileMonth] = useState("all");
+  const [mobileClass, setMobileClass] = useState("all");
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const filteredDefaulters = useMemo(() => {
     let list = [...FEE_DEFAULTERS];
@@ -99,41 +112,156 @@ export default function PrincipalFinancePage() {
         title="Finance"
         subtitle="Financial Command Center — school-wide financial health at a glance."
         action={
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Select defaultValue="2025-26">
-              <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2024-25">2024-25</SelectItem>
-                <SelectItem value="2025-26">2025-26</SelectItem>
-                <SelectItem value="2026-27">2026-27</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select defaultValue="all" onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-28 h-8 text-xs"><SelectValue placeholder="Month" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Months</SelectItem>
-                {ALL_MONTHS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select defaultValue="all" onValueChange={setSelectedClass}>
-              <SelectTrigger className="w-24 h-8 text-xs"><SelectValue placeholder="Class" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Classes</SelectItem>
-                {ALL_CLASSES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-              <Input
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 w-40 pl-8 text-xs"
-              />
+          isMobile ? (
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8 w-full pl-8 text-xs"
+                />
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-xs shrink-0"
+                onClick={() => setFilterSheetOpen(true)}
+              >
+                <SlidersHorizontal className="size-3.5" />
+                Filters
+                {(selectedClass !== "all" || selectedMonth !== "all") && (
+                  <Badge className="ml-1 size-4 p-0 text-[9px] flex items-center justify-center bg-violet-500 text-white rounded-full">
+                    {[selectedClass !== "all", selectedMonth !== "all"].filter(Boolean).length}
+                  </Badge>
+                )}
+              </Button>
             </div>
-          </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Select defaultValue="2025-26">
+                <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2024-25">2024-25</SelectItem>
+                  <SelectItem value="2025-26">2025-26</SelectItem>
+                  <SelectItem value="2026-27">2026-27</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select defaultValue="all" onValueChange={setSelectedMonth}>
+                <SelectTrigger className="w-28 h-8 text-xs"><SelectValue placeholder="Month" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Months</SelectItem>
+                  {ALL_MONTHS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select defaultValue="all" onValueChange={setSelectedClass}>
+                <SelectTrigger className="w-24 h-8 text-xs"><SelectValue placeholder="Class" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Classes</SelectItem>
+                  {ALL_CLASSES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8 w-40 pl-8 text-xs"
+                />
+              </div>
+            </div>
+          )
         }
       />
+
+      {/* Mobile Filter Sheet */}
+      <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+        <SheetContent side="bottom" className="sm:hidden max-h-[85vh] overflow-y-auto">
+          <SheetHeader className="pb-2">
+            <SheetTitle className="text-base">Filters</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Academic Year</label>
+              <Select value={mobileAcademicYear} onValueChange={setMobileAcademicYear}>
+                <SelectTrigger className="w-full h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2024-25">2024-25</SelectItem>
+                  <SelectItem value="2025-26">2025-26</SelectItem>
+                  <SelectItem value="2026-27">2026-27</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Month</label>
+              <Select value={mobileMonth} onValueChange={(v) => { setMobileMonth(v); setSelectedMonth(v); }}>
+                <SelectTrigger className="w-full h-9 text-xs"><SelectValue placeholder="All Months" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Months</SelectItem>
+                  {ALL_MONTHS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Class</label>
+              <Select value={mobileClass} onValueChange={(v) => { setMobileClass(v); setSelectedClass(v); }}>
+                <SelectTrigger className="w-full h-9 text-xs"><SelectValue placeholder="All Classes" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Classes</SelectItem>
+                  {ALL_CLASSES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Quarter</label>
+              <Select value={selectedQuarter} onValueChange={setSelectedQuarter}>
+                <SelectTrigger className="w-full h-9 text-xs"><SelectValue placeholder="All Quarters" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Quarters</SelectItem>
+                  {ALL_QUARTERS.map((q) => <SelectItem key={q} value={q}>{q}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Department</label>
+              <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+                <SelectTrigger className="w-full h-9 text-xs"><SelectValue placeholder="All Departments" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  {ALL_DEPARTMENTS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 h-9 text-xs"
+                onClick={() => {
+                  setSelectedClass("all");
+                  setSelectedMonth("all");
+                  setSelectedQuarter("all");
+                  setSelectedDepartment("all");
+                  setMobileClass("all");
+                  setMobileMonth("all");
+                  setFilterSheetOpen(false);
+                }}
+              >
+                Clear Filters
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1 h-9 text-xs"
+                onClick={() => setFilterSheetOpen(false)}
+              >
+                Apply
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* KPI Cards */}
       <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
@@ -150,14 +278,16 @@ export default function PrincipalFinancePage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <Card className="p-2 sm:p-3 mb-6">
-          <TabsList className="h-9 overflow-x-auto scrollbar-hide">
-            <TabsTrigger value="fee-mgmt" className="text-xs gap-1.5"><CreditCard className="size-3" /> Fee Management</TabsTrigger>
-            <TabsTrigger value="income" className="text-xs gap-1.5"><DollarSign className="size-3" /> Income Overview</TabsTrigger>
-            <TabsTrigger value="expenses" className="text-xs gap-1.5"><Receipt className="size-3" /> Expenses</TabsTrigger>
-            <TabsTrigger value="salaries" className="text-xs gap-1.5"><Users className="size-3" /> Salaries & Payroll</TabsTrigger>
-            <TabsTrigger value="analytics" className="text-xs gap-1.5"><BarChart3 className="size-3" /> Financial Analytics</TabsTrigger>
-            <TabsTrigger value="ai" className="text-xs gap-1.5"><Sparkles className="size-3" /> AI Insights</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+            <TabsList className="h-9 sm:h-10 inline-flex w-auto gap-1 sm:gap-2 p-1">
+              <TabsTrigger value="fee-mgmt" className="text-xs gap-1.5 px-2.5 sm:px-3 whitespace-nowrap"><CreditCard className="size-3" /> Fee Management</TabsTrigger>
+              <TabsTrigger value="income" className="text-xs gap-1.5 px-2.5 sm:px-3 whitespace-nowrap"><DollarSign className="size-3" /> Income Overview</TabsTrigger>
+              <TabsTrigger value="expenses" className="text-xs gap-1.5 px-2.5 sm:px-3 whitespace-nowrap"><Receipt className="size-3" /> Expenses</TabsTrigger>
+              <TabsTrigger value="salaries" className="text-xs gap-1.5 px-2.5 sm:px-3 whitespace-nowrap"><Users className="size-3" /> Salaries & Payroll</TabsTrigger>
+              <TabsTrigger value="analytics" className="text-xs gap-1.5 px-2.5 sm:px-3 whitespace-nowrap"><BarChart3 className="size-3" /> Financial Analytics</TabsTrigger>
+              <TabsTrigger value="ai" className="text-xs gap-1.5 px-2.5 sm:px-3 whitespace-nowrap"><Sparkles className="size-3" /> AI Insights</TabsTrigger>
+            </TabsList>
+          </div>
         </Card>
 
         {/* ═══ FEE MANAGEMENT ═══ */}
@@ -187,7 +317,8 @@ export default function PrincipalFinancePage() {
                     </Select>
                   </div>
                 </div>
-                <div className="overflow-x-auto">
+                {/* Desktop table */}
+                <div className="overflow-x-auto hidden sm:block">
                     <table className="w-full min-w-[600px] text-xs">
                     <thead>
                       <tr className="border-b border-border/60">
@@ -223,6 +354,31 @@ export default function PrincipalFinancePage() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+                {/* Mobile card list */}
+                <div className="sm:hidden space-y-2">
+                  {filteredDefaulters.map((d) => (
+                    <div key={d.id} className="rounded-xl border border-border/60 p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="size-7">
+                            <AvatarFallback className="bg-violet-500 text-white text-[9px]">{d.studentName.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="text-xs font-semibold">{d.studentName}</div>
+                            <div className="text-[10px] text-muted-foreground">{d.class} &middot; {d.parentName}</div>
+                          </div>
+                        </div>
+                        <Badge className={cn("border-0 text-[9px] capitalize shrink-0", RISK_STYLES[d.riskLevel].bg, RISK_STYLES[d.riskLevel].text)}>
+                          {d.riskLevel}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-red-600">{fmtFull(d.amountDue)}</span>
+                        <span className="text-muted-foreground">{d.daysOverdue}d overdue</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </Card>
 
@@ -269,14 +425,14 @@ export default function PrincipalFinancePage() {
               {/* Pie Chart */}
               <Card className="p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Income Distribution</h4>
-                <div className="w-full h-[200px] sm:h-[300px]">
+                <div className="w-full h-[260px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={INCOME_SOURCES} dataKey="amount" nameKey="category" cx="50%" cy="50%" outerRadius={80} innerRadius={40} paddingAngle={3}>
+                      <Pie data={INCOME_SOURCES} dataKey="amount" nameKey="category" cx="50%" cy="45%" outerRadius={70} innerRadius={35} paddingAngle={3}>
                         {INCOME_SOURCES.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                       </Pie>
                       <Tooltip formatter={(v: number) => fmtFull(v)} />
-                      <Legend iconSize={8} wrapperStyle={{ fontSize: "10px" }} />
+                      <Legend iconSize={6} wrapperStyle={{ fontSize: "9px", display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "2px 8px", paddingTop: "4px" }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -303,7 +459,8 @@ export default function PrincipalFinancePage() {
             {/* Income Sources Table */}
             <Card className="p-4 sm:p-6">
               <h3 className="text-base sm:text-lg font-semibold mb-4">Income Sources</h3>
-              <div className="overflow-x-auto">
+              {/* Desktop table */}
+              <div className="overflow-x-auto hidden sm:block">
                 <table className="w-full min-w-[600px] text-xs">
                   <thead>
                     <tr className="border-b border-border/60">
@@ -338,6 +495,30 @@ export default function PrincipalFinancePage() {
                   </tbody>
                 </table>
               </div>
+              {/* Mobile card list */}
+              <div className="sm:hidden space-y-2">
+                {INCOME_SOURCES.map((src) => {
+                  const Icon = INCOME_ICON_MAP[src.icon] || Wallet;
+                  return (
+                    <div key={src.id} className="rounded-xl border border-border/60 p-3 flex items-center gap-3">
+                      <div className="size-8 rounded-lg bg-violet-500/10 grid place-items-center shrink-0">
+                        <Icon className="size-4 text-violet-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold truncate">{src.category}</div>
+                        <div className="text-[10px] text-muted-foreground">{src.contribution}% contribution</div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-xs font-semibold">{fmtFull(src.amount)}</div>
+                        <span className={cn("inline-flex items-center gap-0.5 text-[10px] font-medium", src.monthlyTrend >= 0 ? "text-emerald-600" : "text-red-600")}>
+                          {src.monthlyTrend >= 0 ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+                          {Math.abs(src.monthlyTrend)}%
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </Card>
           </div>
         </TabsContent>
@@ -356,14 +537,14 @@ export default function PrincipalFinancePage() {
               {/* Expense Breakdown */}
               <Card className="p-4 sm:p-6">
                 <h4 className="text-xs font-semibold mb-3">Expense Breakdown</h4>
-                <div className="w-full h-[200px] sm:h-[300px]">
+                <div className="w-full h-[260px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={EXPENSE_CATEGORIES} dataKey="actualSpend" nameKey="category" cx="50%" cy="50%" outerRadius={80} innerRadius={40} paddingAngle={3}>
+                      <Pie data={EXPENSE_CATEGORIES} dataKey="actualSpend" nameKey="category" cx="50%" cy="45%" outerRadius={70} innerRadius={35} paddingAngle={3}>
                         {EXPENSE_CATEGORIES.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                       </Pie>
                       <Tooltip formatter={(v: number) => fmtFull(v)} />
-                      <Legend iconSize={8} wrapperStyle={{ fontSize: "10px" }} />
+                      <Legend iconSize={6} wrapperStyle={{ fontSize: "9px", display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "2px 8px", paddingTop: "4px" }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -390,7 +571,8 @@ export default function PrincipalFinancePage() {
             {/* Expense Categories Table */}
             <Card className="p-4 sm:p-6">
               <h3 className="text-base sm:text-lg font-semibold mb-4">Expense Categories</h3>
-              <div className="overflow-x-auto">
+              {/* Desktop table */}
+              <div className="overflow-x-auto hidden sm:block">
                 <table className="w-full min-w-[600px] text-xs">
                   <thead>
                     <tr className="border-b border-border/60">
@@ -424,6 +606,29 @@ export default function PrincipalFinancePage() {
                   </tbody>
                 </table>
               </div>
+              {/* Mobile card list */}
+              <div className="sm:hidden space-y-2">
+                {EXPENSE_CATEGORIES.map((exp) => {
+                  const Icon = EXPENSE_ICON_MAP[exp.icon] || Wallet;
+                  return (
+                    <div key={exp.id} className="rounded-xl border border-border/60 p-3 flex items-center gap-3">
+                      <div className="size-8 rounded-lg bg-violet-500/10 grid place-items-center shrink-0">
+                        <Icon className="size-4 text-violet-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold truncate">{exp.category}</div>
+                        <div className="text-[10px] text-muted-foreground">Budget: {fmtFull(exp.budget)}</div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-xs font-semibold">{fmtFull(exp.actualSpend)}</div>
+                        <span className={cn("text-[10px] font-medium", exp.variance > 0 ? "text-red-600" : "text-emerald-600")}>
+                          {exp.variance > 0 ? "+" : ""}{exp.variance}%
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </Card>
           </div>
         </TabsContent>
@@ -431,7 +636,7 @@ export default function PrincipalFinancePage() {
         {/* ═══ SALARIES & PAYROLL ═══ */}
         <TabsContent value="salaries">
           <div className="space-y-6">
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="kpi-mobile-scroll grid-cols-2 lg:grid-cols-5 gap-3">
               <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Total Salary</div><div className="text-lg font-semibold">{fmtFull(FINANCE_KPI.totalSalaryExpense)}</div></Card>
               <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Teaching Staff</div><div className="text-lg font-semibold">{fmtFull(STAFF_SALARIES.filter((s) => s.staffType === "teaching").reduce((a, s) => a + s.salary, 0))}</div></Card>
               <Card className="p-3 sm:p-4"><div className="text-[10px] text-muted-foreground mb-1">Non-Teaching</div><div className="text-lg font-semibold">{fmtFull(STAFF_SALARIES.filter((s) => s.staffType === "non-teaching").reduce((a, s) => a + s.salary, 0))}</div></Card>
@@ -451,7 +656,8 @@ export default function PrincipalFinancePage() {
 
             <Card className="p-4 sm:p-6">
               <h3 className="text-base sm:text-lg font-semibold mb-4">Staff Payroll</h3>
-              <div className="overflow-x-auto">
+              {/* Desktop table */}
+              <div className="overflow-x-auto hidden sm:block">
                 <table className="w-full min-w-[600px] text-xs">
                   <thead>
                     <tr className="border-b border-border/60">
@@ -485,6 +691,28 @@ export default function PrincipalFinancePage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+              {/* Mobile card list */}
+              <div className="sm:hidden space-y-2">
+                {filteredSalaries.map((s) => (
+                  <div key={s.id} className="rounded-xl border border-border/60 p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="size-7">
+                          <AvatarFallback className="bg-violet-500 text-white text-[9px]">{s.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="text-xs font-semibold">{s.name}</div>
+                          <div className="text-[10px] text-muted-foreground">{s.department} &middot; {s.role}</div>
+                        </div>
+                      </div>
+                      <Badge className={cn("border-0 text-[9px] capitalize shrink-0", STATUS_STYLES[s.status].bg, STATUS_STYLES[s.status].text)}>
+                        {s.status}
+                      </Badge>
+                    </div>
+                    <div className="text-xs font-semibold">{fmtFull(s.salary)}</div>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>

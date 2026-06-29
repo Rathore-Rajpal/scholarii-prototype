@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { PageHeader } from "@/components/scholarii/AppShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   ArrowRight,
   CalendarClock,
@@ -219,6 +220,16 @@ function CommunicationPage() {
   const [metricPanelOpen, setMetricPanelOpen] = useState(false);
   const [selectedCommunication, setSelectedCommunication] = useState<CommunicationCard | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [isMobile, setIsMobile] = useState(false);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const kpis = [
     { label: "Announcements Sent", value: "128", hint: "This Month", icon: Megaphone, tone: "sky" as const },
@@ -293,30 +304,30 @@ function CommunicationPage() {
       </div>
 
       {/* Communication Health Summary */}
-      <Card className="p-4 sm:p-6 mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+      <Card className="p-3 sm:p-6 mb-6 sm:mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 sm:gap-4">
           <div className="max-w-xl">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="size-10 rounded-xl bg-emerald-500/10 grid place-items-center shrink-0">
-                <Sparkles className="size-5 text-emerald-500" />
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <div className="size-8 sm:size-10 rounded-xl bg-emerald-500/10 grid place-items-center shrink-0">
+                <Sparkles className="size-4 sm:size-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-xs font-semibold">Communication Health</p>
-                <div className="text-2xl sm:text-4xl font-semibold">86 / 100</div>
+                <p className="text-[11px] sm:text-xs font-semibold">Communication Health</p>
+                <div className="text-xl sm:text-4xl font-semibold">86 / 100</div>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground leading-5">
+            <p className="text-[11px] sm:text-xs text-muted-foreground leading-4 sm:leading-5">
               Healthy communication performance with strong delivery, high circular read rates, and solid parent engagement.
             </p>
-            <div className="flex flex-wrap items-center gap-2 mt-3">
-              <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[10px]">Healthy</Badge>
-              <Badge variant="outline" className="text-[10px]">Principal View</Badge>
-              <Badge variant="outline" className="text-[10px]">Executive Oversight</Badge>
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-2 sm:mt-3">
+              <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[9px] sm:text-[10px]">Healthy</Badge>
+              <Badge variant="outline" className="text-[9px] sm:text-[10px]">Principal View</Badge>
+              <Badge variant="outline" className="text-[9px] sm:text-[10px]">Executive Oversight</Badge>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="mt-4 sm:mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
           {communicationHealthMetrics.map((metric) => (
             <button
               key={metric.id}
@@ -324,14 +335,14 @@ function CommunicationPage() {
               onClick={() => openMetricPanel(metric)}
               className="text-left"
             >
-                    <Card className="h-full p-3 sm:p-4 transition hover:-translate-y-0.5 hover:shadow-md">
-                <div className="flex items-start justify-between gap-3">
+                    <Card className="h-full p-2.5 sm:p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+                <div className="flex items-start justify-between gap-2 sm:gap-3">
                   <div>
-                    <p className="text-[11px] text-muted-foreground">{metric.label}</p>
-                    <div className="text-lg font-semibold mt-1">{metric.value}</div>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{metric.note}</p>
+                    <p className="text-[10px] sm:text-[11px] text-muted-foreground">{metric.label}</p>
+                    <div className="text-base sm:text-lg font-semibold mt-0.5 sm:mt-1">{metric.value}</div>
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">{metric.note}</p>
                   </div>
-                  <Badge variant="outline" className="text-[10px]">{metric.badge}</Badge>
+                  <Badge variant="outline" className="text-[9px] sm:text-[10px] shrink-0">{metric.badge}</Badge>
                 </div>
               </Card>
             </button>
@@ -341,38 +352,40 @@ function CommunicationPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-4 mb-8">
-          <TabsList className="h-11 w-full overflow-x-auto scrollbar-hide">
-            <TabsTrigger value="overview" className="text-sm gap-2 px-5"><LayoutDashboard className="size-4" /> Overview</TabsTrigger>
-            <TabsTrigger value="recent" className="text-sm gap-2 px-5"><MessageSquare className="size-4" /> Recent</TabsTrigger>
-            <TabsTrigger value="circulars" className="text-sm gap-2 px-5"><BookOpen className="size-4" /> Circulars</TabsTrigger>
-            <TabsTrigger value="engagement" className="text-sm gap-2 px-5"><Heart className="size-4" /> Engagement</TabsTrigger>
-            <TabsTrigger value="channels" className="text-sm gap-2 px-5"><Radio className="size-4" /> Channels</TabsTrigger>
-            <TabsTrigger value="upcoming" className="text-sm gap-2 px-5"><Calendar className="size-4" /> Upcoming</TabsTrigger>
-          </TabsList>
+        <Card className="p-4 mb-6 sm:mb-8">
+          <div className="overflow-x-auto scrollbar-hide">
+            <TabsList className="h-11 w-max min-w-full">
+              <TabsTrigger value="overview" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5"><LayoutDashboard className="size-3.5 sm:size-4" /> Overview</TabsTrigger>
+              <TabsTrigger value="recent" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5"><MessageSquare className="size-3.5 sm:size-4" /> Recent</TabsTrigger>
+              <TabsTrigger value="circulars" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5"><BookOpen className="size-3.5 sm:size-4" /> Circulars</TabsTrigger>
+              <TabsTrigger value="engagement" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5"><Heart className="size-3.5 sm:size-4" /> Engagement</TabsTrigger>
+              <TabsTrigger value="channels" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5"><Radio className="size-3.5 sm:size-4" /> Channels</TabsTrigger>
+              <TabsTrigger value="upcoming" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5"><Calendar className="size-3.5 sm:size-4" /> Upcoming</TabsTrigger>
+            </TabsList>
+          </div>
         </Card>
 
         {/* ═══ OVERVIEW ═══ */}
         {activeTab === "overview" && (
-          <Card className="p-4 sm:p-6">
-            <div className="flex items-center justify-between gap-3 mb-4">
+          <Card className="p-3 sm:p-6">
+            <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold">Communication Overview</h3>
-                <p className="text-xs text-muted-foreground">Summary of all communication activities and their performance.</p>
+                <h3 className="text-sm sm:text-lg font-semibold">Communication Overview</h3>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">Summary of all communication activities and their performance.</p>
               </div>
-              <Badge variant="outline" className="text-[10px]">Summary</Badge>
+              <Badge variant="outline" className="text-[9px] sm:text-[10px]">Summary</Badge>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
               {recentCommunications.slice(0, 3).map((item) => (
-                <div key={item.id} className="rounded-xl border border-border/60 p-3 sm:p-4">
-                  <div className="flex items-center justify-between gap-3">
+                <div key={item.id} className="rounded-xl border border-border/60 p-2.5 sm:p-4">
+                  <div className="flex items-center justify-between gap-2 sm:gap-3">
                     <div>
-                      <p className="text-xs font-semibold">{item.title}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{item.sentLabel}</p>
+                      <p className="text-[11px] sm:text-xs font-semibold">{item.title}</p>
+                      <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">{item.sentLabel}</p>
                     </div>
-                    <Badge variant={item.status === "Pending Read" ? "destructive" : "outline"} className="text-[10px]">{item.status}</Badge>
+                    <Badge variant={item.status === "Pending Read" ? "destructive" : "outline"} className="text-[9px] sm:text-[10px]">{item.status}</Badge>
                   </div>
-                  <div className="mt-2 text-[11px] text-muted-foreground">Read rate: {item.readRate}%</div>
+                  <div className="mt-2 text-[10px] sm:text-[11px] text-muted-foreground">Read rate: {item.readRate}%</div>
                 </div>
               ))}
             </div>
@@ -385,65 +398,75 @@ function CommunicationPage() {
             <Card className="p-3 sm:p-4 mb-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="relative">
+                  <div className="relative flex-1 sm:flex-none">
                     <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       className="h-8 text-xs pl-8 w-full sm:w-[260px]"
-                      placeholder="Search announcement, circular, keyword..."
+                      placeholder="Search communications..."
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
                     />
                   </div>
-                  <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="w-[160px] h-8 text-xs"><SelectValue placeholder="Type" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All types</SelectItem>
-                      <SelectItem value="Announcement">Announcement</SelectItem>
-                      <SelectItem value="Circular">Circular</SelectItem>
-                      <SelectItem value="PTM Reminder">PTM Reminder</SelectItem>
-                      <SelectItem value="Fee Reminder">Fee Reminder</SelectItem>
-                      <SelectItem value="Exam Notice">Exam Notice</SelectItem>
-                      <SelectItem value="Holiday Notice">Holiday Notice</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[140px] h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All status</SelectItem>
-                      <SelectItem value="Sent">Sent</SelectItem>
-                      <SelectItem value="Scheduled">Scheduled</SelectItem>
-                      <SelectItem value="Delivered">Delivered</SelectItem>
-                      <SelectItem value="Pending Read">Pending Read</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="hidden sm:flex flex-wrap items-center gap-2">
+                    <Select value={typeFilter} onValueChange={setTypeFilter}>
+                      <SelectTrigger className="w-[160px] h-8 text-xs"><SelectValue placeholder="Type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All types</SelectItem>
+                        <SelectItem value="Announcement">Announcement</SelectItem>
+                        <SelectItem value="Circular">Circular</SelectItem>
+                        <SelectItem value="PTM Reminder">PTM Reminder</SelectItem>
+                        <SelectItem value="Fee Reminder">Fee Reminder</SelectItem>
+                        <SelectItem value="Exam Notice">Exam Notice</SelectItem>
+                        <SelectItem value="Holiday Notice">Holiday Notice</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[140px] h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All status</SelectItem>
+                        <SelectItem value="Sent">Sent</SelectItem>
+                        <SelectItem value="Scheduled">Scheduled</SelectItem>
+                        <SelectItem value="Delivered">Delivered</SelectItem>
+                        <SelectItem value="Pending Read">Pending Read</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {(typeFilter !== "all" || statusFilter !== "all") && (
+                    <Button variant="ghost" size="sm" className="h-8 text-xs hidden sm:inline-flex" onClick={clearFilters}>Clear Filters</Button>
+                  )}
+                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 sm:hidden" onClick={() => setFilterSheetOpen(true)}>
+                    <Search className="size-3" /> Filters
+                    {(typeFilter !== "all" || statusFilter !== "all") && (
+                      <Badge className="ml-1 h-4 w-4 p-0 text-[9px] rounded-full bg-primary text-primary-foreground">!</Badge>
+                    )}
+                  </Button>
                 </div>
-                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearFilters}>Clear Filters</Button>
               </div>
             </Card>
 
-            <Card className="p-4 sm:p-6">
-              <div className="flex items-center justify-between gap-3 mb-4">
+            <Card className="p-3 sm:p-6">
+              <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
                 <div>
-                  <h3 className="text-base sm:text-lg font-semibold">Recent Communications</h3>
-                  <p className="text-xs text-muted-foreground">Only the latest school communications are shown here.</p>
+                  <h3 className="text-sm sm:text-lg font-semibold">Recent Communications</h3>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground">Only the latest school communications are shown here.</p>
                 </div>
                 <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
                   View All <ArrowRight className="size-3" />
                 </Button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                 {filteredCommunications.slice(0, 3).map((item) => (
                   <button key={item.id} type="button" onClick={() => setSelectedCommunication(item)} className="text-left">
-              <Card className="h-full p-3 sm:p-4 transition hover:-translate-y-0.5 hover:shadow-md">
-                      <div className="flex items-start justify-between gap-3">
+              <Card className="h-full p-2.5 sm:p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+                      <div className="flex items-start justify-between gap-2 sm:gap-3">
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-semibold">{item.title}</p>
+                            <p className="text-[11px] sm:text-xs font-semibold">{item.title}</p>
                           </div>
-                          <Badge variant={item.status === "Scheduled" ? "outline" : "secondary"} className="text-[10px] mt-1">{item.type}</Badge>
-                          <p className="text-[11px] text-muted-foreground mt-1">{item.sentLabel}</p>
+                          <Badge variant={item.status === "Scheduled" ? "outline" : "secondary"} className="text-[9px] sm:text-[10px] mt-1">{item.type}</Badge>
+                          <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-1">{item.sentLabel}</p>
                         </div>
-                        <Badge variant={item.status === "Pending Read" ? "destructive" : "outline"} className="text-[10px] shrink-0">{item.status}</Badge>
+                        <Badge variant={item.status === "Pending Read" ? "destructive" : "outline"} className="text-[9px] sm:text-[10px] shrink-0">{item.status}</Badge>
                       </div>
                       <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
                         <div>
@@ -465,30 +488,30 @@ function CommunicationPage() {
 
         {/* ═══ CIRCULARS ═══ */}
         {activeTab === "circulars" && (
-          <Card className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
+          <Card className="p-3 sm:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold">Circulars Overview</h3>
-                <p className="text-xs text-muted-foreground">A compact view of circular circulation.</p>
+                <h3 className="text-sm sm:text-lg font-semibold">Circulars Overview</h3>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">A compact view of circular circulation.</p>
               </div>
-              <Badge variant="outline" className="text-[10px]">84 Circulars Sent</Badge>
+              <Badge variant="outline" className="text-[9px] sm:text-[10px]">84 Circulars Sent</Badge>
             </div>
-            <div className="grid grid-cols-2 gap-3 h-[200px] sm:h-[300px]">
-              <Card className="p-3 sm:p-4">
-                <p className="text-[11px] text-muted-foreground">Read</p>
-                <div className="text-lg font-semibold mt-1">71</div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3">
+              <Card className="p-2.5 sm:p-4">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">Read</p>
+                <div className="text-base sm:text-lg font-semibold mt-0.5 sm:mt-1">71</div>
               </Card>
-              <Card className="p-3 sm:p-4">
-                <p className="text-[11px] text-muted-foreground">Unread</p>
-                <div className="text-lg font-semibold mt-1 text-amber-600">13</div>
+              <Card className="p-2.5 sm:p-4">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">Unread</p>
+                <div className="text-base sm:text-lg font-semibold mt-0.5 sm:mt-1 text-amber-600">13</div>
               </Card>
-              <Card className="p-3 sm:p-4">
-                <p className="text-[11px] text-muted-foreground">Pending</p>
-                <div className="text-lg font-semibold mt-1 text-sky-600">6</div>
+              <Card className="p-2.5 sm:p-4">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">Pending</p>
+                <div className="text-base sm:text-lg font-semibold mt-0.5 sm:mt-1 text-sky-600">6</div>
               </Card>
-              <Card className="p-3 sm:p-4">
-                <p className="text-[11px] text-muted-foreground">Total</p>
-                <div className="text-lg font-semibold mt-1">84</div>
+              <Card className="p-2.5 sm:p-4">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">Total</p>
+                <div className="text-base sm:text-lg font-semibold mt-0.5 sm:mt-1">84</div>
               </Card>
             </div>
           </Card>
@@ -496,30 +519,30 @@ function CommunicationPage() {
 
         {/* ═══ ENGAGEMENT ═══ */}
         {activeTab === "engagement" && (
-          <Card className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
+          <Card className="p-3 sm:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold">Parent Engagement Overview</h3>
-                <p className="text-xs text-muted-foreground">High-level view of parent response and read behavior.</p>
+                <h3 className="text-sm sm:text-lg font-semibold">Parent Engagement Overview</h3>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">High-level view of parent response and read behavior.</p>
               </div>
-              <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[10px]">Healthy</Badge>
+              <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[9px] sm:text-[10px]">Healthy</Badge>
             </div>
-            <div className="grid grid-cols-2 gap-3 h-[200px] sm:h-[300px]">
-              <Card className="p-3 sm:p-4">
-                <p className="text-[11px] text-muted-foreground">Active Parents</p>
-                <div className="text-lg font-semibold mt-1">92%</div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3">
+              <Card className="p-2.5 sm:p-4">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">Active Parents</p>
+                <div className="text-base sm:text-lg font-semibold mt-0.5 sm:mt-1">92%</div>
               </Card>
-              <Card className="p-3 sm:p-4">
-                <p className="text-[11px] text-muted-foreground">PTM Responses</p>
-                <div className="text-lg font-semibold mt-1">76%</div>
+              <Card className="p-2.5 sm:p-4">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">PTM Responses</p>
+                <div className="text-base sm:text-lg font-semibold mt-0.5 sm:mt-1">76%</div>
               </Card>
-              <Card className="p-3 sm:p-4">
-                <p className="text-[11px] text-muted-foreground">Circular Reads</p>
-                <div className="text-lg font-semibold mt-1">84%</div>
+              <Card className="p-2.5 sm:p-4">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">Circular Reads</p>
+                <div className="text-base sm:text-lg font-semibold mt-0.5 sm:mt-1">84%</div>
               </Card>
-              <Card className="p-3 sm:p-4">
-                <p className="text-[11px] text-muted-foreground">Announcement Engagement</p>
-                <div className="text-lg font-semibold mt-1">78%</div>
+              <Card className="p-2.5 sm:p-4">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">Announcement Engagement</p>
+                <div className="text-base sm:text-lg font-semibold mt-0.5 sm:mt-1">78%</div>
               </Card>
             </div>
           </Card>
@@ -527,28 +550,28 @@ function CommunicationPage() {
 
         {/* ═══ CHANNELS ═══ */}
         {activeTab === "channels" && (
-          <Card className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
+          <Card className="p-3 sm:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold">Communication Channel Overview</h3>
-                <p className="text-xs text-muted-foreground">High-level usage across school communication channels.</p>
+                <h3 className="text-sm sm:text-lg font-semibold">Communication Channel Overview</h3>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">High-level usage across school communication channels.</p>
               </div>
-              <Badge variant="outline" className="text-[10px]">Multi-channel</Badge>
+              <Badge variant="outline" className="text-[9px] sm:text-[10px]">Multi-channel</Badge>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {channelStats.map((channel) => (
-                <div key={channel.channel} className="rounded-xl border border-border/60 p-3 sm:p-4">
-                  <div className="flex items-center justify-between gap-3">
+                <div key={channel.channel} className="rounded-xl border border-border/60 p-2.5 sm:p-4">
+                  <div className="flex items-center justify-between gap-2 sm:gap-3">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-semibold">{channel.channel}</p>
-                        <Badge variant="secondary" className="text-[10px]">{channel.badge}</Badge>
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <p className="text-[11px] sm:text-xs font-semibold">{channel.channel}</p>
+                        <Badge variant="secondary" className="text-[9px] sm:text-[10px]">{channel.badge}</Badge>
                       </div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{channel.usage}</p>
+                      <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">{channel.usage}</p>
                     </div>
-                    <div className="text-right">
-                      <div className="text-xs font-semibold">{channel.sent}</div>
-                      <div className="text-[11px] text-muted-foreground">{channel.delivered}</div>
+                    <div className="text-right shrink-0">
+                      <div className="text-[11px] sm:text-xs font-semibold">{channel.sent}</div>
+                      <div className="text-[10px] sm:text-[11px] text-muted-foreground">{channel.delivered}</div>
                     </div>
                   </div>
                 </div>
@@ -559,22 +582,22 @@ function CommunicationPage() {
 
         {/* ═══ UPCOMING ═══ */}
         {activeTab === "upcoming" && (
-          <Card className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
+          <Card className="p-3 sm:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold">Upcoming Communications</h3>
-                <p className="text-xs text-muted-foreground">Scheduled items that need principal visibility.</p>
+                <h3 className="text-sm sm:text-lg font-semibold">Upcoming Communications</h3>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">Scheduled items that need principal visibility.</p>
               </div>
-              <Badge variant="outline" className="text-[10px]">8 Scheduled</Badge>
+              <Badge variant="outline" className="text-[9px] sm:text-[10px]">8 Scheduled</Badge>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {upcomingCommunications.map((item) => (
-                <div key={item.title} className="flex items-center justify-between rounded-xl border border-border/60 px-3 sm:px-4 py-2 sm:py-3">
-                  <div>
-                    <p className="text-xs font-semibold">{item.title}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{item.detail}</p>
+                <div key={item.title} className="flex items-center justify-between rounded-xl border border-border/60 px-2.5 sm:px-4 py-2 sm:py-3">
+                  <div className="min-w-0">
+                    <p className="text-[11px] sm:text-xs font-semibold">{item.title}</p>
+                    <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">{item.detail}</p>
                   </div>
-                  <Badge variant="outline" className="text-[10px] shrink-0">{item.when}</Badge>
+                  <Badge variant="outline" className="text-[9px] sm:text-[10px] shrink-0 ml-2">{item.when}</Badge>
                 </div>
               ))}
             </div>
@@ -583,13 +606,13 @@ function CommunicationPage() {
       </Tabs>
 
       {/* Quick Actions */}
-      <Card className="p-3 sm:p-4 mt-8">
+      <Card className="p-3 sm:p-4 mt-6 sm:mt-8">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-semibold">Quick Actions</p>
-            <p className="text-[11px] text-muted-foreground">Minimal actions for communication oversight.</p>
+            <p className="text-xs sm:text-xs font-semibold">Quick Actions</p>
+            <p className="text-[10px] sm:text-[11px] text-muted-foreground">Minimal actions for communication oversight.</p>
           </div>
-          <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+          <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2">
             <Button size="sm" variant="outline" className="h-8 text-xs w-full sm:w-auto">Create Announcement</Button>
             <Button size="sm" variant="outline" className="h-8 text-xs w-full sm:w-auto">Publish Circular</Button>
             <Button size="sm" variant="outline" className="h-8 text-xs w-full sm:w-auto">Schedule Communication</Button>
@@ -599,28 +622,28 @@ function CommunicationPage() {
 
       {/* Metric Detail Dialog */}
       <Dialog open={metricPanelOpen} onOpenChange={setMetricPanelOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Communication Metric</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs text-muted-foreground">{selectedMetric.label}</p>
-                <div className="text-2xl font-semibold mt-1">{selectedMetric.value}</div>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">{selectedMetric.label}</p>
+                <div className="text-xl sm:text-2xl font-semibold mt-1">{selectedMetric.value}</div>
               </div>
-              <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[10px]">{selectedMetric.badge}</Badge>
+              <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[9px] sm:text-[10px]">{selectedMetric.badge}</Badge>
             </div>
-            <Card className="p-3 sm:p-4">
-              <p className="text-[11px] text-muted-foreground mb-1">What it means</p>
-              <p className="text-xs text-muted-foreground leading-5">{selectedMetric.meaning}</p>
+            <Card className="p-2.5 sm:p-4">
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground mb-1">What it means</p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground leading-4 sm:leading-5">{selectedMetric.meaning}</p>
             </Card>
-            <Card className="p-3 sm:p-4">
-              <p className="text-[11px] text-muted-foreground mb-1">Why this score</p>
-              <p className="text-xs text-muted-foreground leading-5">{selectedMetric.why}</p>
+            <Card className="p-2.5 sm:p-4">
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground mb-1">Why this score</p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground leading-4 sm:leading-5">{selectedMetric.why}</p>
             </Card>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <ShieldCheck className="size-3.5" />
+            <div className="flex items-center gap-2 text-[11px] sm:text-xs text-muted-foreground">
+              <ShieldCheck className="size-3.5 shrink-0" />
               <span>Designed for quick principal-level oversight, not operational messaging.</span>
             </div>
           </div>
@@ -634,7 +657,7 @@ function CommunicationPage() {
           if (!open) setSelectedCommunication(null);
         }}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {selectedCommunication?.type === "Circular" ? "Circular Preview" : "Communication Details"}
@@ -642,53 +665,96 @@ function CommunicationPage() {
           </DialogHeader>
 
           {selectedCommunication && (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-slate-900 text-white hover:bg-slate-900 text-[10px]">{selectedCommunication.type}</Badge>
-                <Badge variant="outline" className="text-[10px]">{selectedCommunication.status}</Badge>
-                <span className="text-xs text-muted-foreground">{selectedCommunication.sentLabel}</span>
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <Badge className="bg-slate-900 text-white hover:bg-slate-900 text-[9px] sm:text-[10px]">{selectedCommunication.type}</Badge>
+                <Badge variant="outline" className="text-[9px] sm:text-[10px]">{selectedCommunication.status}</Badge>
+                <span className="text-[11px] sm:text-xs text-muted-foreground">{selectedCommunication.sentLabel}</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Card className="p-3 sm:p-4">
-                  <p className="text-[11px] text-muted-foreground">Read Rate</p>
-                  <div className="text-lg font-semibold mt-1">{selectedCommunication.readRate}%</div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+                <Card className="p-2.5 sm:p-4">
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground">Read Rate</p>
+                  <div className="text-base sm:text-lg font-semibold mt-0.5 sm:mt-1">{selectedCommunication.readRate}%</div>
                 </Card>
-                <Card className="p-3 sm:p-4">
-                  <p className="text-[11px] text-muted-foreground">Audience</p>
-                  <div className="text-xs font-medium leading-5 mt-1">{selectedCommunication.audience}</div>
+                <Card className="p-2.5 sm:p-4">
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground">Audience</p>
+                  <div className="text-[11px] sm:text-xs font-medium leading-4 sm:leading-5 mt-0.5 sm:mt-1">{selectedCommunication.audience}</div>
                 </Card>
-                <Card className="p-3 sm:p-4">
-                  <p className="text-[11px] text-muted-foreground">Issued By</p>
-                  <div className="text-xs font-medium leading-5 mt-1">{selectedCommunication.issuedBy}</div>
+                <Card className="p-2.5 sm:p-4">
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground">Issued By</p>
+                  <div className="text-[11px] sm:text-xs font-medium leading-4 sm:leading-5 mt-0.5 sm:mt-1">{selectedCommunication.issuedBy}</div>
                 </Card>
               </div>
 
-              <Card className="p-3 sm:p-4">
-                <p className="text-[11px] text-muted-foreground mb-2">Full Circular</p>
-                <p className="text-xs text-muted-foreground leading-5">{selectedCommunication.body}</p>
+              <Card className="p-2.5 sm:p-4">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground mb-1.5 sm:mb-2">Full Circular</p>
+                <p className="text-[11px] sm:text-xs text-muted-foreground leading-4 sm:leading-5">{selectedCommunication.body}</p>
               </Card>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Card className="p-3 sm:p-4">
-                  <p className="text-[11px] text-muted-foreground">Delivery Channels</p>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                <Card className="p-2.5 sm:p-4">
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground">Delivery Channels</p>
+                  <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-1.5 sm:mt-2">
                     {selectedCommunication.channels.map((channel) => (
-                      <Badge key={channel} variant="secondary" className="text-[10px]">
+                      <Badge key={channel} variant="secondary" className="text-[9px] sm:text-[10px]">
                         {channel}
                       </Badge>
                     ))}
                   </div>
                 </Card>
-                <Card className="p-3 sm:p-4">
-                  <p className="text-[11px] text-muted-foreground">Action Needed</p>
-                  <div className="text-xs font-medium leading-5 mt-1">{selectedCommunication.actionLabel}</div>
+                <Card className="p-2.5 sm:p-4">
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground">Action Needed</p>
+                  <div className="text-[11px] sm:text-xs font-medium leading-4 sm:leading-5 mt-0.5 sm:mt-1">{selectedCommunication.actionLabel}</div>
                 </Card>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Mobile Filter Sheet */}
+      <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+        <SheetContent side="bottom" className="rounded-t-2xl max-h-[80vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Filters</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">Type</label>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="All types" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  <SelectItem value="Announcement">Announcement</SelectItem>
+                  <SelectItem value="Circular">Circular</SelectItem>
+                  <SelectItem value="PTM Reminder">PTM Reminder</SelectItem>
+                  <SelectItem value="Fee Reminder">Fee Reminder</SelectItem>
+                  <SelectItem value="Exam Notice">Exam Notice</SelectItem>
+                  <SelectItem value="Holiday Notice">Holiday Notice</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">Status</label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="All status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All status</SelectItem>
+                  <SelectItem value="Sent">Sent</SelectItem>
+                  <SelectItem value="Scheduled">Scheduled</SelectItem>
+                  <SelectItem value="Delivered">Delivered</SelectItem>
+                  <SelectItem value="Pending Read">Pending Read</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" size="sm" className="flex-1 h-10 text-sm" onClick={() => { clearFilters(); setFilterSheetOpen(false); }}>Clear Filters</Button>
+              <Button size="sm" className="flex-1 h-10 text-sm" onClick={() => setFilterSheetOpen(false)}>Apply</Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

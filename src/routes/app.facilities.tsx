@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/scholarii/AppShell";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import {
   Building2, Wrench, Clock3, CalendarDays, BookOpen, Search,
   LayoutGrid, Calendar, Library, Lightbulb, BarChart3, Users,
-  Sparkles, AlertTriangle, CheckCircle2, Info, TrendingUp,
+  Sparkles, AlertTriangle, CheckCircle2, Info, TrendingUp, SlidersHorizontal,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/facilities")({ component: FacilitiesPage });
@@ -108,6 +108,24 @@ function FacilitiesPage() {
   const [statusFilter, setStatusFilter] = useState<FacilityStatus | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [activeTab, setActiveTab] = useState("facilities");
+  const [isMobile, setIsMobile] = useState(false);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const tabsListRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const el = document.getElementById(`fac-tab-${activeTab}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
 
   const filteredFacilities = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -137,44 +155,46 @@ function FacilitiesPage() {
         title="Facilities & Resources"
         subtitle="See what is occupied, what is free, and how school spaces are being used today."
         action={
-          <div className="flex items-center gap-2">
-            <Badge className="border-0 bg-emerald-500/10 text-emerald-600">
-              <Building2 className="mr-1 size-3" />
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <Badge className="border-0 bg-emerald-500/10 text-emerald-600 text-[10px] sm:text-xs">
+              <Building2 className="mr-1 size-2.5 sm:size-3" />
               {occupiedCount} occupied
             </Badge>
-            <Button size="sm" className="h-8 text-xs gap-1.5 bg-violet-600 hover:bg-violet-700">
-              <CalendarDays className="size-3" /> Book Facility
+            <Button size="sm" className="h-7 sm:h-8 text-[10px] sm:text-xs gap-1 sm:gap-1.5 bg-violet-600 hover:bg-violet-700">
+              <CalendarDays className="size-3" /> <span className="hidden sm:inline">Book Facility</span><span className="sm:hidden">Book</span>
             </Button>
           </div>
         }
       />
 
       {/* KPI Cards */}
-      <div className="kpi-mobile-scroll grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
         <KpiCard icon={Building2} label="Total Facilities" value={String(FACILITIES.length)} tone="violet" />
-        <KpiCard icon={Wrench} label="Currently Occupied" value={String(occupiedCount)} tone="sky" />
-        <KpiCard icon={Clock3} label="Available Now" value={String(availableCount)} tone="emerald" />
+        <KpiCard icon={Wrench} label="Occupied" value={String(occupiedCount)} tone="sky" />
+        <KpiCard icon={Clock3} label="Available" value={String(availableCount)} tone="emerald" />
         <KpiCard icon={CalendarDays} label="Scheduled" value={String(scheduledCount)} tone="amber" />
         <KpiCard icon={BookOpen} label="Library Books" value="8,420" tone="violet" />
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="p-3 sm:p-4 mb-8">
-          <TabsList className="h-11 overflow-x-auto scrollbar-hide">
-            <TabsTrigger value="facilities" className="text-sm gap-2 px-5"><LayoutGrid className="size-4" /> Facilities</TabsTrigger>
-            <TabsTrigger value="schedule" className="text-sm gap-2 px-5"><Calendar className="size-4" /> Schedule</TabsTrigger>
-            <TabsTrigger value="library" className="text-sm gap-2 px-5"><Library className="size-4" /> Library</TabsTrigger>
-            <TabsTrigger value="insights" className="text-sm gap-2 px-5"><Lightbulb className="size-4" /> Insights</TabsTrigger>
-          </TabsList>
+        <Card className="p-2 sm:p-3 mb-6 sm:mb-8">
+          <div className="overflow-x-auto scrollbar-hide">
+            <TabsList ref={tabsListRef} className="h-9 sm:h-11 w-max min-w-full inline-flex sm:justify-start gap-1">
+              <TabsTrigger value="facilities" id="fac-tab-facilities" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5 shrink-0"><LayoutGrid className="size-3.5 sm:size-4" /> Facilities</TabsTrigger>
+              <TabsTrigger value="schedule" id="fac-tab-schedule" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5 shrink-0"><Calendar className="size-3.5 sm:size-4" /> Schedule</TabsTrigger>
+              <TabsTrigger value="library" id="fac-tab-library" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5 shrink-0"><Library className="size-3.5 sm:size-4" /> Library</TabsTrigger>
+              <TabsTrigger value="insights" id="fac-tab-insights" className="text-xs sm:text-sm gap-1.5 sm:gap-2 px-3 sm:px-5 shrink-0"><Lightbulb className="size-3.5 sm:size-4" /> Insights</TabsTrigger>
+            </TabsList>
+          </div>
         </Card>
 
         {/* ═══ FACILITIES TAB ═══ */}
         <TabsContent value="facilities">
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Filters */}
-            <Card className="p-3 sm:p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Card className="p-2.5 sm:p-4">
+              <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                   <Input
@@ -184,7 +204,15 @@ function FacilitiesPage() {
                     className="h-8 pl-8 text-xs"
                   />
                 </div>
-                <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs gap-1.5 sm:hidden shrink-0"
+                  onClick={() => setFilterSheetOpen(true)}
+                >
+                  <SlidersHorizontal className="size-3" /> Filters
+                </Button>
+                <div className="hidden sm:block">
                   <Select value={statusFilter ?? "all"} onValueChange={(v) => setStatusFilter(v === "all" ? null : v as FacilityStatus)}>
                     <SelectTrigger className="w-32 h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
                     <SelectContent>
@@ -199,40 +227,40 @@ function FacilitiesPage() {
             </Card>
 
             {/* Facility Cards */}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {filteredFacilities.map((facility) => {
                 const meta = STATUS_META[facility.status];
                 return (
                   <button
                     key={facility.id}
                     onClick={() => setSelectedFacility(facility)}
-                    className="rounded-xl border border-border/60 bg-card p-4 text-left transition-all hover:shadow-md hover:-translate-y-0.5"
+                    className="rounded-xl border border-border/60 bg-card p-3 sm:p-4 text-left transition-all hover:shadow-md hover:-translate-y-0.5"
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className={cn("size-9 rounded-lg grid place-items-center", meta.bg)}>
-                          <Building2 className={cn("size-4", meta.text)} />
+                    <div className="flex items-start justify-between mb-2 sm:mb-3">
+                      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                        <div className={cn("size-8 sm:size-9 rounded-lg grid place-items-center shrink-0", meta.bg)}>
+                          <Building2 className={cn("size-3.5 sm:size-4", meta.text)} />
                         </div>
-                        <div>
-                          <div className="text-sm font-semibold">{facility.name}</div>
-                          <div className="text-[10px] text-muted-foreground">{facility.category}</div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-semibold truncate">{facility.name}</div>
+                          <div className="text-[9px] sm:text-[10px] text-muted-foreground">{facility.category}</div>
                         </div>
                       </div>
-                      <Badge className={cn("border-0 text-[8px]", meta.bg, meta.text)}>
+                      <Badge className={cn("border-0 text-[7px] sm:text-[8px] shrink-0 ml-2", meta.bg, meta.text)}>
                         <span className={cn("size-1.5 rounded-full mr-1", meta.dot)} />
                         {facility.status}
                       </Badge>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-1 sm:space-y-2">
                       <Row label="Current" value={facility.currentClass} />
                       <Row label="Teacher" value={facility.currentTeacher} />
                       <Row label="Time Slot" value={facility.timeSlot} />
                     </div>
 
-                    <div className="mt-3 flex items-center justify-between text-[10px] text-muted-foreground">
+                    <div className="mt-2 sm:mt-3 flex items-center justify-between text-[9px] sm:text-[10px] text-muted-foreground">
                       <span>{facility.capacity}</span>
-                      <span>{facility.responsibleStaff}</span>
+                      <span className="truncate ml-2">{facility.responsibleStaff}</span>
                     </div>
                   </button>
                 );
@@ -445,14 +473,14 @@ function KpiCard({ icon: Icon, label, value, tone }: {
     red: "bg-red-500/10 text-red-500",
   };
   return (
-    <Card className="p-3 sm:p-4">
-      <div className="flex items-center gap-3">
-        <div className={cn("size-10 rounded-xl grid place-items-center shrink-0", tones[tone])}>
-          <Icon className="size-5" />
+    <Card className="p-2.5 sm:p-4">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className={cn("size-8 sm:size-10 rounded-lg sm:rounded-xl grid place-items-center shrink-0", tones[tone])}>
+          <Icon className="size-4 sm:size-5" />
         </div>
         <div className="min-w-0">
-          <div className="text-[11px] text-muted-foreground truncate">{label}</div>
-          <div className="text-lg font-semibold truncate">{value}</div>
+          <div className="text-[10px] sm:text-[11px] text-muted-foreground truncate">{label}</div>
+          <div className="text-sm sm:text-lg font-semibold truncate">{value}</div>
         </div>
       </div>
     </Card>

@@ -25,10 +25,7 @@ import {
   FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  TEACHER_CLASSES,
-  CLASS_OVERVIEW_STATS,
-} from "@/lib/scholarii/teacher-myclasses-mock-data";
+import { TEACHER_CLASSES, CLASS_OVERVIEW_STATS } from "@/lib/scholarii/teacher-myclasses-mock-data";
 import { useAuth } from "@/lib/scholarii/auth";
 
 export const Route = createFileRoute("/app/classes")({
@@ -46,9 +43,10 @@ function MyClassesPage() {
 
   const stats = CLASS_OVERVIEW_STATS;
 
-  const filteredClasses = TEACHER_CLASSES.filter((cls) =>
-    cls.className.toLowerCase().includes(search.toLowerCase()) ||
-    cls.subject.toLowerCase().includes(search.toLowerCase())
+  const filteredClasses = TEACHER_CLASSES.filter(
+    (cls) =>
+      cls.className.toLowerCase().includes(search.toLowerCase()) ||
+      cls.subject.toLowerCase().includes(search.toLowerCase()),
   );
 
   const selectedClass = TEACHER_CLASSES.find((c) => c.id === selectedClassId);
@@ -67,7 +65,7 @@ function MyClassesPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-5 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <Card className="p-5">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center">
@@ -145,10 +143,10 @@ function MyClassesPage() {
             key={cls.id}
             onClick={() => setSelectedClassId(cls.id === selectedClassId ? null : cls.id)}
             className={cn(
-              "rounded-2xl border p-5 text-left transition-all",
+              "rounded-2xl border p-4 text-left transition-all sm:p-5",
               selectedClass?.id === cls.id
                 ? "border-violet-500 bg-violet-500/5 shadow-sm ring-1 ring-violet-500/20"
-                : "border-border/60 hover:border-border hover:bg-muted/20"
+                : "border-border/60 hover:border-border hover:bg-muted/20",
             )}
           >
             {/* Header */}
@@ -193,10 +191,16 @@ function MyClassesPage() {
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs text-muted-foreground">Avg Attendance</span>
-                <span className={cn(
-                  "text-xs font-semibold",
-                  cls.avgAttendance >= 90 ? "text-emerald-600" : cls.avgAttendance >= 80 ? "text-amber-600" : "text-red-600"
-                )}>
+                <span
+                  className={cn(
+                    "text-xs font-semibold",
+                    cls.avgAttendance >= 90
+                      ? "text-emerald-600"
+                      : cls.avgAttendance >= 80
+                        ? "text-amber-600"
+                        : "text-red-600",
+                  )}
+                >
                   {cls.avgAttendance}%
                 </span>
               </div>
@@ -207,10 +211,16 @@ function MyClassesPage() {
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs text-muted-foreground">Avg Score</span>
-                <span className={cn(
-                  "text-xs font-semibold",
-                  cls.avgScore >= 75 ? "text-emerald-600" : cls.avgScore >= 60 ? "text-amber-600" : "text-red-600"
-                )}>
+                <span
+                  className={cn(
+                    "text-xs font-semibold",
+                    cls.avgScore >= 75
+                      ? "text-emerald-600"
+                      : cls.avgScore >= 60
+                        ? "text-amber-600"
+                        : "text-red-600",
+                  )}
+                >
                   {cls.avgScore}%
                 </span>
               </div>
@@ -250,21 +260,23 @@ function MyClassesPage() {
             {/* Expanded Details */}
             {selectedClass?.id === cls.id && (
               <div className="mt-4 border-t border-border/60 pt-4 space-y-3">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Quick Actions</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <button className="flex items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-2.5 text-xs font-medium hover:bg-muted/50 transition-colors">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Quick Actions
+                </h4>
+                <div className="tabs-mobile-scroll flex gap-2 overflow-x-auto scrollbar-none sm:grid sm:grid-cols-2">
+                  <button className="flex shrink-0 items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-2.5 text-xs font-medium hover:bg-muted/50 transition-colors">
                     <ClipboardCheck className="size-3.5 text-violet-500" />
                     Attendance
                   </button>
-                  <button className="flex items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-2.5 text-xs font-medium hover:bg-muted/50 transition-colors">
+                  <button className="flex shrink-0 items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-2.5 text-xs font-medium hover:bg-muted/50 transition-colors">
                     <FileText className="size-3.5 text-sky-500" />
                     Assignments
                   </button>
-                  <button className="flex items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-2.5 text-xs font-medium hover:bg-muted/50 transition-colors">
+                  <button className="flex shrink-0 items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-2.5 text-xs font-medium hover:bg-muted/50 transition-colors">
                     <TrendingUp className="size-3.5 text-emerald-500" />
                     Results
                   </button>
-                  <button className="flex items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-2.5 text-xs font-medium hover:bg-muted/50 transition-colors">
+                  <button className="flex shrink-0 items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-2.5 text-xs font-medium hover:bg-muted/50 transition-colors">
                     <Users className="size-3.5 text-amber-500" />
                     Students
                   </button>
