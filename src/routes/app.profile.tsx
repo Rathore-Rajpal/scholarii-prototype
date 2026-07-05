@@ -161,10 +161,10 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 
 function SettingToggle({ label, description, checked, onCheckedChange }: { label: string; description: string; checked: boolean; onCheckedChange: (v: boolean) => void }) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-center justify-between gap-3 pr-1">
       <div className="space-y-0.5 min-w-0">
-        <p className="text-sm font-medium">{label}</p>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs sm:text-sm font-medium">{label}</p>
+        <p className="text-[10px] sm:text-xs text-muted-foreground">{description}</p>
       </div>
       <Switch checked={checked} onCheckedChange={onCheckedChange} className="shrink-0" />
     </div>
@@ -1125,7 +1125,7 @@ function ProfilePage() {
                   <p className="text-xs sm:text-sm font-medium">Change Password</p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground">Last changed {new Date(security.lastPasswordChange).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
                 </div>
-                <Button variant="outline" size="sm" className="shrink-0">
+                <Button variant="outline" size="default" className="shrink-0 h-9 text-xs sm:text-sm">
                   <Key className="mr-1.5 h-3.5 w-3.5" />
                   Change
                 </Button>
@@ -1138,12 +1138,12 @@ function ProfilePage() {
                 onCheckedChange={() => {}}
               />
               <Separator />
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-3 sm:gap-4">
                 <div className="space-y-0.5 min-w-0">
-                  <p className="text-sm font-medium">Session Management</p>
-                  <p className="text-xs text-muted-foreground">{security.activeSessions} active session{security.activeSessions !== 1 ? "s" : ""}</p>
+                  <p className="text-xs sm:text-sm font-medium">Session Management</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{security.activeSessions} active session{security.activeSessions !== 1 ? "s" : ""}</p>
                 </div>
-                <Button variant="ghost" size="sm" className="shrink-0 text-red-500 hover:bg-red-500/10 hover:text-red-600">
+                <Button variant="ghost" size="default" className="shrink-0 h-9 text-xs sm:text-sm text-red-500 hover:bg-red-500/10 hover:text-red-600">
                   <LogOut className="mr-1.5 h-3.5 w-3.5" />
                   Sign Out All
                 </Button>

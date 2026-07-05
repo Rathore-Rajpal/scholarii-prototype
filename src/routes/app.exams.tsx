@@ -86,13 +86,13 @@ function ExamsPage() {
   return (
     <div className="space-y-6 p-6 pb-20 md:p-8">
       <div className="space-y-1.5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/25">
-            <GraduationCap className="h-5 w-5 text-white" />
+        <div className="flex items-start gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 flex-shrink-0">
+            <GraduationCap className="h-6 w-6 text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Exams & Results</h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground leading-snug">
               Track examinations, analyze performance, and gain AI-powered academic insights.
             </p>
           </div>
@@ -195,7 +195,7 @@ function ExamTimeline({
             })}
           </div>
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-1 md:hidden scrollbar-none">
+        <div className="flex gap-3 overflow-x-auto pb-1 md:hidden scrollbar-none snap-x snap-mandatory">
           {exams.map((exam) => {
             const st = STATUS_CONFIG[exam.status];
             const isSelected = exam.id === selectedId;
@@ -203,7 +203,7 @@ function ExamTimeline({
               <button
                 key={exam.id}
                 onClick={() => onSelect(exam)}
-                className={`flex min-w-[160px] flex-col items-center gap-2 rounded-xl border p-4 transition-all ${
+                className={`flex min-w-[160px] snap-center flex-col items-center gap-2 rounded-xl border p-4 transition-all ${
                   isSelected
                     ? "border-primary/50 bg-primary/5 shadow-md"
                     : "border-border/40 bg-muted/30 hover:border-primary/30 hover:shadow-md"
@@ -287,12 +287,12 @@ function ExamWorkspace({
   return (
     <Card className="border-border/40 bg-card/50 backdrop-blur-sm overflow-hidden">
       <div className="border-b border-border/40 bg-muted/20 px-4 py-3 sm:px-6 sm:py-4">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
             <h2 className="text-lg font-bold text-foreground">{exam.name}</h2>
             <p className="text-sm text-muted-foreground">{exam.dateRange}</p>
           </div>
-          <Badge variant="outline" className={`${st.bg} ${st.color} ${st.border} border`}>
+          <Badge variant="outline" className={`${st.bg} ${st.color} ${st.border} border flex-shrink-0`}>
             {st.label}
           </Badge>
         </div>
@@ -652,7 +652,7 @@ function ResultsTab({ exam, onViewReportCard }: { exam: Exam; onViewReportCard: 
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="border-border/40 bg-card/50">
+        <Card className="border-border/40 bg-card/50 -mx-4 md:mx-0 rounded-none md:rounded-xl">
           <CardContent className="p-4">
             <p className="mb-3 text-sm font-semibold text-foreground">Subject Performance</p>
             <ChartContainer config={{}} className="h-[220px] w-full">
@@ -675,7 +675,7 @@ function ResultsTab({ exam, onViewReportCard }: { exam: Exam; onViewReportCard: 
             </ChartContainer>
           </CardContent>
         </Card>
-        <Card className="border-border/40 bg-card/50">
+        <Card className="border-border/40 bg-card/50 -mx-4 md:mx-0 rounded-none md:rounded-xl">
           <CardContent className="p-4">
             <p className="mb-3 text-sm font-semibold text-foreground">Performance Trend</p>
             <ChartContainer config={{}} className="h-[220px] w-full">
@@ -1049,13 +1049,13 @@ function MiniMetric({
 }) {
   return (
     <div className="rounded-xl border border-border/40 bg-muted/30 p-3">
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center gap-1.5 mb-1">
         {icon}
-        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        <p className="text-[11px] font-medium text-muted-foreground leading-tight">
           {label}
         </p>
       </div>
-      <p className="text-sm font-bold text-foreground truncate">{value}</p>
+      <p className="text-base font-bold text-foreground leading-tight break-words">{value}</p>
     </div>
   );
 }

@@ -36,7 +36,7 @@ function DocumentsPageWrapper() {
   const { user } = useAuth();
   if (user?.role === "principal") return <PrincipalDocumentsPage />;
   return (
-    <RoleGuard allowedRoles={["teacher"]}>
+    <RoleGuard allowedRoles={["teacher", "student"]}>
       <DocumentsPage />
     </RoleGuard>
   );
@@ -154,7 +154,7 @@ function DocumentsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
-        <Card className="p-5">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-purple-500/10 grid place-items-center">
               <Users className="size-5 text-purple-500" />
@@ -165,7 +165,7 @@ function DocumentsPage() {
             </div>
           </div>
         </Card>
-        <Card className="p-5 border-2 border-amber-200/70 dark:border-amber-900/40">
+        <Card className="p-4 border-2 border-amber-200/70 dark:border-amber-900/40">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-amber-500/10 grid place-items-center">
               <Clock className="size-5 text-amber-500" />
@@ -176,7 +176,7 @@ function DocumentsPage() {
             </div>
           </div>
         </Card>
-        <Card className="p-5">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-violet-500/10 grid place-items-center">
               <FolderOpen className="size-5 text-violet-500" />
@@ -187,7 +187,7 @@ function DocumentsPage() {
             </div>
           </div>
         </Card>
-        <Card className="p-5">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-emerald-500/10 grid place-items-center">
               <FileText className="size-5 text-emerald-500" />
@@ -198,7 +198,7 @@ function DocumentsPage() {
             </div>
           </div>
         </Card>
-        <Card className="p-5">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-sky-500/10 grid place-items-center">
               <Shield className="size-5 text-sky-500" />
@@ -213,13 +213,13 @@ function DocumentsPage() {
 
       {/* Tabs + Search */}
       <Card className="p-4 mb-6">
-        <div className="flex gap-1">
+        <div className="flex gap-1 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
+                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0",
                 activeTab === tab.id
                   ? "bg-violet-500/10 text-violet-600 shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -236,7 +236,7 @@ function DocumentsPage() {
 
         {/* ===================== STUDENTS TAB ===================== */}
         {activeTab === "students" && (
-          <div className="flex gap-4" style={{ minHeight: "500px" }}>
+          <div className="flex flex-col gap-4 md:flex-row md:min-h-[500px]">
             {/* Left: Student Grid */}
             <div className={cn("flex-1 space-y-3 transition-all", selectedStudentId ? "" : "")}>
               {/* Controls */}
@@ -300,7 +300,7 @@ function DocumentsPage() {
 
             {/* Right: Student Document Sidebar */}
             {selectedStudent && (
-              <div className="border border-border/60 rounded-xl bg-card flex flex-col" style={{ width: `${sideWidth}%`, minWidth: "30%", maxWidth: "50%" }}>
+              <div className="border border-border/60 rounded-xl bg-card flex flex-col w-full md:flex-1">
                 {/* Sidebar Header */}
                 <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60 shrink-0">
                   <Avatar className="size-8 shrink-0">
@@ -415,7 +415,7 @@ function DocumentsPage() {
         {/* ===================== CLASS DOCUMENTS TAB ===================== */}
         {activeTab === "class" && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <div className="relative flex-1 min-w-[180px]">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                 <Input placeholder="Search class documents..." className="pl-8 h-8 text-xs" value={classSearch} onChange={(e) => setClassSearch(e.target.value)} />
@@ -424,7 +424,7 @@ function DocumentsPage() {
             </div>
             <div className="space-y-1.5">
               {filteredClassDocs.map((doc) => (
-                <div key={doc.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
+                <div key={doc.id} className="flex flex-wrap items-center gap-2 p-2.5 sm:gap-3 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
                   <div className="size-7 rounded-lg bg-purple-500/10 grid place-items-center shrink-0">
                     <FileText className="size-3.5 text-purple-600" />
                   </div>
@@ -433,7 +433,7 @@ function DocumentsPage() {
                     <div className="text-[10px] text-muted-foreground">{doc.uploadedBy} · {doc.uploadedDate} · {doc.size}</div>
                   </div>
                   <Badge variant="outline" className="text-[9px] border-0 bg-purple-500/10 text-purple-600 capitalize">{doc.type}</Badge>
-                  <div className="flex items-center gap-0.5">
+                  <div className="hidden sm:flex items-center gap-0.5">
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Eye className="size-3" /></Button>
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Download className="size-3" /></Button>
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><PenLine className="size-3" /></Button>
@@ -447,7 +447,7 @@ function DocumentsPage() {
         {/* ===================== QUESTION PAPERS TAB ===================== */}
         {activeTab === "question-papers" && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <div className="relative flex-1 min-w-[180px]">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                 <Input placeholder="Search question papers..." className="pl-8 h-8 text-xs" value={qpSearch} onChange={(e) => setQpSearch(e.target.value)} />
@@ -467,7 +467,7 @@ function DocumentsPage() {
             </div>
             <div className="space-y-1.5">
               {filteredQP.map((paper) => (
-                <div key={paper.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
+                <div key={paper.id} className="flex flex-wrap items-center gap-2 p-2.5 sm:gap-3 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
                   <div className="size-7 rounded-lg bg-emerald-500/10 grid place-items-center shrink-0">
                     <FileText className="size-3.5 text-emerald-600" />
                   </div>
@@ -476,7 +476,7 @@ function DocumentsPage() {
                     <div className="text-[10px] text-muted-foreground">{paper.subject} · {paper.className} · {paper.createdDate}</div>
                   </div>
                   <Badge variant="outline" className={cn("text-[9px] border-0", examTypeColors[paper.examType])}>{paper.examType}</Badge>
-                  <div className="flex items-center gap-0.5">
+                  <div className="hidden sm:flex items-center gap-0.5">
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Eye className="size-3" /></Button>
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Download className="size-3" /></Button>
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Copy className="size-3" /></Button>
@@ -496,7 +496,7 @@ function DocumentsPage() {
             </div>
             <div className="space-y-1.5">
               {filteredSchoolDocs.map((doc) => (
-                <div key={doc.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
+                <div key={doc.id} className="flex flex-wrap items-center gap-2 p-2.5 sm:gap-3 rounded-lg border border-border/40 hover:bg-muted/30 transition-colors">
                   <div className="size-7 rounded-lg bg-purple-500/10 grid place-items-center shrink-0">
                     <BookOpen className="size-3.5 text-purple-600" />
                   </div>
@@ -505,7 +505,7 @@ function DocumentsPage() {
                     <div className="text-[10px] text-muted-foreground">{doc.category} · {doc.uploadedDate} · {doc.size}</div>
                   </div>
                   <Badge variant="outline" className="text-[9px] border-0 bg-purple-500/10 text-purple-600">{doc.category}</Badge>
-                  <div className="flex items-center gap-0.5">
+                  <div className="hidden sm:flex items-center gap-0.5">
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Eye className="size-3" /></Button>
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0"><Download className="size-3" /></Button>
                   </div>
@@ -518,8 +518,8 @@ function DocumentsPage() {
         {/* ===================== MY DOCUMENTS TAB ===================== */}
         {activeTab === "my-docs" && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1 min-w-[180px]">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                 <Input placeholder="Search personal documents..." className="pl-8 h-8 text-xs" value={mySearch} onChange={(e) => setMySearch(e.target.value)} />
               </div>

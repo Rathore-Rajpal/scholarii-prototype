@@ -28,9 +28,9 @@ export function TeacherPageLayout({
 
       {/* KPI + Toolbar + Tabs — fixed, does not scroll */}
       <div className="shrink-0 border-b border-border/60 pb-3">
-        <div className="grid grid-cols-3 lg:grid-cols-5 gap-3 mb-3">{kpiCards}</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-3">{kpiCards}</div>
         {toolbar && <div className="mb-3">{toolbar}</div>}
-        <div className="flex gap-1 overflow-x-auto">{tabs}</div>
+        <div className="flex gap-1 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">{tabs}</div>
       </div>
 
       {/* Scrollable content area — only this section scrolls */}
@@ -51,7 +51,7 @@ export function TabButton({ active, onClick, icon: Icon, label }: TabButtonProps
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap flex-shrink-0",
         active
           ? "bg-brand-gradient text-white shadow-glow"
           : "text-muted-foreground hover:bg-muted hover:text-foreground",

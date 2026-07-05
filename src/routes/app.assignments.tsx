@@ -26,6 +26,8 @@ import {
   File,
   Send,
   Loader2,
+  TrendingUp,
+  TrendingDown,
   ArrowRight,
 } from "lucide-react";
 import { useAuth } from "@/lib/scholarii/auth";
@@ -175,41 +177,32 @@ const ASSIGNMENTS: Assignment[] = [
   },
 ];
 
-const STATUS_CONFIG: Record<
-  AssignmentStatus,
-  { label: string; color: string; bg: string; border: string }
-> = {
-  not_submitted: {
-    label: "Not Submitted",
-    color: "text-red-400",
-    bg: "bg-red-500/10",
-    border: "border-red-500/20",
-  },
-  in_progress: {
-    label: "In Progress",
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/20",
-  },
-  submitted: {
-    label: "Submitted",
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
-  },
-  verified: {
-    label: "Verified",
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-500/20",
-  },
+const SUBJECT_COLORS: Record<string, string> = {
+  Mathematics: "text-blue-600",
+  Science: "text-cyan-600",
+  English: "text-emerald-600",
+  "Computer Science": "text-violet-600",
 };
 
-const SUBJECT_ICONS: Record<string, string> = {
-  Mathematics: "📐",
-  Science: "🔬",
-  English: "📝",
-  "Computer Science": "💻",
+const SUBJECT_ICON_BG: Record<string, string> = {
+  Mathematics: "bg-blue-500/10",
+  Science: "bg-cyan-500/10",
+  English: "bg-emerald-500/10",
+  "Computer Science": "bg-violet-500/10",
+};
+
+const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
+  not_submitted: { label: "Not Submitted", color: "text-red-500", bg: "bg-red-500/10" },
+  in_progress: { label: "Pending", color: "text-amber-500", bg: "bg-amber-500/10" },
+  submitted: { label: "Submitted", color: "text-blue-500", bg: "bg-blue-500/10" },
+  verified: { label: "Verified", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+};
+
+const SUBJECT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  Mathematics: BookOpen,
+  Science: FileCheck,
+  English: File,
+  "Computer Science": GraduationCap,
 };
 
 const FILTER_OPTIONS: { value: string; label: string }[] = [
@@ -294,53 +287,57 @@ function AssignmentsPage() {
   return (
     <div className="space-y-6 p-6 pb-20 md:p-8">
       {/* Header */}
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25">
-            <ClipboardList className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-              Assignments
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              View assignments from your teachers, track progress, submit work, and get AI guidance.
-            </p>
-          </div>
+      <div className="flex items-start gap-3 mb-6 px-0">
+        <div className="w-12 h-12 rounded-2xl bg-violet-600 flex items-center justify-center flex-shrink-0">
+          <ClipboardList size={24} className="text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Assignments</h1>
+          <p className="text-sm text-gray-500 mt-0.5 leading-snug">
+            View assignments from your teachers, track progress, submit work, and get AI guidance.
+          </p>
         </div>
       </div>
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+      <div className="flex flex-col gap-3 mb-6">
         <MetricCard
-          icon={<ClipboardList className="h-5 w-5 text-blue-400" />}
+          icon={BookOpen}
           label="Total Assignments"
-          value={metrics.total}
-          accent="from-blue-500 to-indigo-600"
+          value={String(metrics.total)}
+          trend="up"
+          trendLabel="All assignments this term"
+          tone="info"
         />
         <MetricCard
-          icon={<Clock className="h-5 w-5 text-amber-400" />}
+          icon={Clock}
           label="Pending"
-          value={metrics.pending}
-          accent="from-amber-500 to-orange-600"
+          value={String(metrics.pending)}
+          trend="up"
+          trendLabel="Need your attention"
+          tone="warning"
         />
         <MetricCard
-          icon={<Send className="h-5 w-5 text-cyan-400" />}
+          icon={FileCheck}
           label="Submitted"
-          value={metrics.submitted}
-          accent="from-cyan-500 to-blue-600"
+          value={String(metrics.submitted)}
+          trend="up"
+          trendLabel="Awaiting review"
+          tone="info"
         />
         <MetricCard
-          icon={<CheckCircle2 className="h-5 w-5 text-emerald-400" />}
+          icon={CheckCircle2}
           label="Verified"
-          value={metrics.verified}
-          accent="from-emerald-500 to-green-600"
+          value={String(metrics.verified)}
+          trend="up"
+          trendLabel="Completed"
+          tone="success"
         />
       </div>
 
       {/* Filters & Search */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide -mx-4 px-4">
           {FILTER_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -355,14 +352,14 @@ function AssignmentsPage() {
             </button>
           ))}
         </div>
-        <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           <input
             type="text"
             placeholder="Search by title, subject, teacher..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-border/50 bg-muted/30 py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 sm:w-80"
+            className="w-full rounded-xl border border-gray-200 bg-muted/30 py-2.5 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-violet-500"
           />
         </div>
       </div>
@@ -423,32 +420,61 @@ function AssignmentsPage() {
 }
 
 function MetricCard({
-  icon,
+  icon: Icon,
   label,
   value,
-  accent,
+  trend,
+  trendLabel,
+  tone,
 }: {
-  icon: React.ReactNode;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
-  value: number;
-  accent: string;
+  value: string;
+  trend: "up" | "down" | "stable";
+  trendLabel: string;
+  tone: "success" | "warning" | "info" | "default";
 }) {
+  const toneStyles = {
+    success: "from-emerald-500/10 to-emerald-600/5",
+    warning: "from-amber-500/10 to-amber-600/5",
+    info: "from-blue-500/10 to-blue-600/5",
+    default: "from-slate-500/10 to-slate-600/5",
+  };
+
+  const iconBg = {
+    success: "bg-emerald-500/10 text-emerald-600",
+    warning: "bg-amber-500/10 text-amber-600",
+    info: "bg-blue-500/10 text-blue-600",
+    default: "bg-slate-500/10 text-slate-600",
+  };
+
   return (
-    <Card className="relative overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm">
-      <CardContent className="p-4">
-        <div className={`absolute -right-3 -top-3 h-16 w-16 rounded-full bg-gradient-to-br ${accent} opacity-10 blur-xl`} />
-        <div className="flex items-center justify-between w-full">
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              {label}
-            </p>
-            <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
-          </div>
-          <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${accent} shadow-lg flex-shrink-0`}>
-            {icon}
-          </div>
+    <Card className="relative overflow-hidden px-5 py-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between min-h-[80px]">
+      <div className={`absolute inset-0 bg-gradient-to-br ${toneStyles[tone]} opacity-50`} />
+      <div className="relative flex items-start justify-between">
+        <p className="text-sm font-medium text-muted-foreground leading-tight max-w-[70%]">{label}</p>
+        <div className={`rounded-xl p-2.5 ${iconBg[tone]} flex-shrink-0 ml-2`}>
+          <Icon className="size-6" />
         </div>
-      </CardContent>
+      </div>
+      <div className="relative mt-2">
+        <p className="text-4xl font-bold text-foreground leading-tight break-words">{value}</p>
+        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+          {trend === "up" && <TrendingUp className="size-3 text-emerald-500 shrink-0" />}
+          {trend === "down" && <TrendingDown className="size-3 text-red-500 shrink-0" />}
+          <span
+            className={`text-xs font-medium ${
+              trend === "up"
+                ? "text-emerald-600"
+                : trend === "down"
+                  ? "text-red-500"
+                  : "text-muted-foreground"
+            }`}
+          >
+            {trendLabel}
+          </span>
+        </div>
+      </div>
     </Card>
   );
 }
@@ -462,63 +488,30 @@ function AssignmentCard({
   onSelect: () => void;
   onAi: () => void;
 }) {
-  const st = STATUS_CONFIG[assignment.status];
-  const icon = SUBJECT_ICONS[assignment.subject] || "📚";
+  const st = STATUS_BADGE[assignment.status];
+  const SubIcon = SUBJECT_ICONS[assignment.subject] || BookOpen;
+  const subjectColor = SUBJECT_COLORS[assignment.subject] || "text-gray-600";
+  const iconBg = SUBJECT_ICON_BG[assignment.subject] || "bg-gray-500/10";
 
   return (
-    <Card
-      className="group cursor-pointer border-border/40 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
+    <div
+      className="bg-white rounded-xl shadow-sm p-4 mb-3 overflow-hidden group cursor-pointer transition-all hover:shadow-md"
       onClick={onSelect}
     >
-      <CardContent className="p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex-1 space-y-2.5">
-            <div className="flex items-center gap-2.5">
-              <span className="text-xl">{icon}</span>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  {assignment.subject}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Teacher: {assignment.teacher}
-                </p>
-              </div>
-            </div>
-            <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-              {assignment.title}
-            </h3>
-            <p className="text-sm text-muted-foreground line-clamp-2">{assignment.description}</p>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
-                Created: {assignment.createdDate}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                Due: {assignment.deadline}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-            <Badge variant="outline" className={`${st.bg} ${st.color} ${st.border} border text-xs`}>
-              {st.label}
-            </Badge>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-0 gap-1.5 text-xs text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 sm:mt-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                onAi();
-              }}
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              Do With AI
-            </Button>
-          </div>
+      <div className="flex items-start gap-3">
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+          <SubIcon className={`size-5 ${subjectColor}`} />
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex-1 min-w-0">
+          <p className={`text-xs font-semibold uppercase ${subjectColor}`}>{assignment.subject}</p>
+          <p className="text-base font-bold text-gray-900 mt-0.5 leading-snug truncate">{assignment.title}</p>
+          <p className="text-xs text-gray-400 mt-1">Due: {assignment.deadline}</p>
+        </div>
+        <span className={`text-xs px-3 py-1 rounded-full flex-shrink-0 font-medium ${st.bg} ${st.color}`}>
+          {st.label}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -533,14 +526,16 @@ function AssignmentDetail({
   onFileUpload: (id: string) => void;
   onOpenAi: () => void;
 }) {
-  const st = STATUS_CONFIG[assignment.status];
-  const icon = SUBJECT_ICONS[assignment.subject] || "📚";
+  const st = STATUS_BADGE[assignment.status];
+  const SubIcon = SUBJECT_ICONS[assignment.subject] || BookOpen;
+  const subjectColor = SUBJECT_COLORS[assignment.subject] || "text-gray-600";
+  const iconBg = SUBJECT_ICON_BG[assignment.subject] || "bg-gray-500/10";
 
   return (
     <div className="space-y-6">
       <SheetHeader>
         <SheetTitle className="flex items-center gap-2 text-lg">
-          <span className="text-xl">{icon}</span>
+          <SubIcon className={`size-5 ${subjectColor}`} />
           Assignment Details
         </SheetTitle>
         <SheetDescription>
@@ -551,8 +546,8 @@ function AssignmentDetail({
       <div className="space-y-5">
         {/* Subject & Teacher */}
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-600/20 text-xl">
-            {icon}
+          <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${iconBg}`}>
+            <SubIcon className={`size-6 ${subjectColor}`} />
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -561,7 +556,7 @@ function AssignmentDetail({
             <p className="text-sm text-foreground font-medium">{assignment.teacher}</p>
           </div>
           <div className="ml-auto">
-            <Badge variant="outline" className={`${st.bg} ${st.color} ${st.border} border`}>
+            <Badge variant="outline" className={`${st.bg} ${st.color} border-0`}>
               {st.label}
             </Badge>
           </div>
@@ -667,7 +662,7 @@ function AssignmentDetail({
                   <p className="text-sm font-medium text-foreground">{assignment.fileName}</p>
                   <p className="text-xs text-muted-foreground">Uploaded: {assignment.uploadDate}</p>
                 </div>
-                <Badge variant="outline" className={`${st.bg} ${st.color} ${st.border} border text-xs`}>
+                <Badge variant="outline" className={`${st.bg} ${st.color} border-0 text-xs`}>
                   {st.label}
                 </Badge>
               </div>

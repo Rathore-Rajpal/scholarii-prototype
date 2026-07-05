@@ -50,7 +50,7 @@ import {
 
 export const Route = createFileRoute("/app/attendance")({
   component: () => (
-    <RoleGuard allowedRoles={["teacher"]}>
+    <RoleGuard allowedRoles={["teacher", "student"]}>
       <AttendancePage />
     </RoleGuard>
   ),
@@ -237,25 +237,25 @@ function AttendancePage() {
           <div className="space-y-4">
             {/* Controls */}
             <Card className="p-4 border-2 border-border/60">
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
                 <div className="flex items-center gap-2">
                   <Calendar className="size-4 text-muted-foreground" />
                   <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}
-                    className="h-9 px-3 rounded-lg border border-border bg-background text-sm" />
+                    className="h-9 px-3 rounded-lg border border-border bg-background text-sm flex-1 md:flex-none" />
                 </div>
                 <Select value={selectedClass} onValueChange={setSelectedClass}>
-                  <SelectTrigger className="w-28"><SelectValue placeholder="Class" /></SelectTrigger>
+                  <SelectTrigger className="w-full md:w-28"><SelectValue placeholder="Class" /></SelectTrigger>
                   <SelectContent>{TEACHER_CLASSES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                  <SelectTrigger className="w-40"><SelectValue placeholder="Subject" /></SelectTrigger>
+                  <SelectTrigger className="w-full md:w-40"><SelectValue placeholder="Subject" /></SelectTrigger>
                   <SelectContent>{TEACHER_SUBJECTS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={selectedLecture} onValueChange={setSelectedLecture}>
-                  <SelectTrigger className="w-48"><SelectValue placeholder="Lecture" /></SelectTrigger>
+                  <SelectTrigger className="w-full md:w-48"><SelectValue placeholder="Lecture" /></SelectTrigger>
                   <SelectContent>{TEACHER_LECTURES.map((l) => <SelectItem key={l.id} value={l.id}>{l.time} — {l.class}</SelectItem>)}</SelectContent>
                 </Select>
-                <div className="relative flex-1 min-w-[200px]">
+                <div className="relative flex-1 min-w-0">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input placeholder="Search students..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
                 </div>
@@ -283,7 +283,7 @@ function AttendancePage() {
             {/* Student List */}
             <Card className="border-2 border-border/60 overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm hidden md:table">
                   <thead className="bg-muted/50">
                     <tr>
                       <th className="text-left p-3 text-xs font-medium text-muted-foreground w-12">Roll</th>
@@ -331,6 +331,39 @@ function AttendancePage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+              <div className="md:hidden p-3 space-y-2">
+                {filteredStudents.map((student) => {
+                  const currentStatus = attendanceRecords[student.id];
+                  return (
+                    <div key={student.id} className="flex items-center gap-2 p-2 rounded-lg border border-border/50">
+                      <Avatar className="size-7 shrink-0">
+                        <AvatarFallback className={cn("text-[10px] text-white",
+                          student.attendance >= 90 ? "bg-emerald-500" :
+                          student.attendance >= 80 ? "bg-amber-500" : "bg-red-500"
+                        )}>{student.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{student.name}</p>
+                        <p className="text-[10px] text-muted-foreground">Roll #{student.roll} · {student.attendance}%</p>
+                      </div>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        {(["present", "absent", "late", "leave"] as const).map((status) => {
+                          const cfg = statusConfig[status];
+                          const isActive = currentStatus === status;
+                          return (
+                            <button key={status} onClick={() => handleAttendanceChange(student.id, status)} className={cn(
+                              "px-1.5 py-1 rounded text-[9px] font-medium transition-all border",
+                              isActive ? `${cfg.bg} ${cfg.color} ${cfg.border}` : "border-transparent text-muted-foreground",
+                            )}>
+                              {cfg.label.charAt(0)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </Card>
 
@@ -388,7 +421,7 @@ function AttendancePage() {
                 {filteredReportDays.map((day, i) => (
                   <div key={day.date}>
                     <div className="flex items-center gap-4 py-3">
-                      <div className="w-32 shrink-0">
+                      <div className="w-20 sm:w-32 shrink-0">
                         <div className="text-sm font-medium">{day.date}</div>
                         <div className="text-[10px] text-muted-foreground">{day.day}</div>
                       </div>
@@ -402,7 +435,7 @@ function AttendancePage() {
                             </>
                           )}
                         </div>
-                        <div className="flex items-center gap-3 text-[10px] shrink-0 w-36">
+                        <div className="hidden sm:flex items-center gap-3 text-[10px] shrink-0 w-36">
                           <span className="text-emerald-600 font-medium">{day.present} Present</span>
                           <span className="text-red-600 font-medium">{day.absent} Absent</span>
                         </div>
@@ -507,7 +540,7 @@ function AttendancePage() {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-4 gap-3 mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
                   {[
                     { label: "Attendance", value: `${selectedStudent.attendance}%`, color: "text-emerald-600" },
                     { label: "Present Days", value: "105", color: "text-emerald-600" },
@@ -591,14 +624,14 @@ function AttendancePage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2 mt-3 pt-3 border-t border-border/50">
-                    <Button variant="outline" size="sm" className="text-xs flex-1">
+                  <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border/50">
+                    <Button variant="outline" size="sm" className="text-xs flex-1 min-w-[100px]">
                       <Phone className="size-3.5 mr-1" />Notify Parent
                     </Button>
-                    <Button variant="outline" size="sm" className="text-xs flex-1">
+                    <Button variant="outline" size="sm" className="text-xs flex-1 min-w-[100px]">
                       <Edit className="size-3.5 mr-1" />Add Note
                     </Button>
-                    <Button variant="outline" size="sm" className="text-xs flex-1">
+                    <Button variant="outline" size="sm" className="text-xs flex-1 min-w-[100px]">
                       <Calendar className="size-3.5 mr-1" />Schedule PTA
                     </Button>
                   </div>
@@ -631,8 +664,8 @@ function AttendancePage() {
         {activeTab === "analytics" && (
           <div className="space-y-4">
             {/* Monthly Trend + Weekly Trend */}
-            <div className="grid lg:grid-cols-2 gap-4">
-              <Card className="p-5 border-2 border-border/60">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card className="p-5 border-2 border-border/60 -mx-4 md:mx-0 rounded-none md:rounded-xl">
                 <h3 className="text-sm font-semibold mb-4">Monthly Attendance Trend</h3>
                 <ChartContainer config={monthlyChartConfig} className="h-[240px] w-full">
                   <LineChart data={MONTHLY_TRENDS} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
@@ -645,7 +678,7 @@ function AttendancePage() {
                 </ChartContainer>
               </Card>
 
-              <Card className="p-5 border-2 border-border/60">
+              <Card className="p-5 border-2 border-border/60 -mx-4 md:mx-0 rounded-none md:rounded-xl">
                 <h3 className="text-sm font-semibold mb-4">Weekly Attendance Trend</h3>
                 <ChartContainer config={weeklyChartConfig} className="h-[240px] w-full">
                   <BarChart data={WEEKLY_TRENDS} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
@@ -660,8 +693,8 @@ function AttendancePage() {
             </div>
 
             {/* Attendance Distribution + Class Comparison */}
-            <div className="grid lg:grid-cols-2 gap-4">
-              <Card className="p-5 border-2 border-border/60">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card className="p-5 border-2 border-border/60 -mx-4 md:mx-0 rounded-none md:rounded-xl">
                 <h3 className="text-sm font-semibold mb-4">Attendance Distribution</h3>
                 <ChartContainer config={distributionChartConfig} className="h-[240px] w-full">
                   <PieChart>
@@ -683,7 +716,7 @@ function AttendancePage() {
                 </div>
               </Card>
 
-              <Card className="p-5 border-2 border-border/60">
+              <Card className="p-5 border-2 border-border/60 -mx-4 md:mx-0 rounded-none md:rounded-xl">
                 <h3 className="text-sm font-semibold mb-4">Class Comparison</h3>
                 <ChartContainer config={classChartConfig} className="h-[240px] w-full">
                   <BarChart data={CLASS_COMPARISON} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
@@ -735,8 +768,8 @@ function AttendancePage() {
             </Card>
 
             {/* Top Attendees + Most Absent */}
-            <div className="grid lg:grid-cols-2 gap-4">
-              <Card className="p-5 border-2 border-border/60">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card className="p-5 border-2 border-border/60 -mx-4 md:mx-0 rounded-none md:rounded-xl">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="size-8 rounded-lg bg-emerald-500/10 grid place-items-center">
                     <TrendingUp className="size-4 text-emerald-600" />
@@ -763,7 +796,7 @@ function AttendancePage() {
                 </div>
               </Card>
 
-              <Card className="p-5 border-2 border-border/60">
+              <Card className="p-5 border-2 border-border/60 -mx-4 md:mx-0 rounded-none md:rounded-xl">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="size-8 rounded-lg bg-red-500/10 grid place-items-center">
                     <TrendingDown className="size-4 text-red-600" />
