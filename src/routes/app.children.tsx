@@ -27,6 +27,7 @@ import {
   Baby,
 } from "lucide-react";
 import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 
 export const Route = createFileRoute("/app/children")({
   component: ChildrenPage,
@@ -77,51 +78,6 @@ const CHILDREN: Child[] = [
     color: "#ec4899",
   },
 ];
-
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  tone: "success" | "warning" | "info" | "default";
-}) {
-  const toneStyles = {
-    success: "from-emerald-500/10 to-emerald-600/5 text-emerald-600",
-    warning: "from-amber-500/10 to-amber-600/5 text-amber-600",
-    info: "from-violet-500/10 to-violet-600/5 text-violet-600",
-    default: "from-slate-500/10 to-slate-600/5 text-slate-600",
-  };
-
-  const iconBg = {
-    success: "bg-emerald-500/10",
-    warning: "bg-amber-500/10",
-    info: "bg-violet-500/10",
-    default: "bg-slate-500/10",
-  };
-
-  return (
-    <Card className="relative overflow-hidden p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${toneStyles[tone]} opacity-50`}
-      />
-      <div className="relative flex items-center gap-3">
-        <div className={`rounded-xl p-2 ${iconBg[tone]}`}>
-          <Icon className="size-4" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-muted-foreground truncate">
-            {label}
-          </p>
-          <p className="text-xl font-bold tracking-tight">{value}</p>
-        </div>
-      </div>
-    </Card>
-  );
-}
 
 function ChildrenPage() {
   const { user, parentMode } = useAuth();
@@ -181,38 +137,38 @@ function ChildrenPage() {
   const pendingFees = CHILDREN.filter((c) => c.feeStatus === "Pending").length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">
           My Children
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
           View and monitor your enrolled children at a glance.
         </p>
       </div>
 
       {/* Summary Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <KpiCard
           icon={Users}
           label="Total Children"
           value={`${totalChildren} Children`}
           tone="default"
         />
-        <MetricCard
+        <KpiCard
           icon={ClipboardCheck}
           label="Avg Attendance"
           value={`${avgAttendance}%`}
           tone="success"
         />
-        <MetricCard
+        <KpiCard
           icon={TrendingUp}
           label="Avg Academic Score"
           value={`${avgScore}%`}
           tone="info"
         />
-        <MetricCard
+        <KpiCard
           icon={AlertTriangle}
           label="Pending Fee Actions"
           value={pendingFees > 0 ? `${pendingFees} Pending` : "None"}
@@ -246,18 +202,18 @@ function ChildrenPage() {
 
       {/* Children Grid */}
       {filteredChildren.length === 0 ? (
-        <Card className="p-12 text-center">
+        <Card className="p-8 sm:p-12 text-center">
           <div className="space-y-2">
-            <p className="text-lg font-medium text-muted-foreground">
+            <p className="text-base sm:text-lg font-medium text-muted-foreground">
               No children found
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Try adjusting your search or filter.
             </p>
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {filteredChildren.map((child) => (
             <ChildCard key={child.id} child={child} />
           ))}
@@ -286,12 +242,12 @@ function ChildCard({ child }: { child: Child }) {
         style={{ background: child.color }}
       />
 
-      <div className="p-5 pt-6">
+      <div className="p-4 sm:p-5 pt-5 sm:pt-6">
         {/* Avatar + Name + Grade */}
-        <div className="flex items-start gap-4">
-          <Avatar className="size-14 border-2 border-background shadow-md shrink-0">
+        <div className="flex items-start gap-3 sm:gap-4">
+          <Avatar className="size-11 sm:size-14 border-2 border-background shadow-md shrink-0">
             <AvatarFallback
-              className="font-bold text-lg"
+              className="font-bold text-sm sm:text-lg"
               style={{ backgroundColor: child.color, color: "white" }}
             >
               {initials}
@@ -299,17 +255,17 @@ function ChildCard({ child }: { child: Child }) {
           </Avatar>
 
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold tracking-tight truncate">
+            <h3 className="text-base sm:text-lg font-bold tracking-tight truncate">
               {child.name}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Class {child.class}-{child.section} · Roll {child.roll}
             </p>
           </div>
 
           <Badge
             variant="outline"
-            className="text-xs font-bold shrink-0"
+            className="text-[10px] sm:text-xs font-bold shrink-0"
             style={{
               backgroundColor: `${child.color}15`,
               color: child.color,
@@ -321,41 +277,41 @@ function ChildCard({ child }: { child: Child }) {
         </div>
 
         {/* Quick Metrics - 2x2 Grid */}
-        <div className="grid grid-cols-2 gap-3 mt-5">
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-muted/40">
-            <div className="rounded-lg bg-emerald-500/10 p-1.5">
-              <ClipboardCheck className="size-3.5 text-emerald-600" />
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mt-4 sm:mt-5">
+          <div className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl bg-muted/40 min-h-[52px]">
+            <div className="rounded-lg bg-emerald-500/10 p-2 shrink-0">
+              <ClipboardCheck className="size-4 text-emerald-600" />
             </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground uppercase tracking-wider">
                 Attendance
               </p>
-              <p className="text-sm font-bold">{child.attendance}%</p>
+              <p className="text-sm sm:text-base font-bold">{child.attendance}%</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-muted/40">
-            <div className="rounded-lg bg-violet-500/10 p-1.5">
-              <GraduationCap className="size-3.5 text-violet-600" />
+          <div className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl bg-muted/40 min-h-[52px]">
+            <div className="rounded-lg bg-violet-500/10 p-2 shrink-0">
+              <GraduationCap className="size-4 text-violet-600" />
             </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground uppercase tracking-wider">
                 Academic
               </p>
-              <p className="text-sm font-bold">{child.academicScore}%</p>
+              <p className="text-sm sm:text-base font-bold">{child.academicScore}%</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-muted/40">
-            <div className="rounded-lg bg-blue-500/10 p-1.5">
-              <Wallet className="size-3.5 text-blue-600" />
+          <div className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl bg-muted/40 min-h-[52px]">
+            <div className="rounded-lg bg-blue-500/10 p-2 shrink-0">
+              <Wallet className="size-4 text-blue-600" />
             </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground uppercase tracking-wider">
                 Fee Status
               </p>
               <p
-                className={`text-sm font-bold ${
+                className={`text-sm sm:text-base font-bold ${
                   child.feeStatus === "Paid"
                     ? "text-emerald-600"
                     : "text-amber-600"
@@ -366,26 +322,26 @@ function ChildCard({ child }: { child: Child }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-muted/40">
-            <div className="rounded-lg bg-amber-500/10 p-1.5">
-              <CalendarDays className="size-3.5 text-amber-600" />
+          <div className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl bg-muted/40 min-h-[52px]">
+            <div className="rounded-lg bg-amber-500/10 p-2 shrink-0">
+              <CalendarDays className="size-4 text-amber-600" />
             </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground uppercase tracking-wider">
                 Upcoming
               </p>
-              <p className="text-sm font-bold truncate">{child.upcoming.split("·")[0].trim()}</p>
+              <p className="text-sm sm:text-base font-bold truncate">{child.upcoming.split("·")[0].trim()}</p>
             </div>
           </div>
         </div>
 
         {/* Term Progress */}
-        <div className="mt-4">
-          <div className="flex items-center justify-between text-sm mb-2">
-            <span className="text-muted-foreground text-xs">Term Progress</span>
-            <span className="font-bold text-sm">{child.termProgress}%</span>
+        <div className="mt-3 sm:mt-4">
+          <div className="flex items-center justify-between text-xs sm:text-sm mb-1.5 sm:mb-2">
+            <span className="text-muted-foreground text-[10px] sm:text-xs">Term Progress</span>
+            <span className="font-bold text-xs sm:text-sm">{child.termProgress}%</span>
           </div>
-          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+          <div className="h-1.5 sm:h-2 w-full rounded-full bg-muted overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{
@@ -397,16 +353,16 @@ function ChildCard({ child }: { child: Child }) {
         </div>
 
         {/* Next Event + View Button */}
-        <div className="mt-4 flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/40">
-          <div className="flex items-center gap-2 text-sm">
-            <CalendarDays className="size-3.5 text-muted-foreground" />
+        <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 p-3 rounded-xl bg-muted/30 border border-border/40">
+          <div className="flex items-center gap-2 text-xs sm:text-sm">
+            <CalendarDays className="size-3 sm:size-3.5 text-muted-foreground" />
             <span className="text-muted-foreground">Next:</span>
-            <span className="font-medium">{child.upcoming}</span>
+            <span className="font-medium truncate">{child.upcoming}</span>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="gap-1.5 text-violet-600 hover:text-violet-700 hover:bg-violet-500/10"
+            className="gap-1.5 text-violet-600 hover:text-violet-700 hover:bg-violet-500/10 self-end sm:self-auto"
             onClick={() =>
               nav({ to: `/app/children/progress/${child.id}` as never })
             }

@@ -42,6 +42,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/lib/scholarii/auth";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 
 export const Route = createFileRoute("/app/children/progress/$childId")({
   component: StudentProgressPage,
@@ -209,51 +210,10 @@ function getChildProgressData(childId: string): ChildProgressData {
   return children[childId] || children.child1;
 }
 
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  tone: "success" | "warning" | "info" | "default";
-}) {
-  const toneStyles = {
-    success: "from-emerald-500/10 to-emerald-600/5 text-emerald-600",
-    warning: "from-amber-500/10 to-amber-600/5 text-amber-600",
-    info: "from-violet-500/10 to-violet-600/5 text-violet-600",
-    default: "from-slate-500/10 to-slate-600/5 text-slate-600",
-  };
-
-  const iconBg = {
-    success: "bg-emerald-500/10",
-    warning: "bg-amber-500/10",
-    info: "bg-violet-500/10",
-    default: "bg-slate-500/10",
-  };
-
-  return (
-    <Card className="relative overflow-hidden p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-      <div className={`absolute inset-0 bg-gradient-to-br ${toneStyles[tone]} opacity-50`} />
-      <div className="relative flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">{label}</p>
-          <p className="text-3xl font-bold tracking-tight">{value}</p>
-        </div>
-        <div className={`rounded-xl p-2.5 ${iconBg[tone]}`}>
-          <Icon className="size-5" />
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+    <div className="flex items-center justify-between mb-3 sm:mb-4">
+      <h2 className="text-base sm:text-lg font-semibold tracking-tight">{title}</h2>
       {action}
     </div>
   );
@@ -275,49 +235,51 @@ function StudentProgressPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate({ to: "/app/children" })}
-          className="shrink-0"
+          className="shrink-0 size-9 sm:size-10"
         >
-          <ArrowLeft className="size-5" />
+          <ArrowLeft className="size-4 sm:size-5" />
         </Button>
-        <div className="flex items-center gap-4 flex-1 min-w-0">
-          <Avatar className="size-14 border-2 border-background shadow-md">
-            <AvatarFallback className="bg-violet-500/10 text-violet-600 font-bold text-lg">
+        <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+          <Avatar className="size-11 sm:size-14 border-2 border-background shadow-md">
+            <AvatarFallback className="bg-violet-500/10 text-violet-600 font-bold text-sm sm:text-lg">
               {data.name.charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight">{data.name}</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-lg sm:text-2xl font-bold tracking-tight">{data.name}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Class {data.class}-{data.section} · Roll {data.roll}
             </p>
           </div>
         </div>
         <Button
           variant="outline"
+          size="sm"
           onClick={() => navigate({ to: "/app/attendance" as never })}
+          className="hidden sm:flex"
         >
           View Full Attendance
         </Button>
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard icon={TrendingUp} label="Overall Score" value={`${overallScore}%`} tone="info" />
-        <MetricCard icon={CheckCircle2} label="Attendance" value={`${attendance}%`} tone="success" />
-        <MetricCard
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <KpiCard icon={TrendingUp} label="Overall Score" value={`${overallScore}%`} tone="info" />
+        <KpiCard icon={CheckCircle2} label="Attendance" value={`${attendance}%`} tone="success" />
+        <KpiCard
           icon={Trophy}
           label="Strongest Subject"
           value={data.strengths[0]?.subject || "N/A"}
           tone="success"
         />
-        <MetricCard
+        <KpiCard
           icon={Target}
           label="Focus Area"
           value={data.focusAreas[0]?.subject || "N/A"}
@@ -328,14 +290,14 @@ function StudentProgressPage() {
       {/* Performance Charts */}
       <SectionHeader title="Academic Performance" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="p-5">
+        <Card className="p-4 sm:p-5">
           <h3 className="font-semibold mb-1">Performance Trend</h3>
-          <p className="text-sm text-muted-foreground mb-4">Average marks over the last 6 months</p>
-          <ChartContainer config={performanceChartConfig} className="h-[240px] w-full">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">Average marks over the last 6 months</p>
+          <ChartContainer config={performanceChartConfig} className="h-[200px] sm:h-[240px] w-full">
             <LineChart data={data.monthlyPerformance} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} className="text-muted-foreground" />
-              <YAxis domain={[50, 100]} tick={{ fontSize: 12 }} className="text-muted-foreground" />
+              <XAxis dataKey="month" tick={{ fontSize: 11 }} className="text-muted-foreground" />
+              <YAxis domain={[50, 100]} tick={{ fontSize: 11 }} className="text-muted-foreground" />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line
                 type="monotone"
@@ -349,16 +311,16 @@ function StudentProgressPage() {
           </ChartContainer>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-4 sm:p-5">
           <h3 className="font-semibold mb-1">Subject Performance</h3>
-          <p className="text-sm text-muted-foreground mb-4">Marks percentage by subject</p>
-          <ChartContainer config={subjectChartConfig} className="h-[240px] w-full">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">Marks percentage by subject</p>
+          <ChartContainer config={subjectChartConfig} className="h-[200px] sm:h-[240px] w-full">
             <BarChart data={data.subjectScores} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" vertical={false} />
-              <XAxis dataKey="subject" tick={{ fontSize: 11 }} className="text-muted-foreground" />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} className="text-muted-foreground" />
+              <XAxis dataKey="subject" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+              <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} className="text-muted-foreground" />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="score" fill="var(--color-score)" radius={[6, 6, 0, 0]} barSize={40} />
+              <Bar dataKey="score" fill="var(--color-score)" radius={[6, 6, 0, 0]} barSize={32} />
             </BarChart>
           </ChartContainer>
         </Card>
@@ -366,16 +328,16 @@ function StudentProgressPage() {
 
       {/* Attendance & Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="p-5">
-          <h3 className="font-semibold mb-4">Attendance Breakdown</h3>
-          <ChartContainer config={attendancePieConfig} className="h-[200px] w-full">
+        <Card className="p-4 sm:p-5">
+          <h3 className="font-semibold mb-3 sm:mb-4">Attendance Breakdown</h3>
+          <ChartContainer config={attendancePieConfig} className="h-[180px] sm:h-[200px] w-full">
             <PieChart>
               <Pie
                 data={data.attendanceBreakdown}
                 cx="50%"
                 cy="50%"
-                innerRadius={55}
-                outerRadius={80}
+                innerRadius={50}
+                outerRadius={70}
                 paddingAngle={3}
                 dataKey="value"
               >
@@ -386,9 +348,9 @@ function StudentProgressPage() {
               <ChartTooltip content={<ChartTooltipContent />} />
             </PieChart>
           </ChartContainer>
-          <div className="flex justify-center gap-4 mt-2">
+          <div className="flex justify-center gap-3 sm:gap-4 mt-2">
             {data.attendanceBreakdown.map((entry) => (
-              <div key={entry.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div key={entry.name} className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground">
                 <div className="size-2 rounded-full" style={{ background: entry.color }} />
                 {entry.name} ({entry.value})
               </div>
@@ -396,9 +358,9 @@ function StudentProgressPage() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-4 sm:p-5">
           <h3 className="font-semibold mb-3">Strength Areas</h3>
-          <div className="space-y-3">
+          <div className="space-y-2.5 sm:space-y-3">
             {data.strengths.map((s) => (
               <div key={s.subject} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -406,11 +368,11 @@ function StudentProgressPage() {
                     <Trophy className="size-3.5 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{s.subject}</p>
-                    <p className="text-xs text-muted-foreground">{s.teacher}</p>
+                    <p className="text-xs sm:text-sm font-medium">{s.subject}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">{s.teacher}</p>
                   </div>
                 </div>
-                <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                <Badge variant="outline" className="text-[10px] sm:text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
                   {s.score}%
                 </Badge>
               </div>
@@ -418,18 +380,18 @@ function StudentProgressPage() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-4 sm:p-5">
           <h3 className="font-semibold mb-3">Focus Areas</h3>
-          <div className="space-y-3">
+          <div className="space-y-2.5 sm:space-y-3">
             {data.focusAreas.map((f) => (
-              <div key={f.subject} className="flex items-start gap-3">
+              <div key={f.subject} className="flex items-start gap-2.5 sm:gap-3">
                 <div className="rounded-lg bg-amber-500/10 p-1.5 mt-0.5">
                   <Target className="size-3.5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{f.subject}</p>
-                  <p className="text-xs text-muted-foreground">{f.reason}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Teacher: {f.teacher}</p>
+                  <p className="text-xs sm:text-sm font-medium">{f.subject}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{f.reason}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Teacher: {f.teacher}</p>
                 </div>
               </div>
             ))}
@@ -438,28 +400,28 @@ function StudentProgressPage() {
       </div>
 
       {/* Recent Grades */}
-      <Card className="p-5">
+      <Card className="p-4 sm:p-5">
         <SectionHeader title="Recent Grades" />
-        <div className="space-y-3">
+        <div className="space-y-2.5 sm:space-y-3">
           {data.recentGrades.map((grade, i) => (
             <div
               key={`${grade.subject}-${i}`}
               className="flex items-center justify-between p-3 rounded-xl border border-border/50"
             >
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-violet-500/10 p-2">
-                  <BookOpen className="size-4 text-violet-600" />
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="rounded-lg bg-violet-500/10 p-1.5 sm:p-2">
+                  <BookOpen className="size-3.5 sm:size-4 text-violet-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{grade.subject}</p>
-                  <p className="text-xs text-muted-foreground">{grade.date}</p>
+                  <p className="text-xs sm:text-sm font-medium">{grade.subject}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{grade.date}</p>
                 </div>
               </div>
-              <div className="text-right">
-                <Badge variant="outline" className="text-sm font-bold">
+              <div className="text-right shrink-0">
+                <Badge variant="outline" className="text-xs sm:text-sm font-bold">
                   {grade.grade}
                 </Badge>
-                <p className="text-xs text-muted-foreground mt-1">{grade.score}%</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{grade.score}%</p>
               </div>
             </div>
           ))}
@@ -467,26 +429,26 @@ function StudentProgressPage() {
       </Card>
 
       {/* Upcoming Exams */}
-      <Card className="p-5">
+      <Card className="p-4 sm:p-5">
         <SectionHeader title="Upcoming Exams" />
-        <div className="space-y-3">
+        <div className="space-y-2.5 sm:space-y-3">
           {data.upcomingExams.map((exam, i) => (
             <div
               key={`${exam.subject}-${i}`}
               className="flex items-center justify-between p-3 rounded-xl border border-border/50"
             >
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-violet-500/10 p-2">
-                  <GraduationCap className="size-4 text-violet-600" />
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="rounded-lg bg-violet-500/10 p-1.5 sm:p-2">
+                  <GraduationCap className="size-3.5 sm:size-4 text-violet-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{exam.name}</p>
-                  <p className="text-xs text-muted-foreground">{exam.subject}</p>
+                  <p className="text-xs sm:text-sm font-medium">{exam.name}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{exam.subject}</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-medium">{exam.date}</p>
-                <Badge variant={exam.daysLeft <= 3 ? "destructive" : "secondary"} className="text-xs mt-1">
+              <div className="text-right shrink-0">
+                <p className="text-xs sm:text-sm font-medium">{exam.date}</p>
+                <Badge variant={exam.daysLeft <= 3 ? "destructive" : "secondary"} className="text-[10px] sm:text-xs mt-1">
                   {exam.daysLeft} days left
                 </Badge>
               </div>
@@ -496,19 +458,19 @@ function StudentProgressPage() {
       </Card>
 
       {/* AI Insights */}
-      <Card className="relative overflow-hidden p-5 border-violet-500/20">
+      <Card className="relative overflow-hidden p-4 sm:p-5 border-violet-500/20">
         <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-violet-600/5" />
         <div className="relative">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 p-2">
-              <Sparkles className="size-4 text-white" />
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <div className="rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 p-1.5 sm:p-2">
+              <Sparkles className="size-3.5 sm:size-4 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold">AI Study Insights</h3>
-              <p className="text-xs text-muted-foreground">Personalized recommendations for {data.name}</p>
+              <h3 className="font-semibold text-sm sm:text-base">AI Study Insights</h3>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Personalized recommendations for {data.name}</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
             {data.aiInsights.map((insight, i) => {
               const iconMap = {
                 improvement: { icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-500/10" },
@@ -520,12 +482,12 @@ function StudentProgressPage() {
               return (
                 <div
                   key={i}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-background/80 border border-border/50"
+                  className="flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl bg-background/80 border border-border/50"
                 >
                   <div className={`rounded-lg p-1.5 ${bg} shrink-0`}>
-                    <InsightIcon className={`size-3.5 ${color}`} />
+                    <InsightIcon className={`size-3 sm:size-3.5 ${color}`} />
                   </div>
-                  <p className="text-sm leading-relaxed">{insight.text}</p>
+                  <p className="text-xs sm:text-sm leading-relaxed">{insight.text}</p>
                 </div>
               );
             })}

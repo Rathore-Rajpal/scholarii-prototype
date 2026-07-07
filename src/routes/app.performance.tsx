@@ -9,6 +9,7 @@ import {
   Activity, TrendingUp, TrendingDown, Trophy, Target, Star,
   Award, BookOpen, Clock, Sparkles, ArrowUpRight, CheckCircle2,
   Zap, Brain, Target as TargetIcon, Medal, PieChart,
+  BarChart3 as BarChart3Icon,
 } from "lucide-react";
 import {
   LineChart, Line, BarChart, Bar, RadarChart, Radar,
@@ -16,6 +17,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 import { EXAMS, CLASS_PERFORMANCE, SUBJECT_COLORS } from "@/lib/scholarii/exams-mock-data";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 
 export const Route = createFileRoute("/app/performance")({ component: PerformancePage });
 
@@ -105,7 +107,7 @@ function PerformancePage() {
   const [activeTab, setActiveTab] = useState<TabId>("journey");
 
   return (
-    <div className="space-y-0 p-6 pb-20 md:p-8">
+    <div className="space-y-5 sm:space-y-6 pb-20">
       {/* Header */}
       <div className="mb-4 space-y-1.5">
         <div className="flex items-center gap-3">
@@ -120,29 +122,60 @@ function PerformancePage() {
       </div>
 
       {/* Top Metrics */}
-      <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        <HeroMetric icon={<BarChart3 className="h-5 w-5 text-blue-400" />} label="Overall Score" value={`${overallScore}%`} sub={scoreChange >= 0 ? `+${scoreChange}% from previous` : `${scoreChange}% from previous`} positive={scoreChange >= 0} accent="from-blue-500 to-indigo-600" />
-        <HeroMetric icon={<Trophy className="h-5 w-5 text-amber-400" />} label="Class Rank" value={`${overallRank} / ${totalStudents}`} sub={`Top ${rankPercentile}%`} positive={true} accent="from-amber-500 to-orange-600" />
-        <HeroMetric icon={<Clock className="h-5 w-5 text-emerald-400" />} label="Attendance" value={`${attendance}%`} sub={attendance >= 90 ? "Excellent" : "Good"} positive={attendance >= 80} accent="from-emerald-500 to-green-600" />
-        <HeroMetric icon={<TrendingUp className="h-5 w-5 text-violet-400" />} label="Academic Growth" value={`+${scoreChange}%`} sub={`Since ${conductedExams[0]?.name.replace("Exam", "").trim()}`} positive={scoreChange >= 0} accent="from-violet-500 to-purple-600" />
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4 auto-rows-fr">
+        <KpiCard
+          icon={BarChart3Icon}
+          label="Overall Score"
+          value={`${overallScore}%`}
+          tone="info"
+          trend={scoreChange >= 0 ? "up" : "down"}
+          trendLabel={scoreChange >= 0 ? `+${scoreChange}% from previous` : `${scoreChange}% from previous`}
+        />
+        <KpiCard
+          icon={Trophy}
+          label="Class Rank"
+          value={`${overallRank} / ${totalStudents}`}
+          tone="warning"
+          trend="up"
+          trendLabel={`Top ${rankPercentile}%`}
+        />
+        <KpiCard
+          icon={Clock}
+          label="Attendance"
+          value={`${attendance}%`}
+          tone="success"
+          trend={attendance >= 90 ? "up" : "down"}
+          trendLabel={attendance >= 90 ? "Excellent" : "Good"}
+        />
+        <KpiCard
+          icon={TrendingUp}
+          label="Academic Growth"
+          value={`+${scoreChange}%`}
+          tone="info"
+          trend={scoreChange >= 0 ? "up" : "down"}
+          trendLabel={`Since ${conductedExams[0]?.name.replace("Exam", "").trim()}`}
+        />
       </div>
 
       {/* Tabs */}
-      <div className="sticky top-0 z-10 -mx-6 bg-background/80 px-6 backdrop-blur-xl md:-mx-8 md:px-8">
-        <div className="flex gap-1 overflow-x-auto border-b border-border/40 py-2 scrollbar-none">
-          {TAB_LIST.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              {tab.icon} <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
+      <div className="sticky top-0 z-30 -mx-6 px-6 pt-1 pb-2 sm:pb-3 md:-mx-8 md:px-8">
+        <div className="relative">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-xl rounded-2xl" />
+          <div className="relative flex gap-1 overflow-x-auto scrollbar-none rounded-2xl border border-border/60 bg-card p-1 sm:p-1.5 shadow-sm">
+            {TAB_LIST.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`relative flex items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? "bg-violet-500/10 text-violet-600 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
+              >
+                {tab.icon} <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -553,29 +586,6 @@ function AchievementsTab() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function HeroMetric({ icon, label, value, sub, positive, accent }: {
-  icon: React.ReactNode; label: string; value: string; sub: string; positive: boolean; accent: string;
-}) {
-  return (
-    <Card className="relative overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm">
-      <CardContent className="p-4">
-        <div className={`absolute -right-3 -top-3 h-16 w-16 rounded-full bg-gradient-to-br ${accent} opacity-10 blur-xl`} />
-        <div className="relative space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-            <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${accent} shadow-md`}>{icon}</div>
-          </div>
-          <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
-          <p className={`flex items-center gap-1 text-xs font-medium ${positive ? "text-emerald-400" : "text-red-400"}`}>
-            {positive ? <ArrowUpRight className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-            {sub}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 
