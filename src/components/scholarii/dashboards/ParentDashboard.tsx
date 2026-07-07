@@ -58,6 +58,7 @@ import {
   Eye,
 } from "lucide-react";
 import { useAuth } from "@/lib/scholarii/auth";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 
 const performanceChartConfig = {
   score: {
