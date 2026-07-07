@@ -28,6 +28,7 @@ import {
   Loader2,
   ArrowRight,
 } from "lucide-react";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 import { useAuth } from "@/lib/scholarii/auth";
 import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
@@ -292,7 +293,7 @@ function AssignmentsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6 pb-20 md:p-8">
+    <div className="space-y-6 pb-20">
       {/* Header */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-3">
@@ -311,30 +312,30 @@ function AssignmentsPage() {
       </div>
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        <MetricCard
-          icon={<ClipboardList className="h-5 w-5 text-blue-400" />}
-          label="Total Assignments"
-          value={metrics.total}
-          accent="from-blue-500 to-indigo-600"
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 auto-rows-fr content-start">
+        <KpiCard
+          icon={ClipboardList}
+          label="Total"
+          value={`${metrics.total}`}
+          tone="default"
         />
-        <MetricCard
-          icon={<Clock className="h-5 w-5 text-amber-400" />}
+        <KpiCard
+          icon={Clock}
           label="Pending"
-          value={metrics.pending}
-          accent="from-amber-500 to-orange-600"
+          value={`${metrics.pending}`}
+          tone="warning"
         />
-        <MetricCard
-          icon={<Send className="h-5 w-5 text-cyan-400" />}
+        <KpiCard
+          icon={Send}
           label="Submitted"
-          value={metrics.submitted}
-          accent="from-cyan-500 to-blue-600"
+          value={`${metrics.submitted}`}
+          tone="info"
         />
-        <MetricCard
-          icon={<CheckCircle2 className="h-5 w-5 text-emerald-400" />}
+        <KpiCard
+          icon={CheckCircle2}
           label="Verified"
-          value={metrics.verified}
-          accent="from-emerald-500 to-green-600"
+          value={`${metrics.verified}`}
+          tone="success"
         />
       </div>
 
@@ -419,37 +420,6 @@ function AssignmentsPage() {
         </SheetContent>
       </Sheet>
     </div>
-  );
-}
-
-function MetricCard({
-  icon,
-  label,
-  value,
-  accent,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  accent: string;
-}) {
-  return (
-    <Card className="relative overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm">
-      <CardContent className="p-4">
-        <div className={`absolute -right-3 -top-3 h-16 w-16 rounded-full bg-gradient-to-br ${accent} opacity-10 blur-xl`} />
-        <div className="flex items-center justify-between w-full">
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              {label}
-            </p>
-            <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
-          </div>
-          <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${accent} shadow-lg flex-shrink-0`}>
-            {icon}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 

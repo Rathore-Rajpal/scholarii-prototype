@@ -309,28 +309,6 @@ function WeeklyTab({ data }: { data: TimetableData }) {
                   }`}
                 >
                   {d.shortDay}
-      <Card className="p-4 overflow-x-auto">
-        <div className="min-w-[700px]">
-          <div className="grid grid-cols-[100px_repeat(6,1fr)] gap-px bg-border/50 rounded-xl overflow-hidden">
-            <div className="bg-muted/50 p-3 text-xs font-medium text-muted-foreground">Period</div>
-            {days.map((d) => (
-              <div
-                key={d.day}
-                className={`bg-muted/50 p-3 text-xs font-medium text-center ${
-                  selectedDay === d.day ? "text-violet-600 bg-violet-500/5" : ""
-                }`}
-              >
-                {d.shortDay}
-              </div>
-            ))}
-
-            {allPeriods.map((pi) => (
-              <>
-                <div
-                  key={`period-${pi}`}
-                  className="bg-card p-3 text-xs font-medium text-muted-foreground"
-                >
-                  P{pi + 1}
                 </div>
               ))}
 
@@ -1172,10 +1150,6 @@ export function TimetablePage() {
         subtitle="View your class schedule, upcoming periods, substitutions, and academic calendar."
       />
 
-      <div className="sticky top-0 z-30 -mx-1 px-1 pt-1 pb-3">
-        <div className="relative">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-xl rounded-2xl" />
-          <div className="relative flex gap-1 overflow-x-auto scrollbar-none flex-nowrap -mx-4 px-4 md:mx-0 md:px-0 rounded-2xl border border-border/60 bg-card p-1.5 shadow-sm">
       <Card className="p-5">
         <div className="flex items-center gap-3 mb-1">
           <div className="rounded-xl bg-violet-500/10 p-2">
@@ -1207,21 +1181,23 @@ export function TimetablePage() {
         <MetricCard icon={Clock} label="Study Hours" value={`${data.totalHours}h`} tone="warning" />
       </div>
 
-      <Card className="p-4 mb-4 overflow-hidden sm:mb-6">
-        <div className="relative flex items-center">
-          {canScrollLeft && (
-            <button
-              onClick={() => scrollTabs("left")}
-              className="absolute left-0 z-20 flex h-full w-8 items-center justify-center bg-gradient-to-r from-background via-background/90 to-transparent"
-              aria-label="Scroll left"
+      <div className="sticky top-0 z-30 -mx-1 px-1 pt-1 pb-3">
+        <div className="relative">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-xl rounded-2xl" />
+          <div className="relative flex items-center -mx-4 px-4 md:mx-0 md:px-0 rounded-2xl border border-border/60 bg-card p-1.5 shadow-sm">
+            {canScrollLeft && (
+              <button
+                onClick={() => scrollTabs("left")}
+                className="absolute left-0 z-20 flex h-full w-8 items-center justify-center bg-gradient-to-r from-background via-background/90 to-transparent"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="size-4 text-muted-foreground" />
+              </button>
+            )}
+            <div
+              ref={tabScrollRef}
+              className="tabs-mobile-scroll flex gap-1 overflow-x-auto scrollbar-none flex-nowrap flex-1"
             >
-              <ChevronLeft className="size-4 text-muted-foreground" />
-            </button>
-          )}
-          <div
-            ref={tabScrollRef}
-            className="tabs-mobile-scroll flex gap-1 overflow-x-auto scrollbar-none"
-          >
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1251,14 +1227,15 @@ export function TimetablePage() {
             </button>
           )}
         </div>
-      </Card>
+      </div>
 
       <div className="min-h-[400px]">
         {activeTab === "today" && <TodayTab data={data} />}
         {activeTab === "weekly" && <WeeklyTab data={data} />}
         {activeTab === "exams" && <ExamsTab data={data} />}
         {activeTab === "calendar" && <CalendarTab data={data} />}
+        </div>
       </div>
-    </div>
+      </div>
   );
 }

@@ -13,6 +13,7 @@ import {
   Youtube, StickyNote, GraduationCap, Users, FolderOpen, Bookmark,
   X, Send, Loader2, Eye, ChevronDown, Plus, Trash2, Edit,
 } from "lucide-react";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 import {
   ALL_RESOURCES, SYLLABUS_BOOKS, TEACHER_RESOURCES, MY_RESOURCES,
   PREVIOUS_PAPERS, SAVED_AI_GUIDES, FILE_TYPE_CONFIG,
@@ -106,7 +107,7 @@ function StudyResourcesPage() {
   }), []);
 
   return (
-    <div className="space-y-6 p-6 pb-20 md:p-8">
+    <div className="space-y-6 pb-20">
       {/* Header */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-3">
@@ -121,11 +122,31 @@ function StudyResourcesPage() {
       </div>
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        <MetricCard icon={<Library className="h-5 w-5 text-blue-400" />} label="Total Resources" value={metrics.total} accent="from-blue-500 to-indigo-600" />
-        <MetricCard icon={<BookOpen className="h-5 w-5 text-emerald-400" />} label="Books Available" value={metrics.books} accent="from-emerald-500 to-green-600" />
-        <MetricCard icon={<Users className="h-5 w-5 text-violet-400" />} label="Teacher Resources" value={metrics.teacher} accent="from-violet-500 to-purple-600" />
-        <MetricCard icon={<FolderOpen className="h-5 w-5 text-amber-400" />} label="My Resources" value={metrics.mine} accent="from-amber-500 to-orange-600" />
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 auto-rows-fr content-start">
+        <KpiCard
+          icon={Library}
+          label="Total Resources"
+          value={`${metrics.total}`}
+          tone="default"
+        />
+        <KpiCard
+          icon={BookOpen}
+          label="Books Available"
+          value={`${metrics.books}`}
+          tone="success"
+        />
+        <KpiCard
+          icon={Users}
+          label="Teacher Resources"
+          value={`${metrics.teacher}`}
+          tone="info"
+        />
+        <KpiCard
+          icon={FolderOpen}
+          label="My Resources"
+          value={`${metrics.mine}`}
+          tone="warning"
+        />
       </div>
 
       {/* Tabs */}
@@ -228,23 +249,6 @@ function StudyResourcesPage() {
         </SheetContent>
       </Sheet>
     </div>
-  );
-}
-
-function MetricCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number; accent: string }) {
-  return (
-    <Card className="relative overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm">
-      <CardContent className="p-4">
-        <div className={`absolute -right-3 -top-3 h-16 w-16 rounded-full bg-gradient-to-br ${accent} opacity-10 blur-xl`} />
-        <div className="relative flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
-          </div>
-          <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${accent} shadow-lg`}>{icon}</div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 

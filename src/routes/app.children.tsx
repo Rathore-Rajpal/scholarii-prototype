@@ -26,6 +26,7 @@ import {
   AlertTriangle,
   Baby,
 } from "lucide-react";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
 export const Route = createFileRoute("/app/children")({
@@ -77,51 +78,6 @@ const CHILDREN: Child[] = [
     color: "#ec4899",
   },
 ];
-
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  tone: "success" | "warning" | "info" | "default";
-}) {
-  const toneStyles = {
-    success: "from-emerald-500/10 to-emerald-600/5 text-emerald-600",
-    warning: "from-amber-500/10 to-amber-600/5 text-amber-600",
-    info: "from-violet-500/10 to-violet-600/5 text-violet-600",
-    default: "from-slate-500/10 to-slate-600/5 text-slate-600",
-  };
-
-  const iconBg = {
-    success: "bg-emerald-500/10",
-    warning: "bg-amber-500/10",
-    info: "bg-violet-500/10",
-    default: "bg-slate-500/10",
-  };
-
-  return (
-    <Card className="relative overflow-hidden p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${toneStyles[tone]} opacity-50`}
-      />
-      <div className="relative flex items-center gap-3">
-        <div className={`rounded-xl p-2 ${iconBg[tone]}`}>
-          <Icon className="size-4" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-muted-foreground truncate">
-            {label}
-          </p>
-          <p className="text-xl font-bold tracking-tight">{value}</p>
-        </div>
-      </div>
-    </Card>
-  );
-}
 
 function ChildrenPage() {
   const { user, parentMode } = useAuth();
@@ -193,26 +149,26 @@ function ChildrenPage() {
       </div>
 
       {/* Summary Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 auto-rows-fr">
+        <KpiCard
           icon={Users}
           label="Total Children"
           value={`${totalChildren} Children`}
           tone="default"
         />
-        <MetricCard
+        <KpiCard
           icon={ClipboardCheck}
           label="Avg Attendance"
           value={`${avgAttendance}%`}
           tone="success"
         />
-        <MetricCard
+        <KpiCard
           icon={TrendingUp}
           label="Avg Academic Score"
           value={`${avgScore}%`}
           tone="info"
         />
-        <MetricCard
+        <KpiCard
           icon={AlertTriangle}
           label="Pending Fee Actions"
           value={pendingFees > 0 ? `${pendingFees} Pending` : "None"}

@@ -668,8 +668,8 @@ export function ParentDashboard() {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr content-start">
+        <KpiCard
           icon={ClipboardCheck}
           label="Attendance"
           value={`${data.attendance}%`}
@@ -677,7 +677,7 @@ export function ParentDashboard() {
           trendLabel="+3% this month"
           tone="success"
         />
-        <MetricCard
+        <KpiCard
           icon={Target}
           label="Academic Score"
           value={`${data.overallScore}%`}
@@ -685,7 +685,7 @@ export function ParentDashboard() {
           trendLabel={`+${data.overallScore - data.previousScore}% improvement`}
           tone="info"
         />
-        <MetricCard
+        <KpiCard
           icon={Wallet}
           label="Fee Status"
           value={data.feeStatus}
@@ -693,7 +693,7 @@ export function ParentDashboard() {
           trendLabel={`Next installment in ${data.nextDueDays} days`}
           tone="default"
         />
-        <MetricCard
+        <KpiCard
           icon={CalendarDays}
           label="Upcoming Events"
           value={`${data.upcomingEvents} Upcoming`}

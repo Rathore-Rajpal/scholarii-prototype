@@ -10,6 +10,7 @@ import {
   AlertTriangle, FileText, ChevronRight, Search, Bell, CalendarDays,
   BookOpen, Award, Timer, CheckCircle2, Filter,
 } from "lucide-react";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 
 export const Route = createFileRoute("/app/updates")({ component: UpdatesPage });
 
@@ -168,8 +169,13 @@ function UpdatesPage() {
     return notices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [activeFilter, searchQuery]);
 
+  const totalNotices = NOTICES.length;
+  const announcementCount = NOTICES.filter((n) => n.category === "announcement").length;
+  const eventCount = NOTICES.filter((n) => n.category === "event" || n.category === "holiday").length;
+  const urgentCount = NOTICES.filter((n) => n.priority === "urgent" || n.priority === "important").length;
+
   return (
-    <div className="space-y-6 p-6 pb-20 md:p-8">
+    <div className="space-y-6 pb-20">
       {/* Header */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-3">
@@ -184,27 +190,31 @@ function UpdatesPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {[
-          { label: "Announcements", value: NOTICES.filter((n) => n.category === "announcement").length, icon: Megaphone, color: "from-blue-500 to-blue-600", shadow: "shadow-blue-500/20" },
-          { label: "Upcoming Events", value: NOTICES.filter((n) => n.category === "event").length, icon: PartyPopper, color: "from-pink-500 to-pink-600", shadow: "shadow-pink-500/20" },
-          { label: "Exams", value: NOTICES.filter((n) => n.category === "exam").length, icon: GraduationCap, color: "from-violet-500 to-violet-600", shadow: "shadow-violet-500/20" },
-          { label: "Deadlines", value: NOTICES.filter((n) => n.category === "deadline").length, icon: Timer, color: "from-red-500 to-red-600", shadow: "shadow-red-500/20" },
-        ].map((stat) => (
-          <Card key={stat.label} className="relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                </div>
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${stat.color} shadow-lg ${stat.shadow}`}>
-                  <stat.icon className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 auto-rows-fr content-start">
+        <KpiCard
+          icon={Bell}
+          label="Total Notices"
+          value={`${totalNotices}`}
+          tone="default"
+        />
+        <KpiCard
+          icon={Megaphone}
+          label="Announcements"
+          value={`${announcementCount}`}
+          tone="info"
+        />
+        <KpiCard
+          icon={PartyPopper}
+          label="Upcoming Events"
+          value={`${eventCount}`}
+          tone="success"
+        />
+        <KpiCard
+          icon={AlertTriangle}
+          label="Important & Urgent"
+          value={`${urgentCount}`}
+          tone="warning"
+        />
       </div>
 
       {/* Category Filters */}
