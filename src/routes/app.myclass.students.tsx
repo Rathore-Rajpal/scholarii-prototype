@@ -42,9 +42,11 @@ import {
   FileCheck,
   BookOpen,
   TrendingUp,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { loadData } from "@/lib/scholarii/mock";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 
 export const Route = createFileRoute("/app/myclass/students")({ component: TeacherStudentsPage });
 
@@ -80,6 +82,35 @@ function TeacherStudentsPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [drawerWidth, setDrawerWidth] = useState(720);
   const [isResizing, setIsResizing] = useState(false);
+  const filterScrollRef = useRef<HTMLDivElement>(null);
+  const [canFilterScrollLeft, setCanFilterScrollLeft] = useState(false);
+  const [canFilterScrollRight, setCanFilterScrollRight] = useState(false);
+
+  const checkFilterScroll = useCallback(() => {
+    const el = filterScrollRef.current;
+    if (!el) return;
+    setCanFilterScrollLeft(el.scrollLeft > 2);
+    setCanFilterScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    const el = filterScrollRef.current;
+    if (!el) return;
+    checkFilterScroll();
+    el.addEventListener("scroll", checkFilterScroll, { passive: true });
+    window.addEventListener("resize", checkFilterScroll);
+    return () => {
+      el.removeEventListener("scroll", checkFilterScroll);
+      window.removeEventListener("resize", checkFilterScroll);
+    };
+  }, [checkFilterScroll]);
+
+  const scrollFilters = (direction: "left" | "right") => {
+    const el = filterScrollRef.current;
+    if (!el) return;
+    const scrollAmount = el.clientWidth - 80;
+    el.scrollBy({ left: direction === "left" ? -scrollAmount : scrollAmount, behavior: "smooth" });
+  };
 
   const derivedStudents = useMemo(() => {
     return data.students
@@ -218,55 +249,85 @@ function TeacherStudentsPage() {
           subtitle="Monitor attendance, performance, risk, and student operations in one intelligent workspace."
         />
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* KPI Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-3">
-            <Card className="p-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-6">
+            <Card className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">Total Students</p>
-                <Users className="size-4 text-muted-foreground" />
+                <p className="text-[10px] text-muted-foreground sm:text-xs">Total Students</p>
+                <Users className="size-3.5 text-muted-foreground sm:size-4" />
               </div>
-              <div className="text-2xl font-bold mt-2">
-                {totalStudents.toLocaleString()} Students
+              <div className="mt-1.5 text-base font-bold sm:mt-2 sm:text-2xl">
+                {totalStudents.toLocaleString()}{" "}
+                <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">
+                  Students
+                </span>
               </div>
             </Card>
-            <Card className="p-4">
+            <Card className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">Present Today</p>
-                <UserCheck className="size-4 text-emerald-500" />
+                <p className="text-[10px] text-muted-foreground sm:text-xs">Present Today</p>
+                <UserCheck className="size-3.5 text-emerald-500 sm:size-4" />
               </div>
-              <div className="text-2xl font-bold mt-2">{presentToday.toLocaleString()} Present</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <div className="mt-1.5 text-base font-bold sm:mt-2 sm:text-2xl">
+                {presentToday.toLocaleString()}{" "}
+                <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">
+                  Present
+                </span>
+              </div>
+              <p className="mt-0.5 text-[10px] text-muted-foreground sm:mt-1 sm:text-xs">
                 {((presentToday / totalStudents) * 100).toFixed(1)}%
               </p>
             </Card>
-            <Card className="p-4 border-2 border-amber-200/70 dark:border-amber-900/40">
+            <Card className="border-2 border-amber-200/70 p-3 dark:border-amber-900/40 sm:p-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">Below 75% Attendance</p>
-                <AlertTriangle className="size-4 text-amber-500" />
+                <p className="text-[10px] text-muted-foreground sm:text-xs">Below 75% Attendance</p>
+                <AlertTriangle className="size-3.5 text-amber-500 sm:size-4" />
               </div>
-              <div className="text-2xl font-bold mt-2">{belowAttendance} Students</div>
+              <div className="mt-1.5 text-base font-bold sm:mt-2 sm:text-2xl">
+                {belowAttendance}{" "}
+                <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">
+                  Students
+                </span>
+              </div>
             </Card>
-            <Card className="p-4 border-2 border-red-200/70 dark:border-red-900/40">
+            <Card className="border-2 border-red-200/70 p-3 dark:border-red-900/40 sm:p-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">At-Risk Students</p>
-                <AlertCircle className="size-4 text-red-500" />
+                <p className="text-[10px] text-muted-foreground sm:text-xs">At-Risk Students</p>
+                <AlertCircle className="size-3.5 text-red-500 sm:size-4" />
               </div>
-              <div className="text-2xl font-bold mt-2">{atRisk} Students</div>
+              <div className="mt-1.5 text-base font-bold sm:mt-2 sm:text-2xl">
+                {atRisk}{" "}
+                <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">
+                  Students
+                </span>
+              </div>
             </Card>
-            <Card className="p-4">
+            <Card className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">New Admissions (Month)</p>
-                <UserPlus className="size-4 text-muted-foreground" />
+                <p className="text-[10px] text-muted-foreground sm:text-xs">
+                  New Admissions (Month)
+                </p>
+                <UserPlus className="size-3.5 text-muted-foreground sm:size-4" />
               </div>
-              <div className="text-2xl font-bold mt-2">{newAdmissions} Students</div>
+              <div className="mt-1.5 text-base font-bold sm:mt-2 sm:text-2xl">
+                {newAdmissions}{" "}
+                <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">
+                  Students
+                </span>
+              </div>
             </Card>
-            <Card className="p-4">
+            <Card className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">Transfer Requests</p>
-                <UserX className="size-4 text-muted-foreground" />
+                <p className="text-[10px] text-muted-foreground sm:text-xs">Transfer Requests</p>
+                <UserX className="size-3.5 text-muted-foreground sm:size-4" />
               </div>
-              <div className="text-2xl font-bold mt-2">{transferRequests} Pending</div>
+              <div className="mt-1.5 text-base font-bold sm:mt-2 sm:text-2xl">
+                {transferRequests}{" "}
+                <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">
+                  Pending
+                </span>
+              </div>
             </Card>
           </div>
 
@@ -281,8 +342,173 @@ function TeacherStudentsPage() {
               </div>
             </div>
 
-            <Card className="p-4">
-              <div className="flex flex-wrap gap-3 items-center">
+            <Card className="overflow-hidden p-3 sm:p-4">
+              {/* Mobile: scrollable filter bar */}
+              <div className="relative md:hidden">
+                {canFilterScrollLeft && (
+                  <button
+                    onClick={() => scrollFilters("left")}
+                    className="absolute left-0 z-20 flex h-full w-6 items-center justify-center bg-gradient-to-r from-background via-background/90 to-transparent"
+                    aria-label="Scroll filters left"
+                  >
+                    <ChevronLeft className="size-3.5 text-muted-foreground" />
+                  </button>
+                )}
+                <div ref={filterScrollRef} className="tabs-mobile-scroll flex gap-2 pb-1">
+                  <div className="relative min-w-[200px] flex-1">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                    <Input
+                      className="h-8 pl-8 text-xs"
+                      placeholder="Search name, roll, parent..."
+                      value={q}
+                      onChange={(e) => {
+                        setQ(e.target.value);
+                        setPage(1);
+                      }}
+                    />
+                  </div>
+                  <Select
+                    value={gender}
+                    onValueChange={(v) => {
+                      setGender(v);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-20 flex-shrink-0 text-[10px]">
+                      <SelectValue placeholder="Gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="M">Male</SelectItem>
+                      <SelectItem value="F">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={status}
+                    onValueChange={(v) => {
+                      setStatus(v);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-24 flex-shrink-0 text-[10px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Transfer Pending">Transfer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={attendanceBand}
+                    onValueChange={(v: AttendanceBand) => {
+                      setAttendanceBand(v);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-24 flex-shrink-0 text-[10px]">
+                      <SelectValue placeholder="Attend." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="90+">90%+</SelectItem>
+                      <SelectItem value="75-89">75-89%</SelectItem>
+                      <SelectItem value="below-75">Below 75%</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={academicBand}
+                    onValueChange={(v: AcademicBand) => {
+                      setAcademicBand(v);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-24 flex-shrink-0 text-[10px]">
+                      <SelectValue placeholder="Academic" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="80+">80%+</SelectItem>
+                      <SelectItem value="65-79">65-79%</SelectItem>
+                      <SelectItem value="below-65">Below 65%</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={feeStatus}
+                    onValueChange={(v) => {
+                      setFeeStatus(v);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-20 flex-shrink-0 text-[10px]">
+                      <SelectValue placeholder="Fees" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="Paid">Paid</SelectItem>
+                      <SelectItem value="Partial">Partial</SelectItem>
+                      <SelectItem value="Overdue">Overdue</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={admissionYear}
+                    onValueChange={(v) => {
+                      setAdmissionYear(v);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-20 flex-shrink-0 text-[10px]">
+                      <SelectValue placeholder="Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <SelectItem key={2021 + i} value={String(2021 + i)}>
+                          {2021 + i}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={riskLevel}
+                    onValueChange={(v: RiskLevel) => {
+                      setRiskLevel(v);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-24 flex-shrink-0 text-[10px]">
+                      <SelectValue placeholder="Risk" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="Healthy">Healthy</SelectItem>
+                      <SelectItem value="Needs Attention">Attention</SelectItem>
+                      <SelectItem value="At Risk">At Risk</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 flex-shrink-0 px-2 text-[10px]"
+                    onClick={clearFilters}
+                  >
+                    <Filter className="size-3 mr-1" />
+                    Clear
+                  </Button>
+                </div>
+                {canFilterScrollRight && (
+                  <button
+                    onClick={() => scrollFilters("right")}
+                    className="absolute right-0 z-20 flex h-full w-6 items-center justify-center bg-gradient-to-l from-background via-background/90 to-transparent"
+                    aria-label="Scroll filters right"
+                  >
+                    <ChevronRight className="size-3.5 text-muted-foreground" />
+                  </button>
+                )}
+              </div>
+
+              {/* Desktop: wrapped filter bar */}
+              <div className="hidden flex-wrap gap-3 items-center md:flex">
                 <div className="relative flex-1 min-w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input
@@ -440,117 +666,209 @@ function TeacherStudentsPage() {
                   </Button>
                 </div>
               </div>
+
+              {/* Mobile: view toggle */}
+              <div className="mt-2 flex items-center justify-end gap-2 md:hidden">
+                <Button
+                  variant={viewMode === "table" ? "secondary" : "outline"}
+                  size="sm"
+                  className="h-7 px-2 text-[10px]"
+                  onClick={() => setViewMode("table")}
+                >
+                  <List className="size-3 mr-1" />
+                  Table
+                </Button>
+                <Button
+                  variant={viewMode === "card" ? "secondary" : "outline"}
+                  size="sm"
+                  className="h-7 px-2 text-[10px]"
+                  onClick={() => setViewMode("card")}
+                >
+                  <LayoutGrid className="size-3 mr-1" />
+                  Cards
+                </Button>
+              </div>
             </Card>
 
             <Card className="overflow-hidden">
-              {viewMode === "table" ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Admission No</TableHead>
-                      <TableHead>Class</TableHead>
-                      <TableHead>Attendance %</TableHead>
-                      <TableHead>Academic Score</TableHead>
-                      <TableHead>Fee Status</TableHead>
-                      <TableHead>Risk Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {rows.map((student) => (
-                      <TableRow
-                        key={student.id}
-                        className="cursor-pointer"
-                        onClick={() => setSelectedStudentId(student.id)}
-                      >
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="size-9">
-                              <AvatarFallback
-                                style={{ backgroundColor: student.avatarColor, color: "white" }}
-                              >
-                                {student.name
-                                  .split(" ")
-                                  .map((p) => p[0])
-                                  .slice(0, 2)
-                                  .join("")}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{student.name}</div>
-                              <div className="text-xs text-muted-foreground">{student.parent}</div>
+              {/* Table view - hidden on mobile */}
+              <div className="hidden md:block">
+                {viewMode === "table" ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Admission No</TableHead>
+                        <TableHead>Class</TableHead>
+                        <TableHead>Attendance %</TableHead>
+                        <TableHead>Academic Score</TableHead>
+                        <TableHead>Fee Status</TableHead>
+                        <TableHead>Risk Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rows.map((student) => (
+                        <TableRow
+                          key={student.id}
+                          className="cursor-pointer"
+                          onClick={() => setSelectedStudentId(student.id)}
+                        >
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="size-9">
+                                <AvatarFallback
+                                  style={{ backgroundColor: student.avatarColor, color: "white" }}
+                                >
+                                  {student.name
+                                    .split(" ")
+                                    .map((p) => p[0])
+                                    .slice(0, 2)
+                                    .join("")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">{student.name}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {student.parent}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">{student.roll}</TableCell>
-                        <TableCell>
-                          Grade {student.grade}-{student.section}
-                        </TableCell>
-                        <TableCell
-                          className={
-                            student.attendance >= 90
-                              ? "text-emerald-600 font-medium"
-                              : student.attendance >= 75
-                                ? "text-amber-600 font-medium"
-                                : "text-red-600 font-medium"
-                          }
-                        >
-                          {student.attendance}%
-                        </TableCell>
-                        <TableCell
-                          className={
-                            student.academicScore >= 80
-                              ? "text-emerald-600 font-medium"
-                              : student.academicScore >= 65
-                                ? "text-amber-600 font-medium"
-                                : "text-red-600 font-medium"
-                          }
-                        >
-                          {student.academicScore || "-"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="secondary"
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">{student.roll}</TableCell>
+                          <TableCell>
+                            Grade {student.grade}-{student.section}
+                          </TableCell>
+                          <TableCell
                             className={
-                              student.feeLabel === "Paid"
-                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                                : student.feeLabel === "Overdue"
-                                  ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300"
-                                  : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                              student.attendance >= 90
+                                ? "text-emerald-600 font-medium"
+                                : student.attendance >= 75
+                                  ? "text-amber-600 font-medium"
+                                  : "text-red-600 font-medium"
                             }
                           >
-                            {student.feeLabel}
+                            {student.attendance}%
+                          </TableCell>
+                          <TableCell
+                            className={
+                              student.academicScore >= 80
+                                ? "text-emerald-600 font-medium"
+                                : student.academicScore >= 65
+                                  ? "text-amber-600 font-medium"
+                                  : "text-red-600 font-medium"
+                            }
+                          >
+                            {student.academicScore || "-"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="secondary"
+                              className={
+                                student.feeLabel === "Paid"
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                                  : student.feeLabel === "Overdue"
+                                    ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300"
+                                    : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                              }
+                            >
+                              {student.feeLabel}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={riskStyles[student.risk]}>{student.risk}</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {!rows.length && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={7}
+                            className="text-center text-muted-foreground py-12"
+                          >
+                            No students match the selected filters.
+                            <div className="mt-3">
+                              <Button size="sm" variant="outline" onClick={clearFilters}>
+                                Clear Filters
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="p-3 grid grid-cols-1 gap-3 sm:p-4 sm:grid-cols-2 xl:grid-cols-3 sm:gap-4">
+                    {rows.map((student) => (
+                      <Card
+                        key={student.id}
+                        className="p-3 cursor-pointer hover:shadow-md transition sm:p-4"
+                        onClick={() => setSelectedStudentId(student.id)}
+                      >
+                        <div className="flex items-center gap-2.5 sm:gap-3">
+                          <Avatar className="size-9 sm:size-10">
+                            <AvatarFallback
+                              style={{ backgroundColor: student.avatarColor, color: "white" }}
+                            >
+                              {student.name
+                                .split(" ")
+                                .map((p) => p[0])
+                                .slice(0, 2)
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-sm font-semibold">{student.name}</div>
+                            <div className="text-[10px] text-muted-foreground sm:text-xs">
+                              Grade {student.grade}-{student.section} - {student.roll}
+                            </div>
+                          </div>
+                          <Badge
+                            className={`flex-shrink-0 text-[9px] sm:text-xs ${riskStyles[student.risk]}`}
+                          >
+                            {student.risk}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={riskStyles[student.risk]}>{student.risk}</Badge>
-                        </TableCell>
-                      </TableRow>
+                        </div>
+                        <div className="mt-3 grid grid-cols-3 gap-2 text-[10px] sm:mt-4 sm:text-xs">
+                          <div>
+                            <p className="text-muted-foreground">Attendance</p>
+                            <p className="font-semibold">{student.attendance}%</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Academic</p>
+                            <p className="font-semibold">{student.academicScore || "-"}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Fees</p>
+                            <p className="font-semibold">{student.feeLabel}</p>
+                          </div>
+                        </div>
+                      </Card>
                     ))}
                     {!rows.length && (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
-                          No students match the selected filters.
-                          <div className="mt-3">
-                            <Button size="sm" variant="outline" onClick={clearFilters}>
-                              Clear Filters
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      <Card className="p-4 text-center text-muted-foreground col-span-full sm:p-6">
+                        No students match the selected filters.
+                        <div className="mt-3">
+                          <Button size="sm" variant="outline" onClick={clearFilters}>
+                            Clear Filters
+                          </Button>
+                        </div>
+                      </Card>
                     )}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile: always show card view */}
+              <div className="md:hidden">
+                <div className="p-3 grid grid-cols-1 gap-3">
                   {rows.map((student) => (
                     <Card
                       key={student.id}
-                      className="p-4 cursor-pointer hover:shadow-md transition"
+                      className="p-3 cursor-pointer hover:shadow-md transition"
                       onClick={() => setSelectedStudentId(student.id)}
                     >
-                      <div className="flex items-center gap-3">
-                        <Avatar className="size-10">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar className="size-9">
                           <AvatarFallback
                             style={{ backgroundColor: student.avatarColor, color: "white" }}
                           >
@@ -561,19 +879,19 @@ function TeacherStudentsPage() {
                               .join("")}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
-                          <div className="font-semibold">{student.name}</div>
-                          <div className="text-xs text-muted-foreground">
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-semibold">{student.name}</div>
+                          <div className="text-[10px] text-muted-foreground">
                             Grade {student.grade}-{student.section} - {student.roll}
                           </div>
                         </div>
-                        <Badge className={`ml-auto ${riskStyles[student.risk]}`}>
+                        <Badge className={`flex-shrink-0 text-[9px] ${riskStyles[student.risk]}`}>
                           {student.risk}
                         </Badge>
                       </div>
-                      <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
+                      <div className="mt-2.5 grid grid-cols-3 gap-2 text-[10px]">
                         <div>
-                          <p className="text-muted-foreground">Attendance</p>
+                          <p className="text-muted-foreground">Attend.</p>
                           <p className="font-semibold">{student.attendance}%</p>
                         </div>
                         <div>
@@ -588,7 +906,7 @@ function TeacherStudentsPage() {
                     </Card>
                   ))}
                   {!rows.length && (
-                    <Card className="p-6 text-center text-muted-foreground col-span-full">
+                    <Card className="p-4 text-center text-muted-foreground">
                       No students match the selected filters.
                       <div className="mt-3">
                         <Button size="sm" variant="outline" onClick={clearFilters}>
@@ -598,22 +916,25 @@ function TeacherStudentsPage() {
                     </Card>
                   )}
                 </div>
-              )}
-              <div className="flex items-center justify-between p-4 border-t border-border text-sm">
+              </div>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-between border-t border-border p-3 text-xs sm:p-4 sm:text-sm">
                 <div className="text-muted-foreground">
                   Showing {filtered.length === 0 ? 0 : (page - 1) * pageSize + 1}-
                   {Math.min(page * pageSize, filtered.length)} of {filtered.length}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={page === 1}
                     onClick={() => setPage((p) => p - 1)}
+                    className="h-7 px-2 sm:h-8 sm:px-3"
                   >
-                    Previous
+                    Prev
                   </Button>
-                  <div className="px-3 py-1.5 rounded-md bg-muted">
+                  <div className="rounded-md bg-muted px-2 py-1 sm:px-3">
                     {page} / {pages}
                   </div>
                   <Button
@@ -621,6 +942,7 @@ function TeacherStudentsPage() {
                     size="sm"
                     disabled={page === pages}
                     onClick={() => setPage((p) => p + 1)}
+                    className="h-7 px-2 sm:h-8 sm:px-3"
                   >
                     Next
                   </Button>
@@ -636,23 +958,26 @@ function TeacherStudentsPage() {
         >
           <SheetContent
             side="right"
-            className="min-w-[420px] max-w-[980px] overflow-hidden"
-            style={{ width: drawerWidth }}
+            className="w-full min-w-0 md:min-w-[420px] md:max-w-[980px] overflow-hidden p-0 md:p-0"
+            style={{
+              width:
+                typeof window !== "undefined" && window.innerWidth < 768 ? "100%" : drawerWidth,
+            }}
           >
             <div
-              className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize bg-transparent hover:bg-muted/60"
+              className="hidden md:block absolute left-0 top-0 h-full w-1.5 cursor-col-resize bg-transparent hover:bg-muted/60"
               onMouseDown={() => setIsResizing(true)}
             />
             {selectedStudent && (
               <div className="h-full flex flex-col">
-                <SheetHeader>
-                  <SheetTitle>Student Profile</SheetTitle>
+                <SheetHeader className="px-4 py-3 border-b sm:px-6 sm:py-4">
+                  <SheetTitle className="text-base sm:text-lg">Student Profile</SheetTitle>
                 </SheetHeader>
                 <ScrollArea className="h-full pr-3">
-                  <div className="space-y-5">
-                    <Card className="p-4">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="size-12">
+                  <div className="space-y-4 p-4 sm:space-y-5 sm:p-0">
+                    <Card className="p-3 sm:p-4">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <Avatar className="size-10 sm:size-12">
                           <AvatarFallback
                             style={{ backgroundColor: selectedStudent.avatarColor, color: "white" }}
                           >
@@ -663,30 +988,38 @@ function TeacherStudentsPage() {
                               .join("")}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
-                          <div className="text-lg font-semibold">{selectedStudent.name}</div>
-                          <div className="text-xs text-muted-foreground">
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-base font-semibold sm:text-lg">
+                            {selectedStudent.name}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground sm:text-xs">
                             Admission No: {selectedStudent.roll}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-[10px] text-muted-foreground sm:text-xs">
                             Grade {selectedStudent.grade}-{selectedStudent.section}
                           </div>
                         </div>
-                        <div className="space-y-2 text-right">
-                          <Badge variant="secondary">{selectedStudent.transferStatus}</Badge>
-                          <Badge className={riskStyles[selectedStudent.risk]}>
+                        <div className="flex flex-col gap-1.5 text-right">
+                          <Badge variant="secondary" className="text-[9px] sm:text-xs">
+                            {selectedStudent.transferStatus}
+                          </Badge>
+                          <Badge
+                            className={`text-[9px] sm:text-xs ${riskStyles[selectedStudent.risk]}`}
+                          >
                             {selectedStudent.risk}
                           </Badge>
                         </div>
                       </div>
                     </Card>
 
-                    <Card className="p-4">
-                      <h4 className="text-sm font-semibold mb-2">AI Student Insights</h4>
-                      <div className="space-y-2 text-xs text-muted-foreground">
+                    <Card className="p-3 sm:p-4">
+                      <h4 className="text-xs font-semibold sm:text-sm sm:mb-2">
+                        AI Student Insights
+                      </h4>
+                      <div className="mt-1.5 space-y-1.5 text-[10px] text-muted-foreground sm:mt-2 sm:space-y-2 sm:text-xs">
                         {getInsights(selectedStudent).map((insight) => (
-                          <div key={insight} className="flex items-start gap-2">
-                            <span className="mt-1 size-1.5 rounded-full bg-amber-500" />
+                          <div key={insight} className="flex items-start gap-1.5 sm:gap-2">
+                            <span className="mt-1 size-1 rounded-full bg-amber-500 sm:size-1.5" />
                             <span>{insight}</span>
                           </div>
                         ))}
@@ -694,17 +1027,47 @@ function TeacherStudentsPage() {
                     </Card>
 
                     <Tabs defaultValue="overview" className="w-full">
-                      <TabsList className="flex flex-wrap gap-2 h-auto">
-                        <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="attendance">Attendance</TabsTrigger>
-                        <TabsTrigger value="academics">Academics</TabsTrigger>
-                        <TabsTrigger value="fees">Fees</TabsTrigger>
-                        <TabsTrigger value="documents">Documents</TabsTrigger>
-                        <TabsTrigger value="communication">Communication</TabsTrigger>
+                      <TabsList className="flex flex-wrap gap-1 h-auto p-1 sm:gap-2 sm:p-1.5">
+                        <TabsTrigger
+                          value="overview"
+                          className="text-[10px] px-2 py-1 sm:text-xs sm:px-3 sm:py-1.5"
+                        >
+                          Overview
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="attendance"
+                          className="text-[10px] px-2 py-1 sm:text-xs sm:px-3 sm:py-1.5"
+                        >
+                          Attendance
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="academics"
+                          className="text-[10px] px-2 py-1 sm:text-xs sm:px-3 sm:py-1.5"
+                        >
+                          Academics
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="fees"
+                          className="text-[10px] px-2 py-1 sm:text-xs sm:px-3 sm:py-1.5"
+                        >
+                          Fees
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="documents"
+                          className="text-[10px] px-2 py-1 sm:text-xs sm:px-3 sm:py-1.5"
+                        >
+                          Documents
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="communication"
+                          className="text-[10px] px-2 py-1 sm:text-xs sm:px-3 sm:py-1.5"
+                        >
+                          Messages
+                        </TabsTrigger>
                       </TabsList>
 
                       <TabsContent value="overview">
-                        <Card className="p-4 grid grid-cols-2 gap-4 text-sm">
+                        <Card className="p-3 grid grid-cols-2 gap-3 text-xs sm:p-4 sm:gap-4 sm:text-sm">
                           <ProfileItem
                             label="Age"
                             value={`${14 + (Number(selectedStudent.roll) % 4)} years`}
@@ -741,8 +1104,8 @@ function TeacherStudentsPage() {
                       </TabsContent>
 
                       <TabsContent value="attendance">
-                        <Card className="p-4 space-y-4">
-                          <div className="grid grid-cols-3 gap-4 text-sm">
+                        <Card className="p-3 space-y-3 sm:p-4 sm:space-y-4">
+                          <div className="grid grid-cols-3 gap-2 text-xs sm:gap-4 sm:text-sm">
                             <ProfileItem
                               label="Current Attendance"
                               value={`${selectedStudent.attendance}%`}
@@ -757,15 +1120,17 @@ function TeacherStudentsPage() {
                             />
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground">Attendance Status</p>
+                            <p className="text-[10px] text-muted-foreground sm:text-xs">
+                              Attendance Status
+                            </p>
                             <Badge
-                              className={
+                              className={`mt-1 text-[9px] sm:text-xs ${
                                 selectedStudent.attendance >= 90
                                   ? "bg-emerald-100 text-emerald-700"
                                   : selectedStudent.attendance >= 75
                                     ? "bg-amber-100 text-amber-700"
                                     : "bg-red-100 text-red-700"
-                              }
+                              }`}
                             >
                               {selectedStudent.attendance >= 90
                                 ? "Excellent"
@@ -774,15 +1139,15 @@ function TeacherStudentsPage() {
                                   : "Needs Attention"}
                             </Badge>
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-[10px] text-muted-foreground sm:text-xs">
                             Monthly trend: steady with minor dips last week.
                           </div>
                         </Card>
                       </TabsContent>
 
                       <TabsContent value="academics">
-                        <Card className="p-4 space-y-4">
-                          <div className="grid grid-cols-3 gap-4 text-sm">
+                        <Card className="p-3 space-y-3 sm:p-4 sm:space-y-4">
+                          <div className="grid grid-cols-3 gap-2 text-xs sm:gap-4 sm:text-sm">
                             <ProfileItem
                               label="Overall Score"
                               value={`${selectedStudent.academicScore || "-"}%`}
@@ -796,7 +1161,7 @@ function TeacherStudentsPage() {
                               value={getTopSubjects(selectedStudent).join(", ") || "-"}
                             />
                           </div>
-                          <div className="space-y-2 text-xs">
+                          <div className="space-y-1.5 text-[10px] sm:space-y-2 sm:text-xs">
                             {selectedStudent.testScores ? (
                               Object.entries(selectedStudent.testScores).map(([subject, score]) => (
                                 <div key={subject} className="flex items-center justify-between">
@@ -820,14 +1185,14 @@ function TeacherStudentsPage() {
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-[10px] text-muted-foreground sm:text-xs">
                             Weak subjects: {getWeakSubjects(selectedStudent).join(", ") || "None"}
                           </div>
                         </Card>
                       </TabsContent>
 
                       <TabsContent value="fees">
-                        <Card className="p-4 space-y-4 text-sm">
+                        <Card className="p-3 space-y-2.5 text-xs sm:p-4 sm:space-y-4 sm:text-sm">
                           <ProfileItem label="Fee Status" value={selectedStudent.feeLabel} />
                           <ProfileItem
                             label="Total Paid"
@@ -856,7 +1221,7 @@ function TeacherStudentsPage() {
                       </TabsContent>
 
                       <TabsContent value="documents">
-                        <Card className="p-4 space-y-3">
+                        <Card className="p-3 space-y-2 sm:p-4 sm:space-y-3">
                           {[
                             "Birth Certificate",
                             "Aadhaar",
@@ -866,8 +1231,12 @@ function TeacherStudentsPage() {
                             "Student ID",
                           ].map((doc) => (
                             <div key={doc} className="flex items-center justify-between">
-                              <span className="text-sm">{doc}</span>
-                              <Button size="sm" variant="outline">
+                              <span className="text-xs sm:text-sm">{doc}</span>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 px-2 text-[10px] sm:h-8 sm:px-3 sm:text-xs"
+                              >
                                 Download
                               </Button>
                             </div>
@@ -876,22 +1245,22 @@ function TeacherStudentsPage() {
                       </TabsContent>
 
                       <TabsContent value="communication">
-                        <Card className="p-4 space-y-3 text-sm">
+                        <Card className="p-3 space-y-2.5 text-xs sm:p-4 sm:space-y-3 sm:text-sm">
                           <div>
                             <p className="font-medium">Recent Notices</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-[10px] text-muted-foreground sm:text-xs">
                               2 notices sent in the last 30 days.
                             </p>
                           </div>
                           <div>
                             <p className="font-medium">Messages Sent</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-[10px] text-muted-foreground sm:text-xs">
                               4 parent messages logged.
                             </p>
                           </div>
                           <div>
                             <p className="font-medium">Communication History</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-[10px] text-muted-foreground sm:text-xs">
                               Last contact: 2026-05-20
                             </p>
                           </div>
@@ -899,41 +1268,84 @@ function TeacherStudentsPage() {
                       </TabsContent>
                     </Tabs>
 
-                    <Card className="p-4">
-                      <div className="flex items-start justify-between gap-4 mb-3">
+                    <Card className="p-3 sm:p-4">
+                      <div className="flex items-start justify-between gap-3 mb-2.5 sm:gap-4 sm:mb-3">
                         <div>
-                          <h4 className="text-sm font-semibold">Teacher Actions</h4>
-                          <p className="text-xs text-muted-foreground">Class-level actions only.</p>
+                          <h4 className="text-xs font-semibold sm:text-sm">Teacher Actions</h4>
+                          <p className="text-[10px] text-muted-foreground sm:text-xs">
+                            Class-level actions only.
+                          </p>
                         </div>
-                        <Badge variant="secondary">Allowed</Badge>
+                        <Badge variant="secondary" className="text-[9px] sm:text-xs">
+                          Allowed
+                        </Badge>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <Button variant="outline" size="sm" className="justify-start">
-                          <Eye className="size-4 mr-2" /> View Student
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 justify-start px-2 text-[10px] sm:h-9 sm:px-3 sm:text-xs"
+                        >
+                          <Eye className="size-3 mr-1.5 sm:size-4 sm:mr-2" /> View Student
                         </Button>
-                        <Button variant="outline" size="sm" className="justify-start">
-                          <MessageSquare className="size-4 mr-2" /> Add Remark
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 justify-start px-2 text-[10px] sm:h-9 sm:px-3 sm:text-xs"
+                        >
+                          <MessageSquare className="size-3 mr-1.5 sm:size-4 sm:mr-2" /> Add Remark
                         </Button>
-                        <Button variant="outline" size="sm" className="justify-start">
-                          <MessageSquare className="size-4 mr-2" /> Contact Parent
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 justify-start px-2 text-[10px] sm:h-9 sm:px-3 sm:text-xs"
+                        >
+                          <MessageSquare className="size-3 mr-1.5 sm:size-4 sm:mr-2" /> Contact
+                          Parent
                         </Button>
-                        <Button variant="outline" size="sm" className="justify-start">
-                          <UserCheck className="size-4 mr-2" /> View Attendance
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 justify-start px-2 text-[10px] sm:h-9 sm:px-3 sm:text-xs"
+                        >
+                          <UserCheck className="size-3 mr-1.5 sm:size-4 sm:mr-2" /> View Attendance
                         </Button>
-                        <Button variant="outline" size="sm" className="justify-start">
-                          <TrendingUp className="size-4 mr-2" /> View Performance
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 justify-start px-2 text-[10px] sm:h-9 sm:px-3 sm:text-xs"
+                        >
+                          <TrendingUp className="size-3 mr-1.5 sm:size-4 sm:mr-2" /> View
+                          Performance
                         </Button>
-                        <Button variant="outline" size="sm" className="justify-start">
-                          <FileCheck className="size-4 mr-2" /> Verify Documents
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 justify-start px-2 text-[10px] sm:h-9 sm:px-3 sm:text-xs"
+                        >
+                          <FileCheck className="size-3 mr-1.5 sm:size-4 sm:mr-2" /> Verify Documents
                         </Button>
-                        <Button variant="outline" size="sm" className="justify-start">
-                          <BookOpen className="size-4 mr-2" /> Assign Work
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 justify-start px-2 text-[10px] sm:h-9 sm:px-3 sm:text-xs"
+                        >
+                          <BookOpen className="size-3 mr-1.5 sm:size-4 sm:mr-2" /> Assign Work
                         </Button>
-                        <Button variant="outline" size="sm" className="justify-start">
-                          <CalendarDays className="size-4 mr-2" /> Schedule Meeting
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 justify-start px-2 text-[10px] sm:h-9 sm:px-3 sm:text-xs"
+                        >
+                          <CalendarDays className="size-3 mr-1.5 sm:size-4 sm:mr-2" /> Schedule
+                          Meeting
                         </Button>
-                        <Button variant="outline" size="sm" className="justify-start sm:col-span-2">
-                          <Brain className="size-4 mr-2" /> Generate AI Insights
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="col-span-2 h-8 justify-start px-2 text-[10px] sm:h-9 sm:px-3 sm:text-xs"
+                        >
+                          <Brain className="size-3 mr-1.5 sm:size-4 sm:mr-2" /> Generate AI Insights
                         </Button>
                       </div>
                     </Card>
