@@ -87,7 +87,7 @@ const PRINCIPAL_NAV: PrincipalNav = [
   { to: "/app/fees", label: "Finance", icon: DollarSign },
   {
     label: "Insights",
-    icon: BarChart3,
+    icon: Lightbulb,
     items: [
       { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
       { to: "/app/ai", label: "Scholarii AI", icon: Sparkles },
@@ -160,7 +160,7 @@ const ADMIN_NAV: PrincipalNav = [
   { to: "/app/admin/fees", label: "Finance", icon: DollarSign },
   {
     label: "Insights",
-    icon: BarChart3,
+    icon: Lightbulb,
     items: [
       { to: "/app/admin/analytics", label: "Analytics", icon: BarChart3 },
       { to: "/app/admin/ai", label: "Scholarii AI", icon: Sparkles },

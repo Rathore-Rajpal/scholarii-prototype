@@ -54,7 +54,7 @@ function AdmissionsPage() {
 
   const totals = useMemo(() => {
     const inquiries = 542;
-    const submitted = applications.filter((a) => a.status !== "New").length + 95; // realistic-looking
+    const submitted = applications.filter((a) => a.status !== "New").length + 95;
     const confirmed = applications.filter((a) => a.status === "Enrolled" || a.status === "Approved").length || 218;
     const conversion = Math.round((confirmed / Math.max(1, submitted)) * 100);
     const pending = applications.filter((a) => a.status === "Documents Pending" || a.status === "Under Review").length || 12;
@@ -81,8 +81,6 @@ function AdmissionsPage() {
       { name: "Grade 5", filled: 103, total: 120 },
     ];
   }, []);
-
-
 
   const clearFilters = () => {
     setQuery("");
@@ -138,35 +136,37 @@ function AdmissionsPage() {
         {/* Recent Applications */}
         <div className="space-y-3">
           <Card className="p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
                 <div>
                    <h3 className="text-base sm:text-lg font-semibold">Recent Applications</h3>
                   <p className="text-sm text-muted-foreground">Latest 10 applications — click to view details.</p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                   <div className="relative">
+                {/* Filters - horizontal scroll on mobile */}
+                <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:items-center">
+                   <div className="relative min-w-0 flex-1 sm:flex-initial sm:w-64">
                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                     <Input className="pl-9" placeholder="Search student, parent, application..." value={query} onChange={(e) => setQuery(e.target.value)} />
+                     <Input className="pl-9 w-full" placeholder="Search student, parent, application..." value={query} onChange={(e) => setQuery(e.target.value)} />
                    </div>
                    <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
-                     <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+                     <SelectTrigger className="w-40 shrink-0"><SelectValue placeholder="Status" /></SelectTrigger>
                      <SelectContent>
                        <SelectItem value="all">All statuses</SelectItem>
                        {STATUSES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
                      </SelectContent>
                    </Select>
                    <Select value={classFilter} onValueChange={(v) => setClassFilter(v)}>
-                     <SelectTrigger className="w-40"><SelectValue placeholder="Class" /></SelectTrigger>
+                     <SelectTrigger className="w-40 shrink-0"><SelectValue placeholder="Class" /></SelectTrigger>
                      <SelectContent>
                        <SelectItem value="all">All classes</SelectItem>
                        {Array.from(new Set(applications.map((a) => a.classApplied))).map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
                      </SelectContent>
                    </Select>
-                   <Button size="sm" variant="outline" onClick={clearFilters}>Clear</Button>
+                   <Button size="sm" variant="outline" onClick={clearFilters} className="shrink-0">Clear</Button>
                  </div>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Desktop table */}
+              <div className="overflow-x-auto table-mobile-scroll hidden sm:block">
               <Table className="min-w-[600px]">
                 <TableHeader>
                   <TableRow>
@@ -187,7 +187,7 @@ function AdmissionsPage() {
                       <TableCell>{a.classApplied}</TableCell>
                       <TableCell className="font-mono text-sm">{a.appliedAt}</TableCell>
                       <TableCell>
-                        <Badge variant={a.status === "Approved" || a.status === "Enrolled" ? "secondary" : a.status === "Rejected" ? "destructive" : a.status === "Documents Pending" ? "warning" : "outline"}>
+                        <Badge variant={a.status === "Approved" || a.status === "Enrolled" ? "secondary" : a.status === "Rejected" ? "destructive" : a.status === "Documents Pending" ? "outline" : "outline"}>
                           {a.status}
                         </Badge>
                       </TableCell>
@@ -197,6 +197,34 @@ function AdmissionsPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
+
+              {/* Mobile card list */}
+              <div className="sm:hidden space-y-2">
+                {filtered.map((a) => (
+                  <div
+                    key={a.id}
+                    className="rounded-xl border border-border/60 p-3 active:bg-muted/20 transition-colors cursor-pointer"
+                    onClick={() => setSelectedApp(a)}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold">{a.student}</span>
+                      <Badge variant={a.status === "Approved" || a.status === "Enrolled" ? "secondary" : a.status === "Rejected" ? "destructive" : "outline"} className="text-[10px]">
+                        {a.status}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <div className="flex justify-between">
+                        <span>{a.parent}</span>
+                        <span>{a.classApplied}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-mono">{a.appliedAt}</span>
+                        <span>Docs: {a.docsSubmitted}/{a.docsRequired}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div className="flex items-center justify-between p-4 border-t border-border text-sm">
@@ -209,11 +237,11 @@ function AdmissionsPage() {
           </div>
 
         {/* Class Capacity Overview */}
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-4">
+        <Card className="p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
             <h3 className="text-base sm:text-lg font-semibold">Class Capacity Overview</h3>
             <Select value={selectedCapacityClass} onValueChange={setSelectedCapacityClass}>
-              <SelectTrigger className="w-40"><SelectValue placeholder="Select Class" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Select Class" /></SelectTrigger>
               <SelectContent>
                 {classesOverview.map((c) => (
                   <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>
@@ -226,7 +254,7 @@ function AdmissionsPage() {
             const seatsLeft = c.total - c.filled;
             return (
               <div key={c.name} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="kpi-mobile-scroll grid-cols-1 sm:grid-cols-3 gap-3">
                    <Card className="p-3 sm:p-4 bg-blue-50 border-blue-200">
                      <p className="text-xs text-muted-foreground">Filled Seats</p>
                      <p className="text-3xl font-bold text-blue-600 mt-2">{c.filled}</p>
@@ -256,7 +284,7 @@ function AdmissionsPage() {
       </div>
 
       <Sheet open={!!selectedApp} onOpenChange={(open) => !open && setSelectedApp(null)}>
-        <SheetContent side="right" className="w-[480px]">
+        <SheetContent side="right" className="w-full sm:w-[480px]">
           {selectedApp && (
             <div className="h-full flex flex-col">
               <SheetHeader>

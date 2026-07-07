@@ -239,15 +239,6 @@ function TeachersPage() {
     return background ? `${background}, ${slice}` : slice;
   }, "");
 
-  const availabilityNow = derivedTeachers
-    .filter((teacher) => teacher.availability === "Available")
-    .slice(0, 5)
-    .map((teacher) => ({
-      name: teacher.name,
-      department: teacher.department,
-      freeUntil: "Period 5",
-    }));
-
   const substituteAssignments = [
     { absent: "Mrs Sharma", className: "Class 8A", period: "Period 4", substitute: "Mr Khan", status: "Assigned" },
     { absent: "Mr Verma", className: "Class 10B", period: "Period 5", substitute: "Not Assigned", status: "Critical" },
@@ -277,7 +268,6 @@ function TeachersPage() {
     },
   ];
 
-
   const clearFilters = () => {
     setQuery("");
     setDepartment("all");
@@ -296,14 +286,14 @@ function TeachersPage() {
         title="Staff Management & Workforce Intelligence"
         subtitle="Operational visibility for staffing, workload, and coverage in one command center."
         action={
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" className="bg-brand-gradient text-white border-0"><UserPlus className="size-4 mr-1" />Add Staff</Button>
-            <Button variant="outline" size="sm" onClick={() => setLeavePanelOpen(true)}>
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+            <Button size="sm" className="bg-brand-gradient text-white border-0 w-full sm:w-auto"><UserPlus className="size-4 mr-1" />Add Staff</Button>
+            <Button variant="outline" size="sm" onClick={() => setLeavePanelOpen(true)} className="w-full sm:w-auto">
               <ClipboardCheck className="size-4 mr-1" />Leaves
             </Button>
-            <Button variant="outline" size="sm"><FileText className="size-4 mr-1" />Generate Staff Report</Button>
-            <Button variant="outline" size="sm"><Download className="size-4 mr-1" />Export Data</Button>
-            <Button variant="outline" size="sm"><Briefcase className="size-4 mr-1" />Schedule Meeting</Button>
+            <Button variant="outline" size="sm" className="w-full sm:w-auto"><FileText className="size-4 mr-1" />Generate Staff Report</Button>
+            <Button variant="outline" size="sm" className="w-full sm:w-auto"><Download className="size-4 mr-1" />Export Data</Button>
+            <Button variant="outline" size="sm" className="w-full sm:w-auto"><Briefcase className="size-4 mr-1" />Schedule Meeting</Button>
           </div>
         }
       />
@@ -313,7 +303,7 @@ function TeachersPage() {
           <Card className="p-3 sm:p-4">
             <p className="text-xs text-muted-foreground">Total Staff</p>
             <div className="text-2xl font-bold mt-2">{totalStaff} Staff Members</div>
-            <p className="text-xs text-muted-foreground mt-1">{totalTeachers} Teachers â€¢ 10 Admin</p>
+            <p className="text-xs text-muted-foreground mt-1">{totalTeachers} Teachers • 10 Admin</p>
           </Card>
           <Card className="p-3 sm:p-4">
             <p className="text-xs text-muted-foreground">Present Today</p>
@@ -349,27 +339,29 @@ function TeachersPage() {
         </div>
 
         <Tabs defaultValue="workforce" className="space-y-4">
-          <Card className="p-3 border-border/60 bg-white/70 backdrop-blur-xl shadow-sm">
-            <TabsList className="flex h-auto overflow-x-auto scrollbar-hide gap-2 bg-transparent p-0">
-              <TabsTrigger
-                value="workforce"
-                className="rounded-full border border-border/70 bg-white/50 px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 backdrop-blur-md data-[state=active]:border-emerald-500/70 data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-50/90 data-[state=active]:to-white/80 data-[state=active]:text-foreground data-[state=active]:shadow-[0_10px_30px_rgba(16,185,129,0.18)] data-[state=active]:ring-1 data-[state=active]:ring-emerald-200/60 hover:border-emerald-300 hover:bg-white/80 hover:text-foreground"
-              >
-                Workforce Intelligence
-              </TabsTrigger>
-              <TabsTrigger
-                value="directory"
-                className="rounded-full border border-border/70 bg-white/50 px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 backdrop-blur-md data-[state=active]:border-emerald-500/70 data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-50/90 data-[state=active]:to-white/80 data-[state=active]:text-foreground data-[state=active]:shadow-[0_10px_30px_rgba(16,185,129,0.18)] data-[state=active]:ring-1 data-[state=active]:ring-emerald-200/60 hover:border-emerald-300 hover:bg-white/80 hover:text-foreground"
-              >
-                Staff Directory
-              </TabsTrigger>
-              <TabsTrigger
-                value="department"
-                className="rounded-full border border-border/70 bg-white/50 px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 backdrop-blur-md data-[state=active]:border-emerald-500/70 data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-50/90 data-[state=active]:to-white/80 data-[state=active]:text-foreground data-[state=active]:shadow-[0_10px_30px_rgba(16,185,129,0.18)] data-[state=active]:ring-1 data-[state=active]:ring-emerald-200/60 hover:border-emerald-300 hover:bg-white/80 hover:text-foreground"
-              >
-                Department Overview
-              </TabsTrigger>
-            </TabsList>
+          <Card className="p-2 sm:p-3 border-border/60 bg-white/70 backdrop-blur-xl shadow-sm">
+            <div className="overflow-x-auto scrollbar-hide">
+              <TabsList className="flex h-auto gap-2 bg-transparent p-0 min-w-max">
+                <TabsTrigger
+                  value="workforce"
+                  className="rounded-full border border-border/70 bg-white/50 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground transition-all duration-300 backdrop-blur-md data-[state=active]:border-emerald-500/70 data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-50/90 data-[state=active]:to-white/80 data-[state=active]:text-foreground data-[state=active]:shadow-[0_10px_30px_rgba(16,185,129,0.18)] data-[state=active]:ring-1 data-[state=active]:ring-emerald-200/60 hover:border-emerald-300 hover:bg-white/80 hover:text-foreground whitespace-nowrap"
+                >
+                  Workforce Intelligence
+                </TabsTrigger>
+                <TabsTrigger
+                  value="directory"
+                  className="rounded-full border border-border/70 bg-white/50 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground transition-all duration-300 backdrop-blur-md data-[state=active]:border-emerald-500/70 data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-50/90 data-[state=active]:to-white/80 data-[state=active]:text-foreground data-[state=active]:shadow-[0_10px_30px_rgba(16,185,129,0.18)] data-[state=active]:ring-1 data-[state=active]:ring-emerald-200/60 hover:border-emerald-300 hover:bg-white/80 hover:text-foreground whitespace-nowrap"
+                >
+                  Staff Directory
+                </TabsTrigger>
+                <TabsTrigger
+                  value="department"
+                  className="rounded-full border border-border/70 bg-white/50 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground transition-all duration-300 backdrop-blur-md data-[state=active]:border-emerald-500/70 data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-50/90 data-[state=active]:to-white/80 data-[state=active]:text-foreground data-[state=active]:shadow-[0_10px_30px_rgba(16,185,129,0.18)] data-[state=active]:ring-1 data-[state=active]:ring-emerald-200/60 hover:border-emerald-300 hover:bg-white/80 hover:text-foreground whitespace-nowrap"
+                >
+                  Department Overview
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </Card>
 
           <TabsContent value="workforce" className="space-y-4">
@@ -382,32 +374,33 @@ function TeachersPage() {
               </div>
               <Badge variant="secondary">Live alerts</Badge>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
-              <Card className="p-4">
+            {/* Alert cards - horizontal scroll on mobile */}
+            <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible xl:grid-cols-5 sm:gap-3">
+              <Card className="p-4 min-w-[200px] sm:min-w-0 shrink-0 sm:shrink">
                 <p className="text-xs text-muted-foreground">Teacher Absence Alert</p>
                 <p className="text-xl font-bold mt-2">{onLeave + lateArrivals} teachers</p>
                 <p className="text-xs text-muted-foreground">Absent or late today</p>
                 <Button size="sm" variant="outline" onClick={() => setEmploymentStatus("On Leave")}>View Details</Button>
               </Card>
-              <Card className="p-4">
+              <Card className="p-4 min-w-[200px] sm:min-w-0 shrink-0 sm:shrink">
                 <p className="text-xs text-muted-foreground">Workload Alert</p>
                 <p className="text-xl font-bold mt-2">{overloaded} teachers</p>
                 <p className="text-xs text-muted-foreground">No free periods</p>
                 <Button size="sm" variant="outline" onClick={() => setWorkloadFilter("Overloaded")}>View Details</Button>
               </Card>
-              <Card className="p-4">
+              <Card className="p-4 min-w-[200px] sm:min-w-0 shrink-0 sm:shrink">
                 <p className="text-xs text-muted-foreground">Substitute Alert</p>
                 <p className="text-xl font-bold mt-2">{pendingSubstitutions} classes</p>
                 <p className="text-xs text-muted-foreground">Need substitutes</p>
                 <Button size="sm" variant="outline">View Details</Button>
               </Card>
-              <Card className="p-4">
+              <Card className="p-4 min-w-[200px] sm:min-w-0 shrink-0 sm:shrink">
                 <p className="text-xs text-muted-foreground">Department Alert</p>
                 <p className="text-xl font-bold mt-2">Science Dept</p>
                 <p className="text-xs text-muted-foreground">70% capacity</p>
                 <Button size="sm" variant="outline" onClick={() => setDepartment("Science")}>View Details</Button>
               </Card>
-              <Card className="p-4">
+              <Card className="p-4 min-w-[200px] sm:min-w-0 shrink-0 sm:shrink">
                 <p className="text-xs text-muted-foreground">Leave Alert</p>
                 <p className="text-xl font-bold mt-2">3 requests</p>
                 <p className="text-xs text-muted-foreground">Pending approval</p>
@@ -423,7 +416,7 @@ function TeachersPage() {
                 <p className="text-sm text-muted-foreground">Teachers today</p>
               </div>
               <div
-                className="size-20 rounded-full"
+                className="size-20 rounded-full shrink-0"
                 style={{ background: `conic-gradient(${pieBackground})` }}
                 aria-label="Staff availability pie chart"
               />
@@ -431,7 +424,7 @@ function TeachersPage() {
             <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-muted-foreground">
               {pieSegments.map((segment) => (
                 <div key={segment.label} className="flex items-center gap-2">
-                  <span className="size-2.5 rounded-full" style={{ backgroundColor: segment.color }} />
+                  <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: segment.color }} />
                   <span>{segment.label}: {segment.value}</span>
                 </div>
               ))}
@@ -468,8 +461,9 @@ function TeachersPage() {
           </div>
 
           <Card className="p-3 sm:p-4">
-            <div className="flex flex-wrap gap-2 items-center">
-              <div className="relative flex-1 min-w-64">
+            {/* Filters - horizontal scroll on mobile */}
+            <div className="flex gap-2 items-center overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
+              <div className="relative flex-1 min-w-[200px] sm:min-w-64 shrink-0 sm:shrink">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   className="pl-9"
@@ -479,7 +473,7 @@ function TeachersPage() {
                 />
               </div>
               <Select value={department} onValueChange={(value) => { setDepartment(value); setPage(1); }}>
-                <SelectTrigger className="w-40"><SelectValue placeholder="Department" /></SelectTrigger>
+                <SelectTrigger className="w-40 shrink-0"><SelectValue placeholder="Department" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All departments</SelectItem>
                   {departments.map((dept) => (
@@ -488,7 +482,7 @@ function TeachersPage() {
                 </SelectContent>
               </Select>
               <Select value={subject} onValueChange={(value) => { setSubject(value); setPage(1); }}>
-                <SelectTrigger className="w-36"><SelectValue placeholder="Subject" /></SelectTrigger>
+                <SelectTrigger className="w-36 shrink-0"><SelectValue placeholder="Subject" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All subjects</SelectItem>
                   {Array.from(new Set(derivedTeachers.map((teacher) => teacher.subject))).map((value) => (
@@ -497,7 +491,7 @@ function TeachersPage() {
                 </SelectContent>
               </Select>
               <Select value={employmentStatus} onValueChange={(value) => { setEmploymentStatus(value); setPage(1); }}>
-                <SelectTrigger className="w-40"><SelectValue placeholder="Attendance Status" /></SelectTrigger>
+                <SelectTrigger className="w-40 shrink-0"><SelectValue placeholder="Attendance Status" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All status</SelectItem>
                   <SelectItem value="Active">Active</SelectItem>
@@ -506,7 +500,7 @@ function TeachersPage() {
                 </SelectContent>
               </Select>
               <Select value={attendanceFilter} onValueChange={(value: AttendanceLevel) => { setAttendanceFilter(value); setPage(1); }}>
-                <SelectTrigger className="w-40"><SelectValue placeholder="Attendance %" /></SelectTrigger>
+                <SelectTrigger className="w-40 shrink-0"><SelectValue placeholder="Attendance %" /></SelectTrigger>
                 <SelectContent>
                   {attendanceLevels.map((value) => (
                     <SelectItem key={value} value={value}>
@@ -516,7 +510,7 @@ function TeachersPage() {
                 </SelectContent>
               </Select>
               <Select value={performanceFilter} onValueChange={(value: PerformanceLevel) => { setPerformanceFilter(value); setPage(1); }}>
-                <SelectTrigger className="w-36"><SelectValue placeholder="Performance" /></SelectTrigger>
+                <SelectTrigger className="w-36 shrink-0"><SelectValue placeholder="Performance" /></SelectTrigger>
                 <SelectContent>
                   {performanceLevels.map((value) => (
                     <SelectItem key={value} value={value}>
@@ -526,7 +520,7 @@ function TeachersPage() {
                 </SelectContent>
               </Select>
               <Select value={workloadFilter} onValueChange={(value: WorkloadLevel) => { setWorkloadFilter(value); setPage(1); }}>
-                <SelectTrigger className="w-36"><SelectValue placeholder="Workload" /></SelectTrigger>
+                <SelectTrigger className="w-36 shrink-0"><SelectValue placeholder="Workload" /></SelectTrigger>
                 <SelectContent>
                   {workloadLevels.map((value) => (
                     <SelectItem key={value} value={value}>
@@ -536,7 +530,7 @@ function TeachersPage() {
                 </SelectContent>
               </Select>
               <Select value={availabilityFilter} onValueChange={(value: AvailabilityLevel) => { setAvailabilityFilter(value); setPage(1); }}>
-                <SelectTrigger className="w-40"><SelectValue placeholder="Availability" /></SelectTrigger>
+                <SelectTrigger className="w-40 shrink-0"><SelectValue placeholder="Availability" /></SelectTrigger>
                 <SelectContent>
                   {availabilityLevels.map((value) => (
                     <SelectItem key={value} value={value}>
@@ -550,8 +544,10 @@ function TeachersPage() {
 
           <Card className="overflow-hidden">
             {viewMode === "table" ? (
-              <div className="overflow-x-auto">
-              <Table className="min-w-[800px]">
+              <>
+                {/* Desktop table */}
+                <div className="overflow-x-auto table-mobile-scroll hidden sm:block">
+                <Table className="min-w-[800px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Teacher</TableHead>
@@ -559,7 +555,7 @@ function TeachersPage() {
                     <TableHead>Department</TableHead>
                     <TableHead>Subjects</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead>Todayâ€™s Status</TableHead>
+                    <TableHead>Today's Status</TableHead>
                     <TableHead>Attendance %</TableHead>
                     <TableHead>Workload Score</TableHead>
                     <TableHead>Availability</TableHead>
@@ -618,25 +614,74 @@ function TeachersPage() {
                     </TableRow>
                   )}
                 </TableBody>
-              </Table>
-              </div>
+                </Table>
+                </div>
+
+                {/* Mobile card list */}
+                <div className="sm:hidden p-3 space-y-2">
+                  {rows.map((teacher) => (
+                    <div
+                      key={teacher.id}
+                      className="rounded-xl border border-border/60 p-3 active:bg-muted/20 transition-colors cursor-pointer"
+                      onClick={() => setSelectedTeacherId(teacher.id)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="size-10 shrink-0">
+                          <AvatarFallback style={{ backgroundColor: teacher.avatarColor, color: "white" }}>
+                            {teacher.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold truncate">{teacher.name}</div>
+                          <div className="text-[11px] text-muted-foreground">{teacher.department} • {teacher.subject}</div>
+                        </div>
+                        <Badge variant={teacher.status === "Active" ? "secondary" : teacher.status === "Late" ? "outline" : "destructive"} className="shrink-0 text-[10px]">
+                          {teacher.status}
+                        </Badge>
+                      </div>
+                      <div className="mt-2.5 grid grid-cols-3 gap-2 text-[11px]">
+                        <div>
+                          <p className="text-muted-foreground">Attendance</p>
+                          <p className={`font-semibold ${teacher.attendancePct >= 95 ? "text-emerald-600" : teacher.attendancePct >= 90 ? "text-amber-600" : "text-red-600"}`}>{teacher.attendancePct}%</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Workload</p>
+                          <p className={`font-semibold ${teacher.workloadLevel === "Overloaded" ? "text-red-600" : teacher.workloadLevel === "High" ? "text-amber-600" : "text-emerald-600"}`}>{teacher.workloadScore}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Availability</p>
+                          <p className="font-semibold">{teacher.availability}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {!rows.length && (
+                    <Card className="p-6 text-center text-muted-foreground">
+                      No staff match the selected filters.
+                      <div className="mt-3">
+                        <Button size="sm" variant="outline" onClick={clearFilters}>Clear Filters</Button>
+                      </div>
+                    </Card>
+                  )}
+                </div>
+              </>
             ) : (
-              <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                 {rows.map((teacher) => (
-                  <Card key={teacher.id} className="p-4 hover:shadow-md transition" onClick={() => setSelectedTeacherId(teacher.id)}>
+                  <Card key={teacher.id} className="p-3 sm:p-4 hover:shadow-md transition cursor-pointer" onClick={() => setSelectedTeacherId(teacher.id)}>
                     <div className="flex items-center gap-3">
-                      <Avatar className="size-10">
+                      <Avatar className="size-10 shrink-0">
                         <AvatarFallback style={{ backgroundColor: teacher.avatarColor, color: "white" }}>
                           {teacher.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <div className="font-semibold">{teacher.name}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm sm:text-base truncate">{teacher.name}</div>
                         <div className="text-xs text-muted-foreground">{teacher.department}</div>
                       </div>
-                      <div className="ml-auto flex flex-col items-end gap-1">
-                        <Badge variant="outline">{teacher.availability}</Badge>
-                        <Badge variant={teacher.roleType === "Teaching" ? "secondary" : "outline"}>
+                      <div className="ml-auto flex flex-col items-end gap-1 shrink-0">
+                        <Badge variant="outline" className="text-[10px]">{teacher.availability}</Badge>
+                        <Badge variant={teacher.roleType === "Teaching" ? "secondary" : "outline"} className="text-[10px]">
                           {teacher.roleType}
                         </Badge>
                       </div>
@@ -660,13 +705,13 @@ function TeachersPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-between p-4 border-t border-border text-sm">
-              <div className="text-muted-foreground">
-                Showing {filteredTeachers.length === 0 ? 0 : (page - 1) * pageSize + 1}â€“{Math.min(page * pageSize, filteredTeachers.length)} of {filteredTeachers.length}
+            <div className="flex items-center justify-between p-3 sm:p-4 border-t border-border text-sm">
+              <div className="text-muted-foreground text-xs sm:text-sm">
+                Showing {filteredTeachers.length === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredTeachers.length)} of {filteredTeachers.length}
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Previous</Button>
-                <div className="px-3 py-1.5 rounded-md bg-muted">{page} / {pages}</div>
+                <div className="px-3 py-1.5 rounded-md bg-muted text-xs sm:text-sm">{page} / {pages}</div>
                 <Button variant="outline" size="sm" disabled={page === pages} onClick={() => setPage((p) => p + 1)}>Next</Button>
               </div>
             </div>
@@ -716,7 +761,7 @@ function TeachersPage() {
                   {departmentMixSegments.map((segment) => (
                     <div key={segment.label} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
-                        <span className="size-2.5 rounded-full" style={{ backgroundColor: segment.color }} />
+                        <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: segment.color }} />
                         <span>{segment.label}</span>
                       </div>
                       <span className="text-muted-foreground">{segment.value}</span>
@@ -742,17 +787,17 @@ function TeachersPage() {
                 <div className="space-y-5">
                   <Card className="p-4">
                     <div className="flex items-center gap-4">
-                      <Avatar className="size-12">
+                      <Avatar className="size-12 shrink-0">
                         <AvatarFallback style={{ backgroundColor: selectedTeacher.avatarColor, color: "white" }}>
                           {selectedTeacher.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <div className="text-lg font-semibold">{selectedTeacher.name}</div>
-                        <div className="text-xs text-muted-foreground">{selectedTeacher.employeeId} â€¢ {selectedTeacher.designation}</div>
-                        <div className="text-xs text-muted-foreground">{selectedTeacher.department} â€¢ {selectedTeacher.experience} experience</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-base sm:text-lg font-semibold">{selectedTeacher.name}</div>
+                        <div className="text-xs text-muted-foreground">{selectedTeacher.employeeId} • {selectedTeacher.designation}</div>
+                        <div className="text-xs text-muted-foreground">{selectedTeacher.department} • {selectedTeacher.experience} experience</div>
                       </div>
-                      <div className="text-right space-y-2">
+                      <div className="text-right space-y-2 shrink-0">
                         <Badge variant={selectedTeacher.status === "Active" ? "secondary" : selectedTeacher.status === "Late" ? "outline" : "destructive"}>
                           {selectedTeacher.status}
                         </Badge>
@@ -762,17 +807,19 @@ function TeachersPage() {
                   </Card>
 
                   <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="flex flex-wrap gap-2 h-auto">
-                      <TabsTrigger value="overview">Overview</TabsTrigger>
-                      <TabsTrigger value="attendance">Attendance</TabsTrigger>
-                      {selectedTeacher.roleType === "Teaching" && (
-                        <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                      )}
-                      <TabsTrigger value="workload">Workload</TabsTrigger>
-                      <TabsTrigger value="performance">Performance</TabsTrigger>
-                      <TabsTrigger value="leave">Leave</TabsTrigger>
-                      <TabsTrigger value="documents">Documents</TabsTrigger>
-                    </TabsList>
+                    <div className="overflow-x-auto scrollbar-hide">
+                      <TabsList className="flex gap-2 h-auto min-w-max">
+                        <TabsTrigger value="overview">Overview</TabsTrigger>
+                        <TabsTrigger value="attendance">Attendance</TabsTrigger>
+                        {selectedTeacher.roleType === "Teaching" && (
+                          <TabsTrigger value="schedule">Schedule</TabsTrigger>
+                        )}
+                        <TabsTrigger value="workload">Workload</TabsTrigger>
+                        <TabsTrigger value="performance">Performance</TabsTrigger>
+                        <TabsTrigger value="leave">Leave</TabsTrigger>
+                        <TabsTrigger value="documents">Documents</TabsTrigger>
+                      </TabsList>
+                    </div>
 
                     <TabsContent value="overview">
                       <Card className="p-4 grid grid-cols-2 gap-4 text-sm">
@@ -782,7 +829,7 @@ function TeachersPage() {
                         <ProfileItem label="Classes Assigned" value={selectedTeacher.classes.join(", ") || "-"} />
                         <ProfileItem label="Emergency Contact" value={selectedTeacher.phone} />
                         <ProfileItem label="Email" value={selectedTeacher.email} />
-                        <ProfileItem label="Salary Amount" value={`â‚¹${selectedTeacher.salaryAmount.toLocaleString("en-IN")}`} />
+                        <ProfileItem label="Salary Amount" value={`₹${selectedTeacher.salaryAmount.toLocaleString("en-IN")}`} />
                         <ProfileItem label="Salary Method" value={selectedTeacher.salaryMethod} />
                         <ProfileItem label="Salary Status" value={selectedTeacher.salaryStatus} />
                         <ProfileItem label="Role Type" value={selectedTeacher.roleType} />
@@ -812,7 +859,7 @@ function TeachersPage() {
                                 key={period}
                                 className={`px-2 py-1 rounded-full text-[11px] ${selectedTeacher.periodsAssigned.includes(period) ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}
                               >
-                                P{period} {selectedTeacher.periodsAssigned.includes(period) ? "âœ“" : "FREE"}
+                                P{period} {selectedTeacher.periodsAssigned.includes(period) ? "✓" : "FREE"}
                               </span>
                             ))}
                           </div>
@@ -883,13 +930,13 @@ function TeachersPage() {
             {leaveRequests.map((leave) => (
               <Card key={`${leave.name}-${leave.range}`} className="p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-semibold">{leave.name}</p>
                     <p className="text-xs text-muted-foreground">{leave.range}</p>
                     <p className="text-xs text-muted-foreground">Type: {leave.type}</p>
                     <p className="text-xs text-muted-foreground">Reason: {leave.reason}</p>
                   </div>
-                  <Badge variant="outline">{leave.status}</Badge>
+                  <Badge variant="outline" className="shrink-0">{leave.status}</Badge>
                 </div>
                 <div className="mt-3 flex gap-2">
                   <Button size="sm" variant="secondary">Approve</Button>

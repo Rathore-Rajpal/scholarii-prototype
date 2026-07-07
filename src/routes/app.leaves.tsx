@@ -47,6 +47,7 @@ import {
   STUDENT_LEAVE_STATS,
 } from "@/lib/scholarii/teacher-leaves-mock-data";
 import { toast } from "sonner";
+import { ScrollableTabs } from "@/components/scholarii/ScrollableTabs";
 
 export const Route = createFileRoute("/app/leaves")({
   component: () => (
@@ -71,6 +72,18 @@ const REQUEST_TABS = [
 ] as const;
 
 type RequestTabId = (typeof REQUEST_TABS)[number]["id"];
+
+const pageTabItems = PAGE_TABS.map((tab) => ({
+  id: tab.id,
+  label: tab.label,
+  icon: <tab.icon className="size-4" />,
+}));
+
+const requestTabItems = REQUEST_TABS.map((tab) => ({
+  id: tab.id,
+  label: tab.label,
+  icon: <tab.icon className="size-4" />,
+}));
 
 const STATUS_META: Record<
   string,
@@ -247,23 +260,11 @@ function LeavesPage() {
 
       {/* Page Tabs */}
       <Card className="p-4 mb-6">
-        <div className="flex gap-1">
-          {PAGE_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setPageTab(tab.id)}
-              className={cn(
-                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
-                pageTab === tab.id
-                  ? "bg-violet-500/10 text-violet-600 shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              <tab.icon className="size-4" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <ScrollableTabs
+          tabs={pageTabItems}
+          activeTab={pageTab}
+          onTabChange={setPageTab}
+        />
       </Card>
 
       {pageTab === "students" ? <StudentLeavesTab /> : <MyLeavesTab />}
@@ -300,22 +301,12 @@ function StudentLeavesTab() {
       {/* Tabs + Search */}
       <Card className="p-4 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex gap-1 flex-1">
-            {REQUEST_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
-                  activeTab === tab.id
-                    ? "bg-violet-500/10 text-violet-600 shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                )}
-              >
-                <tab.icon className="size-4" />
-                {tab.label}
-              </button>
-            ))}
+          <div className="flex-1">
+            <ScrollableTabs
+              tabs={requestTabItems}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
           </div>
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -536,22 +527,12 @@ function MyLeavesTab() {
       {/* Tabs + Search */}
       <Card className="p-4 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex gap-1 flex-1">
-            {REQUEST_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-all",
-                  activeTab === tab.id
-                    ? "bg-violet-500/10 text-violet-600 shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                )}
-              >
-                <tab.icon className="size-4" />
-                {tab.label}
-              </button>
-            ))}
+          <div className="flex-1">
+            <ScrollableTabs
+              tabs={requestTabItems}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
           </div>
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
