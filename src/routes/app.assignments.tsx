@@ -28,6 +28,7 @@ import {
   Loader2,
   ArrowRight,
 } from "lucide-react";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 import { useAuth } from "@/lib/scholarii/auth";
 import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 
@@ -292,7 +293,7 @@ function AssignmentsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6 pb-20 md:p-8">
+    <div className="space-y-6 pb-20">
       {/* Header */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-3">
@@ -300,7 +301,7 @@ function AssignmentsPage() {
             <ClipboardList className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
               Assignments
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -311,41 +312,41 @@ function AssignmentsPage() {
       </div>
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        <MetricCard
-          icon={<ClipboardList className="h-5 w-5 text-blue-400" />}
-          label="Total Assignments"
-          value={metrics.total}
-          accent="from-blue-500 to-indigo-600"
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 auto-rows-fr content-start">
+        <KpiCard
+          icon={ClipboardList}
+          label="Total"
+          value={`${metrics.total}`}
+          tone="default"
         />
-        <MetricCard
-          icon={<Clock className="h-5 w-5 text-amber-400" />}
+        <KpiCard
+          icon={Clock}
           label="Pending"
-          value={metrics.pending}
-          accent="from-amber-500 to-orange-600"
+          value={`${metrics.pending}`}
+          tone="warning"
         />
-        <MetricCard
-          icon={<Send className="h-5 w-5 text-cyan-400" />}
+        <KpiCard
+          icon={Send}
           label="Submitted"
-          value={metrics.submitted}
-          accent="from-cyan-500 to-blue-600"
+          value={`${metrics.submitted}`}
+          tone="info"
         />
-        <MetricCard
-          icon={<CheckCircle2 className="h-5 w-5 text-emerald-400" />}
+        <KpiCard
+          icon={CheckCircle2}
           label="Verified"
-          value={metrics.verified}
-          accent="from-emerald-500 to-green-600"
+          value={`${metrics.verified}`}
+          tone="success"
         />
       </div>
 
       {/* Filters & Search */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
           {FILTER_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setFilter(opt.value)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              className={`flex-shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 filter === opt.value
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -355,7 +356,7 @@ function AssignmentsPage() {
             </button>
           ))}
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
@@ -419,37 +420,6 @@ function AssignmentsPage() {
         </SheetContent>
       </Sheet>
     </div>
-  );
-}
-
-function MetricCard({
-  icon,
-  label,
-  value,
-  accent,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  accent: string;
-}) {
-  return (
-    <Card className="relative overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm">
-      <CardContent className="p-4">
-        <div className={`absolute -right-3 -top-3 h-16 w-16 rounded-full bg-gradient-to-br ${accent} opacity-10 blur-xl`} />
-        <div className="relative flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              {label}
-            </p>
-            <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
-          </div>
-          <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${accent} shadow-lg`}>
-            {icon}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 

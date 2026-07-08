@@ -26,6 +26,7 @@ import {
   BarChart3,
   Sparkle,
 } from "lucide-react";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 import { useAuth } from "@/lib/scholarii/auth";
 import { PlaceholderPage } from "@/components/scholarii/RoleGuard";
 import {
@@ -46,54 +47,6 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
-
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  subtitle,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  subtitle?: string;
-  tone: "success" | "warning" | "info" | "default";
-}) {
-  const toneStyles = {
-    success: "from-emerald-500/10 to-emerald-600/5 text-emerald-600",
-    warning: "from-amber-500/10 to-amber-600/5 text-amber-600",
-    info: "from-violet-500/10 to-violet-600/5 text-violet-600",
-    default: "from-slate-500/10 to-slate-600/5 text-slate-600",
-  };
-
-  const iconBg = {
-    success: "bg-emerald-500/10",
-    warning: "bg-amber-500/10",
-    info: "bg-violet-500/10",
-    default: "bg-slate-500/10",
-  };
-
-  return (
-    <Card className="relative overflow-hidden p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-      <div className={`absolute inset-0 bg-gradient-to-br ${toneStyles[tone]} opacity-50`} />
-      <div className="relative">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="text-3xl font-bold tracking-tight">{value}</p>
-            {subtitle && (
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
-            )}
-          </div>
-          <div className={`rounded-xl p-2.5 ${iconBg[tone]}`}>
-            <Icon className="size-5" />
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
 
 function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
@@ -306,7 +259,7 @@ function FeesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-fit">
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Fees</h1>
@@ -316,32 +269,34 @@ function FeesPage() {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 auto-rows-fr content-start">
+        <KpiCard
           icon={Wallet}
           label="Annual Fees"
           value={`₹${data.annualFees.toLocaleString()}`}
           tone="default"
         />
-        <MetricCard
+        <KpiCard
           icon={CheckCircle2}
-          label="Paid Amount"
+          label="Paid"
           value={`₹${data.paidAmount.toLocaleString()}`}
-          subtitle={`${data.paidPercentage}% Paid`}
+          change={`${data.paidPercentage}%`}
+          positive={true}
           tone="success"
         />
-        <MetricCard
+        <KpiCard
           icon={AlertTriangle}
-          label="Pending Amount"
+          label="Pending"
           value={`₹${data.pendingAmount.toLocaleString()}`}
-          subtitle={`${data.pendingPercentage}% Remaining`}
+          change={`${data.pendingPercentage}%`}
+          positive={false}
           tone="warning"
         />
-        <MetricCard
+        <KpiCard
           icon={CalendarDays}
-          label="Next Due Date"
+          label="Next Due"
           value={data.nextDueDate}
-          subtitle={`${data.nextDueDays} Days Remaining`}
+          change={`${data.nextDueDays} days`}
           tone="info"
         />
       </div>

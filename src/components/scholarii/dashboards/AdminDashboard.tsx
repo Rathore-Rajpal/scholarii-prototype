@@ -550,7 +550,7 @@ function KpiModalDialog({ modal, onClose }: { modal: KpiModal; onClose: () => vo
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/60 z-[9999] flex items-end lg:items-center justify-center p-0 lg:p-4"
+      className="fixed inset-0 bg-black/60 z-[9999] flex items-end lg:items-center justify-center p-0 lg:p-4 overflow-y-auto"
       style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
       onClick={onClose}
     >
@@ -680,7 +680,7 @@ function QuickActionInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 ${props.className ?? ""}`}
+      className={`min-h-[44px] w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 lg:text-sm ${props.className ?? ""}`}
     />
   );
 }
@@ -689,7 +689,7 @@ function QuickActionSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...props}
-      className={`w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 ${props.className ?? ""}`}
+      className={`min-h-[44px] w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 lg:text-sm ${props.className ?? ""}`}
     />
   );
 }
@@ -698,7 +698,7 @@ function QuickActionTextarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>)
   return (
     <textarea
       {...props}
-      className={`w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 ${props.className ?? ""}`}
+      className={`min-h-[44px] w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 lg:text-sm ${props.className ?? ""}`}
     />
   );
 }
@@ -708,14 +708,14 @@ function QuickActionButtons({ submitLabel, onClose, onSubmit }: { submitLabel: s
     <div className="mt-6 grid grid-cols-2 gap-3">
       <button
         type="button"
-        className="rounded-lg border border-gray-200 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        className="w-full rounded-lg border border-gray-200 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
         onClick={onClose}
       >
         Cancel
       </button>
       <button
         type="button"
-        className="w-full rounded-lg bg-violet-600 px-6 py-2 text-sm font-medium text-white hover:bg-violet-700"
+        className="w-full rounded-lg bg-violet-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-violet-700"
         onClick={onSubmit}
       >
         {submitLabel}
@@ -1100,7 +1100,7 @@ function QuickActionModal({ action, onClose }: { action: QuickActionTitle; onClo
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/60 z-[9999] flex items-end lg:items-center justify-center p-0 lg:p-4"
+      className="fixed inset-0 bg-black/60 z-[9999] flex items-end lg:items-center justify-center p-0 lg:p-4 overflow-y-auto"
       style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
       onClick={onClose}
     >
@@ -1175,7 +1175,7 @@ export function AdminDashboard() {
               <Plus className="mr-2 size-4" />
               Quick Action
             </Button>
-            <Button variant="outline" className="rounded-full border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+            <Button variant="outline" className="hidden rounded-full border-gray-300 bg-white text-gray-700 hover:bg-gray-50 md:inline-flex">
               Generate Report
             </Button>
           </div>
@@ -1206,33 +1206,33 @@ export function AdminDashboard() {
           aria-label="Previous KPI card"
           disabled={kpiStartIndex === 0}
           onClick={() => setKpiStartIndex((current) => Math.max(0, current - 1))}
-          className="absolute left-0 top-1/2 z-10 size-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+          className="absolute left-0 top-1/2 z-10 hidden size-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-40 lg:inline-flex"
         >
           <ChevronLeft className="size-4" />
         </Button>
 
-        <div ref={kpiTrackRef} className="flex gap-4 overflow-hidden px-5">
+        <div ref={kpiTrackRef} className="grid grid-cols-2 gap-3 lg:flex lg:gap-4 lg:overflow-hidden lg:px-5">
           {kpiCards.map((card) => (
             <button
               key={card.label}
               type="button"
               onClick={() => setSelectedKpiLabel(card.label)}
-              className="min-w-0 flex-[0_0_100%] cursor-pointer text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:flex-[0_0_calc((100%-16px)/2)] lg:flex-[0_0_calc((100%-48px)/4)] 2xl:flex-[0_0_calc((100%-64px)/5)]"
+              className="min-w-0 cursor-pointer text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md lg:flex-[0_0_calc((100%-48px)/4)] 2xl:flex-[0_0_calc((100%-64px)/5)]"
             >
-              <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+              <div className="bg-white rounded-xl shadow-sm p-3 lg:p-5 border border-gray-100">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="text-sm font-medium text-gray-500">{card.label}</div>
+                  <div className="text-xs lg:text-sm font-medium text-gray-500">{card.label}</div>
                   <div className="flex items-start gap-3">
                     <IconBubble icon={card.icon} tone={card.tone} />
                     <span className={`mt-1 size-2 rounded-full ${toneClasses[card.dot].dot}`} />
                   </div>
                 </div>
-                <div className="mt-4 text-3xl font-bold tracking-tight text-gray-950">{card.value}</div>
-                <div className="mt-1 text-sm text-gray-500">{card.sub}</div>
+                <div className="mt-3 text-2xl lg:mt-4 lg:text-3xl font-bold tracking-tight text-gray-950">{card.value}</div>
+                <div className="mt-1 text-xs lg:text-sm text-gray-500">{card.sub}</div>
                 <div className="mt-4 text-xs font-medium">
                   <span className={card.deltaTone}>{card.delta}</span>
                 </div>
-                <div className="mt-4 h-10">
+                <div className="mt-4 hidden h-10 lg:block">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={card.spark.map((value, index) => ({ index, value }))}>
                       <Line type="monotone" dataKey="value" stroke="#7C3AED" strokeWidth={2} dot={false} />
@@ -1250,7 +1250,7 @@ export function AdminDashboard() {
           aria-label="Next KPI card"
           disabled={kpiStartIndex >= maxKpiStartIndex}
           onClick={() => setKpiStartIndex((current) => Math.min(maxKpiStartIndex, current + 1))}
-          className="absolute right-0 top-1/2 z-10 size-9 translate-x-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+          className="absolute right-0 top-1/2 z-10 hidden size-9 translate-x-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-40 lg:inline-flex"
         >
           <ChevronRight className="size-4" />
         </Button>
@@ -1283,7 +1283,7 @@ export function AdminDashboard() {
         </div>
       </section>
 
-      <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+      <section className="mt-6 flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <div className="rounded-xl bg-white p-5 shadow-sm">
           <SectionHeading title="Recent Activities" subtitle="Last actions performed" />
           <div className="mt-4 divide-y divide-gray-100">
@@ -1351,10 +1351,10 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div className="mt-5 flex flex-col gap-4 xl:grid xl:grid-cols-2">
           <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <h3 className="font-semibold text-gray-950">Collection by Grade</h3>
-            <div className="mt-4 h-72">
+            <div className="mt-4 h-44 lg:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={gradeCollection} layout="vertical" margin={{ top: 8, right: 48, left: 8, bottom: 8 }}>
                   <CartesianGrid horizontal={false} stroke="#F3F4F6" />

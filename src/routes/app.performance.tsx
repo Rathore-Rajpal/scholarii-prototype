@@ -9,6 +9,7 @@ import {
   Activity, TrendingUp, TrendingDown, Trophy, Target, Star,
   Award, BookOpen, Clock, Sparkles, ArrowUpRight, CheckCircle2,
   Zap, Brain, Target as TargetIcon, Medal, PieChart,
+  BarChart3 as BarChart3Icon,
 } from "lucide-react";
 import {
   LineChart, Line, BarChart, Bar, RadarChart, Radar,
@@ -16,6 +17,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 import { EXAMS, CLASS_PERFORMANCE, SUBJECT_COLORS } from "@/lib/scholarii/exams-mock-data";
+import { KpiCard } from "@/components/scholarii/KpiCard";
 
 export const Route = createFileRoute("/app/performance")({ component: PerformancePage });
 
@@ -105,7 +107,7 @@ function PerformancePage() {
   const [activeTab, setActiveTab] = useState<TabId>("journey");
 
   return (
-    <div className="space-y-0 p-6 pb-20 md:p-8">
+    <div className="space-y-6 pb-20">
       {/* Header */}
       <div className="mb-4 space-y-1.5">
         <div className="flex items-center gap-3">
@@ -120,11 +122,39 @@ function PerformancePage() {
       </div>
 
       {/* Top Metrics */}
-      <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        <HeroMetric icon={<BarChart3 className="h-5 w-5 text-blue-400" />} label="Overall Score" value={`${overallScore}%`} sub={scoreChange >= 0 ? `+${scoreChange}% from previous` : `${scoreChange}% from previous`} positive={scoreChange >= 0} accent="from-blue-500 to-indigo-600" />
-        <HeroMetric icon={<Trophy className="h-5 w-5 text-amber-400" />} label="Class Rank" value={`${overallRank} / ${totalStudents}`} sub={`Top ${rankPercentile}%`} positive={true} accent="from-amber-500 to-orange-600" />
-        <HeroMetric icon={<Clock className="h-5 w-5 text-emerald-400" />} label="Attendance" value={`${attendance}%`} sub={attendance >= 90 ? "Excellent" : "Good"} positive={attendance >= 80} accent="from-emerald-500 to-green-600" />
-        <HeroMetric icon={<TrendingUp className="h-5 w-5 text-violet-400" />} label="Academic Growth" value={`+${scoreChange}%`} sub={`Since ${conductedExams[0]?.name.replace("Exam", "").trim()}`} positive={scoreChange >= 0} accent="from-violet-500 to-purple-600" />
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4 auto-rows-fr content-start">
+        <KpiCard
+          icon={BarChart3Icon}
+          label="Overall Score"
+          value={`${overallScore}%`}
+          tone="info"
+          trend={scoreChange >= 0 ? "up" : "down"}
+          trendLabel={scoreChange >= 0 ? `+${scoreChange}% from previous` : `${scoreChange}% from previous`}
+        />
+        <KpiCard
+          icon={Trophy}
+          label="Class Rank"
+          value={`${overallRank} / ${totalStudents}`}
+          tone="warning"
+          trend="up"
+          trendLabel={`Top ${rankPercentile}%`}
+        />
+        <KpiCard
+          icon={Clock}
+          label="Attendance"
+          value={`${attendance}%`}
+          tone="success"
+          trend={attendance >= 90 ? "up" : "down"}
+          trendLabel={attendance >= 90 ? "Excellent" : "Good"}
+        />
+        <KpiCard
+          icon={TrendingUp}
+          label="Academic Growth"
+          value={`+${scoreChange}%`}
+          tone="info"
+          trend={scoreChange >= 0 ? "up" : "down"}
+          trendLabel={`Since ${conductedExams[0]?.name.replace("Exam", "").trim()}`}
+        />
       </div>
 
       {/* Tabs */}

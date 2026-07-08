@@ -843,16 +843,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       {drawerOpen && (
-        <div className="fixed inset-0 bg-black/50 z-[200] lg:hidden" onClick={() => setDrawerOpen(false)}>
-          <aside
-            className="fixed top-0 left-0 h-full w-[260px] bg-white z-[201] shadow-2xl transition-transform duration-300 ease-in-out lg:hidden overflow-hidden"
-            onClick={(event) => event.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-[999] md:hidden">
+          <div className="fixed inset-0 bg-black/60" onClick={() => setDrawerOpen(false)} />
+          <aside className="fixed left-0 top-0 h-full w-64 bg-sidebar border-r border-sidebar-border overflow-hidden animate-in slide-in-from-left duration-300">
             <button
-              type="button"
-              aria-label="Close navigation"
-              className="absolute top-4 right-4 z-10 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
               onClick={() => setDrawerOpen(false)}
+              className="absolute top-4 right-4 z-20 size-8 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+              title="Close navigation"
             >
               <X className="size-5" />
             </button>

@@ -146,17 +146,17 @@ function AdminDocumentsPage() {
             >
               📤 Upload Document
             </Button>
-            <Button variant="ghost" onClick={() => toast.success("Document sent to printer")}>
+            <Button className="hidden md:inline-flex" variant="ghost" onClick={() => toast.success("Document sent to printer")}>
               🖨️ Print
             </Button>
-            <Button variant="ghost" onClick={() => toast.success("Document index exported")}>
+            <Button className="hidden md:inline-flex" variant="ghost" onClick={() => toast.success("Document index exported")}>
               📥 Export Index
             </Button>
           </div>
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Kpi label="Total Documents" value="1,284" hint="All categories" />
         <Kpi label="Student Documents" value="856" hint="Admission + records" />
         <Kpi label="Staff Documents" value="124" hint="Employee records" />
@@ -167,7 +167,7 @@ function AdminDocumentsPage() {
       <Card className="mt-6 overflow-hidden border-gray-100 bg-white shadow-sm">
         <Tabs defaultValue="all">
           <div className="border-b border-gray-100 px-5 pt-5">
-            <TabsList className="h-auto flex-wrap rounded-none bg-transparent p-0">
+            <TabsList className="flex h-auto overflow-x-auto rounded-none bg-transparent p-0 scrollbar-hide">
               <DocTab value="all">📁 All Documents</DocTab>
               <DocTab value="students">👥 Student Docs</DocTab>
               <DocTab value="staff">👨‍🏫 Staff Docs</DocTab>
@@ -275,7 +275,7 @@ function AdminDocumentsPage() {
 
           <TabsContent value="certificates" className="m-0 p-5">
             <Tabs defaultValue="issued">
-              <TabsList>
+              <TabsList className="flex overflow-x-auto scrollbar-hide">
                 <TabsTrigger value="issued">Issued</TabsTrigger>
                 <TabsTrigger value="pending">Pending</TabsTrigger>
                 <TabsTrigger value="templates">Templates</TabsTrigger>
@@ -411,7 +411,7 @@ function DocTab({ value, children }: { value: string; children: ReactNode }) {
   return (
     <TabsTrigger
       value={value}
-      className="rounded-none border-b-2 border-transparent px-4 py-3 shadow-none data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 data-[state=active]:shadow-none"
+      className="min-w-fit whitespace-nowrap rounded-none border-b-2 border-transparent px-3 py-2.5 text-xs shadow-none data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 data-[state=active]:shadow-none lg:px-5 lg:py-3 lg:text-sm"
     >
       {children}
     </TabsTrigger>
@@ -481,8 +481,9 @@ function TrackerTable({
   rows: readonly (readonly string[])[];
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100">
-      <Table>
+    <>
+      <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
+        <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
             {headers.map((header) => (
@@ -525,8 +526,43 @@ function TrackerTable({
             );
           })}
         </TableBody>
-      </Table>
-    </div>
+        </Table>
+      </div>
+      <div className="space-y-3 lg:hidden">
+        {rows.map((row) => {
+          const incomplete = row.some((cell) => cell === "âŒ" || cell === "â³");
+          const docHeaders = headers.slice(2, 6);
+          const docCells = row.slice(2, 6);
+          return (
+            <div key={`${row[0]}-${row[1]}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium text-gray-900">{row[0]}</div>
+                  <div className="text-xs text-gray-500">{row[1]}</div>
+                </div>
+                <StatusBadge status={incomplete ? "Pending" : "Verified âœ“"} />
+              </div>
+              <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+                {docCells.map((cell, index) => (
+                  <div key={`${row[0]}-${docHeaders[index]}`} className="rounded-lg bg-gray-50 p-2">
+                    <div className="text-gray-400">{docHeaders[index]}</div>
+                    <div className="mt-1 font-medium text-gray-900">{cell}</div>
+                  </div>
+                ))}
+              </div>
+              <Button className="w-full border-violet-200 text-violet-600" variant="outline" onClick={() => toast.info(`Upload selected for ${row[0]}`)}>
+                Upload
+              </Button>
+              {incomplete && (
+                <Button className="mt-2 w-full text-violet-600" variant="ghost" onClick={() => toast.success("Reminder sent")}>
+                  Send Reminder
+                </Button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
@@ -540,8 +576,9 @@ function SimpleTable({
   action?: boolean;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100">
-      <Table>
+    <>
+      <div className="hidden overflow-hidden rounded-xl border border-gray-100 lg:block">
+        <Table>
         <TableHeader className="bg-gray-50">
           <TableRow>
             {headers.map((header) => (
@@ -568,8 +605,35 @@ function SimpleTable({
             </TableRow>
           ))}
         </TableBody>
-      </Table>
-    </div>
+        </Table>
+      </div>
+      <div className="space-y-3 lg:hidden">
+        {rows.map((row, index) => (
+          <div key={`${row[0]}-${index}`} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-medium text-gray-900">{row[1] ?? row[0]}</div>
+                <div className="text-xs text-gray-500">{row[0]}</div>
+              </div>
+              {headers.includes("Status") && <StatusBadge status={row[headers.indexOf("Status")] as Status} />}
+            </div>
+            <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+              {row.slice(0, action ? -1 : row.length).map((cell, cellIndex) => (
+                <div key={`${row[0]}-${cell}-${cellIndex}`}>
+                  <div className="text-gray-400">{headers[cellIndex] ?? "Field"}</div>
+                  <div className="font-medium text-gray-900">{cell}</div>
+                </div>
+              ))}
+            </div>
+            {action && (
+              <Button className="w-full border-violet-200 text-violet-600" variant="outline" onClick={() => toast.info(`${row[row.length - 1]} opened`)}>
+                {row[row.length - 1]}
+              </Button>
+            )}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -640,10 +704,13 @@ function UploadDocumentModal({ onClose }: { onClose: () => void }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] grid place-items-center overflow-y-auto bg-black/60 p-4"
+      className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <form className="my-6 w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl" onSubmit={submit}>
+      <form className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-h-[85vh] lg:max-w-xl lg:rounded-2xl lg:p-6" onSubmit={submit}>
+        <div className="mb-2 flex justify-center lg:hidden">
+          <div className="h-1 w-10 rounded-full bg-gray-300" />
+        </div>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-900">Upload Document</h2>
           <button
@@ -725,14 +792,14 @@ function UploadDocumentModal({ onClose }: { onClose: () => void }) {
             <Input required type="file" />
           </Field>
           <Field label="Remarks">
-            <textarea className="min-h-24 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100" />
+            <textarea className="min-h-24 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100 lg:text-sm" />
           </Field>
         </div>
-        <div className="mt-6 flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onClose}>
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <Button className="w-full" type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" className="bg-violet-600 text-white hover:bg-violet-700">
+          <Button type="submit" className="w-full bg-violet-600 text-white hover:bg-violet-700">
             Upload
           </Button>
         </div>
@@ -745,10 +812,13 @@ function UploadDocumentModal({ onClose }: { onClose: () => void }) {
 function CertificateModal({ onClose }: { onClose: () => void }) {
   return createPortal(
     <div
-      className="fixed inset-0 z-[10000] grid place-items-center bg-black/60 p-4"
+      className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/60 p-0 lg:items-center lg:p-4"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl lg:max-h-[85vh] lg:max-w-md lg:rounded-2xl lg:p-6">
+        <div className="mb-2 flex justify-center lg:hidden">
+          <div className="h-1 w-10 rounded-full bg-gray-300" />
+        </div>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Generate Certificate</h2>
           <button
@@ -770,12 +840,12 @@ function CertificateModal({ onClose }: { onClose: () => void }) {
             <Input placeholder="Optional note" />
           </Field>
         </div>
-        <div className="mt-6 flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <Button className="w-full" variant="outline" onClick={onClose}>
             Cancel
           </Button>
           <Button
-            className="bg-violet-600 text-white hover:bg-violet-700"
+            className="w-full bg-violet-600 text-white hover:bg-violet-700"
             onClick={() => {
               toast.success("Certificate generated for principal review");
               onClose();

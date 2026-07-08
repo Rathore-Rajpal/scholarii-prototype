@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 const grades = Array.from({ length: 10 }, (_, index) => `Grade ${index + 1}`);
 const controlClass =
-  "w-full min-h-[44px] rounded-lg border border-gray-200 px-3 py-2.5 text-base focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 lg:text-sm";
+  "min-h-[44px] w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 lg:text-sm";
 
 export function NewAdmissionModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
@@ -28,14 +28,14 @@ export function NewAdmissionModal({ onClose }: { onClose: () => void }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/60 z-[9999] flex items-end lg:items-center justify-center p-0 lg:p-4"
+      className="fixed inset-0 z-[9999] flex items-end justify-center overflow-y-auto bg-black/60 p-0 lg:items-center lg:p-4"
       onClick={onClose}
     >
       <div
-        className="relative max-h-[90vh] lg:max-h-[85vh] w-full lg:max-w-[650px] overflow-y-auto rounded-t-2xl lg:rounded-2xl bg-white shadow-2xl"
+        className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl lg:max-h-[85vh] lg:max-w-[650px] lg:rounded-2xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="lg:hidden flex justify-center pt-3 pb-1">
+        <div className="flex justify-center pb-1 pt-3 lg:hidden">
           <div className="h-1 w-10 rounded-full bg-gray-300" />
         </div>
         <button
